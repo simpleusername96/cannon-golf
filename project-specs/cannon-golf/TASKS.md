@@ -85,13 +85,27 @@ an active plan.
   reduces rebound and rolling without freezing or teleporting the ball.
 - [ ] Implement an airflow device with valid mid-air placement, a readable
   bounded stream, and a modest deterministic directional force.
-- [ ] Prototype a gravity zone under the current authored-map safe boundary; it
+- [ ] Implement a player-placeable gravity zone with valid mid-air placement; it
   produces a sharp local downward acceleration and restores ordinary gravity
   after exit.
-- [ ] Decide Q-16 through Q-18 before assigning expansion stages or exposing
-  gravity in player inventory.
+- [ ] Decide Q-16 and Q-18 through Q-22 before assigning expansion stages or
+  building a dedicated authoring editor.
 
-### 7. Validate the product loop
+### 7. Establish the stage-authoring pipeline
+
+- [ ] Replace Paint Mountain coverage targets and fixed mechanism anchors with
+  Cannon Golf goals, per-device stock, legal placement rules, and solution
+  witnesses.
+- [ ] Author the first few course profiles manually from intended solutions;
+  keep visible fresh-stage content limited to cannon, goals, and terrain.
+- [ ] Record a solution witness containing device transforms, launch parameters,
+  goal order, and expected settlement results.
+- [ ] Replay witnesses through real physics and reject stages that fail stock,
+  placement, bounds, safe-settlement, persistence, or robustness rules.
+- [ ] After several stages, measure repeated authoring work and decide the
+  smallest useful Godot editor dock or viewport gizmo set.
+
+### 8. Validate the product loop
 
 - [ ] Run the prototype comprehension targets in `PRD.md`.
 - [ ] Verify newest-to-oldest impact ordering in lit and shaded terrain.

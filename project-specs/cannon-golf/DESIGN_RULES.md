@@ -44,7 +44,7 @@ coefficients, stage data formats, or code ownership.
 ![Cannon Golf screen direction storyboard](assets/cannon-golf-screen-direction-storyboard.png)
 
 - File: `assets/cannon-golf-screen-direction-storyboard.png`
-- SHA-256: `10D3035EC9B8F45CBDA83D638C8A9BE8A47F1924D06026053A519DFAC3FCFAFE`
+- SHA-256: `5FFFD31293C3643190C8EF9F2EBFF9BAB1F98BF5EF321470CE27E37BFC2672EF`
 - This is the current visual explanation of the immediate screen change, not a
   runtime screenshot, pixel contract, final stage layout, or claim that every
   shown mechanism appears in one stage.
@@ -54,9 +54,9 @@ coefficients, stage data formats, or code ownership.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
   balls, and remaining shots with goal progress, view state, device selection,
   angle, power, and one primary Fire action.
-- The combined board deliberately shows bounce, damping, airflow, and gravity in
-  one frame so their visual roles can be compared. It does not set content order
-  or inventory limits.
+- The combined board deliberately shows player-placed bounce, damping, airflow,
+  and gravity in one frame so their visual roles can be compared. It does not
+  set content order or inventory limits.
 
 ### Camera grammar
 
@@ -129,9 +129,9 @@ coefficients, stage data formats, or code ownership.
 - An airflow device may be suspended in a valid air-placement volume. Show a
   short, restrained stream whose direction and affected width are legible, but
   do not draw an exact resulting trajectory.
-- A gravity zone is currently an authored course mechanism, not visible player
-  inventory. Its bounded volume and downward action must remain readable without
-  implying that global gravity changed.
+- A gravity zone is placed by the player in a valid air volume. Its bounded
+  volume and downward action must remain readable without implying that global
+  gravity changed.
 - Placement mode must show the legal surface or air volume, current orientation,
   stock, and invalid state without covering the route. The device tray must show
   only mechanisms the player can place in the current stage.
@@ -139,6 +139,9 @@ coefficients, stage data formats, or code ownership.
   player to infer a wall normal from a frontal view.
 - Bounce, damping, airflow, and gravity must have distinct silhouettes and
   motion cues in grayscale; color is supporting information only.
+- Before player placement, the visible course contains no pad, fan, field, gate,
+  or other route-changing mechanism. Terrain shape and goals must explain the
+  problem without decorative fake mechanisms.
 
 ### Overlay HUD to reuse
 

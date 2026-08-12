@@ -35,7 +35,9 @@ newest impact is darkest and older impacts are progressively lighter. Later
 stages add multiple goals that cannot all be reached from the cannon and terrain
 alone, so the player places limited bounce pads to redirect shots. After the
 core bounce-pad progression, the accepted expansion vocabulary adds a flat
-damping pad, a mid-air airflow device, and a bounded gravity zone. Strategic
+damping pad, a mid-air airflow device, and a bounded gravity zone. All four
+mechanism families are placed by the player; authored courses contain no
+preinstalled puzzle mechanism. Strategic
 top, side, and oblique views and stable course exploration are more important
 than the inherited frontal cannon composition.
 
@@ -240,11 +242,33 @@ than the inherited frontal cannon composition.
 
 ### FR-14: Gravity zone
 
-- Requirement: a ball that enters a bounded gravity zone must receive a strong
-  downward acceleration and drop sharply while it is affected. The zone must be
-  spatially readable and must not change gravity for the whole stage.
+- Requirement: the player must be able to place a bounded gravity zone in a
+  valid empty-air volume. A ball that enters it must receive a strong downward
+  acceleration and drop sharply while affected. The zone must be spatially
+  readable and must not change gravity for the whole stage.
 - Reason: a local drop creates vertical route choices without replacing the
   cannon's ordinary ballistic rules everywhere else.
+
+### FR-15: Authored course boundary
+
+- Requirement: visible authored gameplay geometry must consist of the stationary
+  cannon, one or more settlement goals, and terrain that can bend laterally and
+  vary in elevation. Bounce pads, damping pads, airflow devices, and gravity
+  zones must not be preinstalled. A stage may still store non-world metadata
+  such as play bounds, camera bookmarks, goal tolerances, per-device stock,
+  placement legality, and certified solution witnesses.
+- Reason: the course supplies the spatial problem while the player supplies all
+  route-changing mechanisms.
+
+### FR-16: Stage solvability evidence [assumption]
+
+- Requirement: [assumption] every shipped stage must include at least one certified solution
+  witness containing the relevant launch parameters, ordered goal attempts, and
+  player device placements. Certification must replay the real physics and pass
+  safe-settlement, bounds, placement, and state-persistence rules. It must not
+  rely only on geometric reachability or an analytical trajectory estimate.
+- Reason: continuous launch and 3D placement variables make visual inspection or
+  terrain-generation constraints insufficient proof that a stage can be solved.
 
 ## Acceptance Criteria
 
@@ -317,7 +341,7 @@ than the inherited frontal cannon composition.
   minimum produces a visible rebound, repeated identical impacts remain within
   the repeatability tolerance, and successive rebounds lose energy until rest.
 
-### AC-10: Distinct expansion mechanics
+### AC-10: Distinct player-placed mechanics
 
 - Applies to: FR-13, FR-14.
 - Conditions for done: a damping pad placed on a fully flat landing surface
@@ -325,7 +349,21 @@ than the inherited frontal cannon composition.
   is invalid on a slope. An airflow device can be placed in a valid empty-air
   volume and produces only a modest repeatable route correction. Entering a
   visible gravity zone produces a sharp local drop without changing the ball's
-  gravity before entry or after exit.
+  gravity before entry or after exit. All four mechanism families begin in
+  player inventory or placement mode rather than already existing in the world.
+
+### AC-11: Course purity
+
+- Applies to: FR-15.
+- Conditions for done: loading a fresh stage creates no route-changing mechanism
+  in the course; only terrain, cannon, and goals are visible gameplay objects.
+
+### AC-12: Certified solution [assumption]
+
+- Applies to: FR-16.
+- Conditions for done: the stage's certified witness can place only the allowed
+  stock, passes every placement rule, settles all required balls, and continues
+  to pass the approved robustness perturbation test.
 
 ## Constraints
 
@@ -336,8 +374,8 @@ than the inherited frontal cannon composition.
 - Current product name, exact camera transition grammar, angle-control
   presentation, impact-mark retention rule, goal-order rule, bounce tuning, and
   device editing rules remain open. Exact damping, airflow, and gravity values,
-  inventory limits, introduction stages, and whether gravity zones become
-  player-placeable also remain open.
+  inventory limits, introduction stages, terrain topology family, and solution
+  robustness tolerances also remain open.
 - UI should remain Korean-first with persistent English support when
   implementation begins.
 
@@ -393,11 +431,14 @@ than the inherited frontal cannon composition.
   are deterministic and planning-state transitions are stable.
 - Prototype damping, airflow, and gravity-zone stages only after the core
   bounce-pad progression is readable; their exact stage counts are not set.
+- [assumption] Author early stages manually from an intended solution, save solution
+  witnesses, and automate replay validation before attempting broad procedural
+  course generation.
 
 ## Open Questions Summary
 
 - The material choices that still affect implementation are tracked in
   [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md), especially camera transitions,
   launch controls, impact fading, goal order, bounce tuning, pad behavior,
-  placement timing, expansion-mechanic tuning, introduction order, and gravity
-  zone ownership.
+  placement timing, expansion-mechanic tuning, introduction order, terrain
+  topology, editor workflow, and solution robustness.

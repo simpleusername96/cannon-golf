@@ -81,6 +81,25 @@ not define their Cannon Golf implementation.
   exact predicted impact, broad mountain generation, fixed generated mechanisms,
   and coverage-based stage results.
 
+#### Existing stage-authoring pipeline
+
+- The inherited runtime has no custom Godot `EditorPlugin` or level-design dock.
+  Stages are serialized `Resource` data transformed by an offline catalog
+  builder.
+- `StageGenerationProfile` describes route count, width, elevation changes,
+  lateral bends, and slope gates. `SeededStageGenerator` resolves a route graph,
+  synthesizes a heightfield-like terrain, rejects structural failures, and bakes
+  deterministic layouts.
+- Current validators cover finite heights, terrain edges, route clearance,
+  slope distribution, fixed mechanism anchors, projectile range, target masks,
+  and predicted-versus-rigid-body contact witnesses. These are useful technical
+  precedents, but target masks, coverage, finite shots, and preinstalled
+  mechanism anchors conflict with Cannon Golf.
+- Cannon Golf needs new certification for goal settlement, persistent occupied
+  goals, player device stock and transforms, surface and air placement legality,
+  multiple ordered launches, and robustness to small input changes. The current
+  generator cannot establish those properties.
+
 ### Local visual references
 
 #### HUD qualities to retain
@@ -163,6 +182,9 @@ not define their Cannon Golf implementation.
   near-profile, and temporary launch-follow views.
 - Validate the direct-shot and bounce-pad loop before committing expansion-stage
   counts, even though the later mechanic vocabulary is now selected.
+- Begin with a human-authored intended solution plus automated generation and
+  replay validation. Add a Godot editor plugin only after manual stage work
+  reveals stable repeated operations.
 - Audit candidate code owners against `PRD.md` before any rename or rewrite.
 
 ## Limitations

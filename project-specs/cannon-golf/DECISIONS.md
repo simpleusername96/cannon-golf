@@ -133,11 +133,20 @@ in `OPEN_QUESTIONS.md`.
   removes rebound and rolling energy so a ball can settle on a flat goal.
 - The airflow device is player-placeable in valid mid-air space and applies only
   a small directional correction to a passing ball.
-- The gravity zone is a bounded region that makes a passing ball drop sharply.
-  Placement ownership is unresolved; until Q-17 is resolved, it is treated as
-  an authored course mechanism and omitted from player inventory.
+- The gravity zone is player-placeable in valid mid-air space and makes a passing
+  ball drop sharply.
 - Exact force values, stock, editing rules, introduction order, stage counts,
-  and gravity-zone placement ownership remain open.
+  and placement-volume rules remain open.
+
+### D-016 — The player places every route-changing mechanism
+
+- Status: accepted.
+- A fresh authored course contains the stationary cannon, settlement goals, and
+  laterally winding terrain with elevation changes. It contains no preinstalled
+  bounce pad, damping pad, airflow device, or gravity zone.
+- Invisible authoring metadata such as bounds, camera bookmarks, legal placement
+  regions, stock, goal tolerances, and certified solution witnesses remains
+  necessary and is not considered a preinstalled course mechanism.
 
 ## Rationale
 
@@ -176,8 +185,8 @@ in `OPEN_QUESTIONS.md`.
 - HUD and save state must not assume a timer, finite shot stock, or later
   displacement of confirmed balls.
 - Placement and course-state owners must distinguish surface pads, mid-air
-  airflow placement, and authored field volumes instead of treating every
-  mechanism as the same placeable object.
+  airflow and gravity placement instead of treating every mechanism as the same
+  placeable object.
 - New reference images must demonstrate top, side, or mixed planning rather than
   refine the current frontal mockups.
 

@@ -43,8 +43,11 @@ affected code path is designed.
 | Q-13 | Is `Cannon Golf` only an internal slug or a candidate public title? | Changes visible copy, package identity, save paths, and export naming | Keep it internal and do not rename runtime identifiers yet |
 | Q-14 | Should a bounce pad use a fixed reflection, authored impulse, controllable strength, or only orientation? | Determines whether placement remains understandable and deterministic | Start comparison with fixed strength plus orientation, but treat it as unapproved |
 | Q-16 | When should damping, airflow, and gravity-zone stages enter after or around the core eleven-stage progression? | Changes teaching order, total content count, and when the device tray expands | Keep the accepted eleven-stage bounce progression intact until an expansion sequence is explicitly set |
-| Q-17 | Does the player ever place gravity zones, or are they always authored course mechanisms? | Changes inventory, 3D placement controls, stage certification, and save state | Treat gravity zones as authored map elements until player placement is explicitly accepted |
 | Q-18 | What exact damping, airflow, and gravity values and inventory limits remain understandable without prediction? | Changes physics tuning, readability, and solution tolerance | Keep damping strong but non-sticky, airflow modest and bounded, and gravity local and sharply downward; exact values remain tuning decisions |
+| Q-19 | Which terrain topology is allowed: heightfield-only winding ground, disconnected islands, caves, bridges, overhangs, or some bounded subset? | Changes mesh representation, camera occlusion, placement normals, generator capability, and solver search space | Start with one connected heightfield-like course that bends laterally and changes elevation; do not accept overhangs or caves without a separate decision |
+| Q-20 | What minimum solution tolerance must a certified stage have around launch and placement values? | Distinguishes a learnable puzzle from a pixel-perfect or numerically fragile solution | Require replay under small perturbations, but set the actual angle, power, position, and rotation tolerances after the physics prototype |
+| Q-21 | Which authoring actions recur enough to justify a Godot editor plugin: route sketching, terrain regeneration, goal placement, stock editing, placement-volume preview, witness recording, or batch validation? | Determines whether a custom editor pays for itself and prevents premature tool scope | Author several stages with Resources and ordinary editor controls first, then build only the repeated high-cost actions into a plugin |
+| Q-22 | What is the final authoring balance between hand-authored terrain, generator-assisted variants, and fully procedural stages? | Changes tool scope, content review cost, reproducibility, and how solvability is established | Start with human-authored intended solutions plus automated replay validation; do not treat procedural generation alone as proof of quality |
 
 ## Resolved Questions
 
@@ -54,6 +57,7 @@ affected code path is designed.
 | Q-06 | Retries are unlimited. There is no timer, lives, finite ball stock, or shot limit that can fail the stage. | `DECISIONS.md` D-011 |
 | Q-11 | Confirmed goals persist and later shots cannot invalidate them, so multi-goal completion does not require several still-dynamic balls to remain settled simultaneously. | `DECISIONS.md` D-010 and D-011 |
 | Q-15 | The selected additional vocabulary is a flat-surface damping pad, a mid-air placeable airflow device, and a bounded gravity-drop zone. | `DECISIONS.md` D-015 |
+| Q-17 | Gravity zones, like every other route-changing mechanism, are placed by the player. | `DECISIONS.md` D-015 and D-016 |
 
 ## Recommendations
 
@@ -62,7 +66,7 @@ affected code path is designed.
   state become an execution contract.
 - Use the saved screen-direction storyboard as the visual brief, then resolve
   Q-12 with a runtime-feasible graybox of the same camera families.
-- Resolve Q-16 through Q-18 before expansion-mechanic implementation or stage
+- Resolve Q-16 and Q-18 through Q-22 before expansion-mechanic implementation or stage
   production becomes an execution contract.
 
 ## Limitations
