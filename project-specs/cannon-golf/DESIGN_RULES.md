@@ -24,9 +24,9 @@ game.
 ## Scope
 
 These rules govern planning and shot cameras, terrain presentation, settlement
-goals, impact-history marks, placeable devices, overlay HUD, typography, color,
-and information hierarchy. They do not decide ball physics, stage data formats,
-or code ownership.
+goals, impact-history marks, placeable devices, course mechanisms, overlay HUD,
+typography, color, and information hierarchy. They do not decide physics
+coefficients, stage data formats, or code ownership.
 
 ## Requirements
 
@@ -38,6 +38,25 @@ or code ownership.
   paintable target surface. A goal may be a hole or a small bounded landing zone.
 - The cannon, current ball, goals, settled balls, recent impact history, and
   selected device are the only persistent gameplay accents.
+
+### Immediate screen direction
+
+![Cannon Golf screen direction storyboard](assets/cannon-golf-screen-direction-storyboard.png)
+
+- File: `assets/cannon-golf-screen-direction-storyboard.png`
+- SHA-256: `10D3035EC9B8F45CBDA83D638C8A9BE8A47F1924D06026053A519DFAC3FCFAFE`
+- This is the current visual explanation of the immediate screen change, not a
+  runtime screenshot, pixel contract, final stage layout, or claim that every
+  shown mechanism appears in one stage.
+- The large left panel establishes the high-oblique planning composition. The
+  upper-right panel demonstrates a true side/profile reading of height and the
+  gravity drop. The lower-right panel demonstrates temporary ball follow.
+- Preserve the quiet warm HUD language, but replace coverage, timer, remaining
+  balls, and remaining shots with goal progress, view state, device selection,
+  angle, power, and one primary Fire action.
+- The combined board deliberately shows bounce, damping, airflow, and gravity in
+  one frame so their visual roles can be compared. It does not set content order
+  or inventory limits.
 
 ### Camera grammar
 
@@ -100,16 +119,26 @@ or code ownership.
 - Marks must remain legible against both lit and shaded terrain without using
   emission or a large glow.
 
-### Bounce pad
+### Devices and course mechanisms
 
-- A pad must sit on or conform to the physical surface and expose its outgoing
-  direction through shape and orientation, not color alone.
-- Placement mode must show the legal surface, current orientation, stock, and
-  invalid state without covering the route.
+- A bounce pad must sit on or conform to a physical surface and expose its
+  outgoing direction through shape and orientation, not color alone.
+- A damping pad must sit flat on a fully level legal surface. Its face and
+  material must communicate grip and energy absorption rather than reflection;
+  a flat bounded landing goal may contain it without hiding the goal boundary.
+- An airflow device may be suspended in a valid air-placement volume. Show a
+  short, restrained stream whose direction and affected width are legible, but
+  do not draw an exact resulting trajectory.
+- A gravity zone is currently an authored course mechanism, not visible player
+  inventory. Its bounded volume and downward action must remain readable without
+  implying that global gravity changed.
+- Placement mode must show the legal surface or air volume, current orientation,
+  stock, and invalid state without covering the route. The device tray must show
+  only mechanisms the player can place in the current stage.
 - Use top/oblique or side/profile composition for placement; do not require the
   player to infer a wall normal from a frontal view.
-- The MVP visual vocabulary contains one bounce-pad family. Other device types
-  remain research, not visible inventory.
+- Bounce, damping, airflow, and gravity must have distinct silhouettes and
+  motion cues in grayscale; color is supporting information only.
 
 ### Overlay HUD to reuse
 
@@ -154,6 +183,9 @@ or code ownership.
   wider desktop aspect ratio.
 - The visible pad face, goal boundary, safe-settlement state, and occupied-goal
   state remain readable without depending on hue alone.
+- A still distinguishes the angled bounce face, flat damping surface, suspended
+  airflow source and stream, and bounded downward gravity field by shape and
+  orientation rather than labels alone.
 
 ## Non-Goals
 

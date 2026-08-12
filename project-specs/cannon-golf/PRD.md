@@ -33,7 +33,9 @@ rest. A shot leaves one visible mark at its first terrain impact. That mark is
 aiming history, not paintable area, a resource, a route trail, or a score. The
 newest impact is darkest and older impacts are progressively lighter. Later
 stages add multiple goals that cannot all be reached from the cannon and terrain
-alone, so the player places limited bounce pads to redirect shots. Strategic
+alone, so the player places limited bounce pads to redirect shots. After the
+core bounce-pad progression, the accepted expansion vocabulary adds a flat
+damping pad, a mid-air airflow device, and a bounded gravity zone. Strategic
 top, side, and oblique views and stable course exploration are more important
 than the inherited frontal cannon composition.
 
@@ -226,6 +228,24 @@ than the inherited frontal cannon composition.
 - Reason: bounce is part of the aiming challenge and makes safe settlement a
   meaningful success condition.
 
+### FR-13: Damping pad and airflow device
+
+- Requirement: a player-placeable damping pad must work only on a valid fully
+  flat surface and must reduce rebound and rolling energy so a ball can settle on
+  a flat goal. A player-placeable airflow device must support valid mid-air
+  placement and apply a small, bounded directional force that bends the ball's
+  route without becoming a second sharp redirector.
+- Reason: the damping pad solves controlled stopping where a recess cannot, while
+  airflow adds a readable fine-correction verb between launch and contact.
+
+### FR-14: Gravity zone
+
+- Requirement: a ball that enters a bounded gravity zone must receive a strong
+  downward acceleration and drop sharply while it is affected. The zone must be
+  spatially readable and must not change gravity for the whole stage.
+- Reason: a local drop creates vertical route choices without replacing the
+  cannon's ordinary ballistic rules everywhere else.
+
 ## Acceptance Criteria
 
 ### AC-1: No coverage gameplay
@@ -297,6 +317,16 @@ than the inherited frontal cannon composition.
   minimum produces a visible rebound, repeated identical impacts remain within
   the repeatability tolerance, and successive rebounds lose energy until rest.
 
+### AC-10: Distinct expansion mechanics
+
+- Applies to: FR-13, FR-14.
+- Conditions for done: a damping pad placed on a fully flat landing surface
+  reduces rebound and roll enough to enable controlled settlement; the same pad
+  is invalid on a slope. An airflow device can be placed in a valid empty-air
+  volume and produces only a modest repeatable route correction. Entering a
+  visible gravity zone produces a sharp local drop without changing the ball's
+  gravity before entry or after exit.
+
 ## Constraints
 
 - Windows desktop and Godot 4.x remain the initial platform and engine.
@@ -305,7 +335,9 @@ than the inherited frontal cannon composition.
 - No new production dependency is approved.
 - Current product name, exact camera transition grammar, angle-control
   presentation, impact-mark retention rule, goal-order rule, bounce tuning, and
-  device editing rules remain open.
+  device editing rules remain open. Exact damping, airflow, and gravity values,
+  inventory limits, introduction stages, and whether gravity zones become
+  player-placeable also remain open.
 - UI should remain Korean-first with persistent English support when
   implementation begins.
 
@@ -330,6 +362,8 @@ than the inherited frontal cannon composition.
   arbitrary.
 - Player-placeable devices may trivialize direct shots unless placement area,
   count, and orientation are constrained.
+- Airflow and gravity volumes may become hard to judge unless their boundaries
+  and active direction are readable from both planning camera families.
 - A confirmed ball must remain visible without becoming an accidental obstacle
   that invalidates later certified routes.
 - The current exact impact prediction and target-click inverse solver may remove
@@ -357,10 +391,13 @@ than the inherited frontal cannon composition.
 - Add two one-pad stages only after direct-shot correction is understandable.
 - Expand through five multi-pad stages only after direct and one-pad solutions
   are deterministic and planning-state transitions are stable.
+- Prototype damping, airflow, and gravity-zone stages only after the core
+  bounce-pad progression is readable; their exact stage counts are not set.
 
 ## Open Questions Summary
 
 - The material choices that still affect implementation are tracked in
   [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md), especially camera transitions,
   launch controls, impact fading, goal order, bounce tuning, pad behavior,
-  placement timing, and any post-bounce device family.
+  placement timing, expansion-mechanic tuning, introduction order, and gravity
+  zone ownership.

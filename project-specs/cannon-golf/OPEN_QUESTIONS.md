@@ -35,14 +35,16 @@ affected code path is designed.
 | Q-02 | Which view is the default planning view, and how do top, side, oblique, cannon, and follow views transition? | Determines stage composition, occlusion rules, controls, and UI safe areas | Treat frontal-only planning as rejected; every transition and exploration mode must preserve planning state and return to valid framing |
 | Q-03 | Do impact marks fade by shot order, real time, stage time, or a fixed retained count? | Determines data model, shader/decal lifecycle, replay, and readability | Preserve only the rule that newest is darkest and older is lighter |
 | Q-04 | How many prior impact marks remain visible? | Too many create noise; too few weaken correction | Make the count a stage-independent tuning decision before content production |
-| Q-07 | Can pads be placed only before the first shot, between shots, or while balls are moving? | Changes state machine, undo, simulation determinism, and camera needs | No placement during live simulation unless explicitly approved later |
-| Q-08 | Can a placed pad be moved, rotated, removed, or reused after a shot? | Changes interaction model and whether trial history remains comparable | Require explicit placement and orientation state in replays |
-| Q-09 | What surface area and orientation constraints make pad placement legal? | Determines collision, UI feedback, trivial solutions, and level certification | Keep pads flush to valid terrain and visibly oriented |
+| Q-07 | Can player-placeable devices be edited only before the first shot, between shots, or while balls are moving? | Changes state machine, undo, simulation determinism, and camera needs | No placement during live simulation unless explicitly approved later |
+| Q-08 | Can a placed device be moved, rotated, removed, or reused after a shot? | Changes interaction model and whether trial history remains comparable | Require explicit placement and orientation state in replays |
+| Q-09 | What surface and empty-air constraints make pad and airflow placement legal? | Determines collision, UI feedback, trivial solutions, and level certification | Keep surface pads flush to valid terrain, restrict damping to fully flat surfaces, and require an explicit unobstructed airflow volume |
 | Q-10 | Are goals attempted in any order or assigned one at a time? | Changes planning, HUD, completion state, and stage solution space | PRD currently allows any order but does not lock it |
 | Q-12 | Which terrain family leads the first slice: quarry, crater chain, slot canyon, switchback, or another course? | Determines generator reuse, camera framing, art direction, and collision proof | Compare with a small graybox storyboard before selecting |
 | Q-13 | Is `Cannon Golf` only an internal slug or a candidate public title? | Changes visible copy, package identity, save paths, and export naming | Keep it internal and do not rename runtime identifiers yet |
 | Q-14 | Should a bounce pad use a fixed reflection, authored impulse, controllable strength, or only orientation? | Determines whether placement remains understandable and deterministic | Start comparison with fixed strength plus orientation, but treat it as unapproved |
-| Q-15 | Which additional device, if any, should follow the eleven-stage bounce-pad progression? | Changes stage vocabulary, placement UI, camera evidence, and content cost | Do not add one to the initial course; compare a damping pad, fixed airflow, and a ball-triggered gate first, with user selection required before promotion |
+| Q-16 | When should damping, airflow, and gravity-zone stages enter after or around the core eleven-stage progression? | Changes teaching order, total content count, and when the device tray expands | Keep the accepted eleven-stage bounce progression intact until an expansion sequence is explicitly set |
+| Q-17 | Does the player ever place gravity zones, or are they always authored course mechanisms? | Changes inventory, 3D placement controls, stage certification, and save state | Treat gravity zones as authored map elements until player placement is explicitly accepted |
+| Q-18 | What exact damping, airflow, and gravity values and inventory limits remain understandable without prediction? | Changes physics tuning, readability, and solution tolerance | Keep damping strong but non-sticky, airflow modest and bounded, and gravity local and sharply downward; exact values remain tuning decisions |
 
 ## Resolved Questions
 
@@ -51,15 +53,17 @@ affected code path is designed.
 | Q-05 | A goal counts only after safe settlement. The confirmed ball stays visible and cannot be displaced; exact collision treatment is an implementation detail. | `DECISIONS.md` D-010 |
 | Q-06 | Retries are unlimited. There is no timer, lives, finite ball stock, or shot limit that can fail the stage. | `DECISIONS.md` D-011 |
 | Q-11 | Confirmed goals persist and later shots cannot invalidate them, so multi-goal completion does not require several still-dynamic balls to remain settled simultaneously. | `DECISIONS.md` D-010 and D-011 |
+| Q-15 | The selected additional vocabulary is a flat-surface damping pad, a mid-air placeable airflow device, and a bounded gravity-drop zone. | `DECISIONS.md` D-015 |
 
 ## Recommendations
 
 - Resolve Q-01 through Q-04 before final camera/input implementation.
 - Resolve Q-07 through Q-10 and Q-14 before bounce-pad placement and multi-goal
   state become an execution contract.
-- Resolve Q-12 with a low-cost camera storyboard using the same simple graybox.
-- Defer Q-15 until the eleven-stage bounce-pad progression proves that another
-  puzzle verb is necessary and readable.
+- Use the saved screen-direction storyboard as the visual brief, then resolve
+  Q-12 with a runtime-feasible graybox of the same camera families.
+- Resolve Q-16 through Q-18 before expansion-mechanic implementation or stage
+  production becomes an execution contract.
 
 ## Limitations
 

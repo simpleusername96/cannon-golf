@@ -52,7 +52,8 @@ in `OPEN_QUESTIONS.md`.
 
 - Status: accepted for the initial concept.
 - The player places a pad to redirect a ball toward otherwise unreachable goals.
-  Additional device families are not yet accepted.
+  It remains the first device taught in the core progression. Later accepted
+  device and mechanism behavior is recorded in D-015.
 
 ### D-006 — Camera direction must move away from frontal-only planning
 
@@ -125,6 +126,19 @@ in `OPEN_QUESTIONS.md`.
 - Exact terrain, goal count, and pad count within the later stages remain level
   design and balancing decisions.
 
+### D-015 — Add damping, airflow, and local gravity as distinct later verbs
+
+- Status: accepted.
+- The damping pad is player-placeable only on a fully flat valid surface and
+  removes rebound and rolling energy so a ball can settle on a flat goal.
+- The airflow device is player-placeable in valid mid-air space and applies only
+  a small directional correction to a passing ball.
+- The gravity zone is a bounded region that makes a passing ball drop sharply.
+  Placement ownership is unresolved; until Q-17 is resolved, it is treated as
+  an authored course mechanism and omitted from player inventory.
+- Exact force values, stock, editing rules, introduction order, stage counts,
+  and gravity-zone placement ownership remain open.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
@@ -140,6 +154,9 @@ in `OPEN_QUESTIONS.md`.
   from losing a carefully prepared solution.
 - The staged content target teaches one variable set at a time before combining
   several pads.
+- The additional mechanics remain distinct because they respectively redirect
+  on contact, remove energy on a flat surface, bend a route slightly in mid-air,
+  and force a sharp local vertical drop.
 - An unchanged technical baseline makes later reuse decisions auditable: any
   runtime divergence will appear in future commits rather than being hidden in
   project creation.
@@ -158,6 +175,9 @@ in `OPEN_QUESTIONS.md`.
   settlement goal and must make confirmed goals irreversible within the stage.
 - HUD and save state must not assume a timer, finite shot stock, or later
   displacement of confirmed balls.
+- Placement and course-state owners must distinguish surface pads, mid-air
+  airflow placement, and authored field volumes instead of treating every
+  mechanism as the same placeable object.
 - New reference images must demonstrate top, side, or mixed planning rather than
   refine the current frontal mockups.
 

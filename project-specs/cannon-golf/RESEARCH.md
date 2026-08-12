@@ -39,9 +39,9 @@ loop.
 
 ### Additional device candidate portfolio
 
-These candidates are research only. None is accepted for the initial course,
-which remains a bounce-pad progression. Ball-specific uses below are inferences
-that require local physics and camera validation.
+This table preserves the evidence considered before the owner selected damping,
+airflow, and local gravity behaviors in `DECISIONS.md`. External precedents do
+not define their Cannon Golf implementation.
 
 | Candidate family | Directly evidenced behavior | Distinct Cannon Golf verb | Main fit limit |
 | --- | --- | --- | --- |
@@ -53,22 +53,17 @@ that require local physics and camera validation.
 | Fixed portal pair | [Portal](https://store.steampowered.com/app/400/Portal/) centers spatial puzzles on maneuvering objects through portals | Preserve an entry relationship while connecting separated course regions | High camera-disorientation and route-bypass risk; free endpoint placement would trivialize authored courses |
 | Local gravity change | [Gravity Control](https://store.steampowered.com/app/1133350/Gravity_Control/) guides objects indirectly by changing gravity direction | Change which surface is down for a bounded region | Very high camera, physics, and golf-metaphor cost; invalidates ordinary ballistic assumptions |
 
-#### Provisional fit after portfolio freeze
+#### Owner selection after portfolio review
 
-- Keep the first approximately eleven stages bounce-pad-only. Another inventory
-  device should not interrupt the direct-shot and multi-pad learning sequence.
-- First inspect a limited damping or brake pad after that sequence. It supplies
-  the complementary verb `remove energy and settle` while the bounce pad owns
-  `redirect and continue`. This priority is a project-fit inference, not an
-  externally validated selection.
-- Next inspect fixed, visible airflow if the game needs a mid-air verb. Keep
-  direction and strength authored or discretely oriented; do not require live
-  activation or exact trajectory prediction.
-- Treat a ball-triggered gate as a later course mechanism rather than another
-  trajectory modifier when multi-goal ordering needs more depth.
-- Defer magnets, portals, transport beams, and gravity changes until simpler
-  verbs prove insufficient; each adds larger prediction, camera, or metaphor
-  costs.
+- The owner selected a flat-surface damping pad that removes energy, a
+  player-placeable mid-air airflow device that makes a small route correction,
+  and a bounded gravity zone that creates a sharp downward drop.
+- The ball-triggered gate, magnets, portals, and transport beams remain
+  unselected. Their evidence remains useful only if later playtests reveal a
+  different missing verb.
+- The selected gravity behavior is narrower than a general gravity-direction
+  mechanic: it acts as a local drop zone rather than redefining down for a whole
+  stage.
 
 ### Local Paint Mountain baseline
 
@@ -154,24 +149,20 @@ that require local physics and camera validation.
   solve the user's camera concern. Their camera is evidence of what to change.
 - Paint Mountain's HUD system is more reusable than its world composition or
   product semantics.
-- The additional-device search separates three useful later verbs: remove energy
-  for settlement, apply a sustained mid-air force, or change route state after a
-  ball-triggered event. Portals, magnets, and gravity changes add materially more
-  prediction or camera cost.
+- The selected additions separate three useful verbs: remove energy on a flat
+  landing surface, make a small mid-air correction, and force a sharp local
+  vertical drop.
 - This is not a weak build case: no reviewed reference supplies the complete
   combination, and the existing local runtime materially reduces technical
   startup cost.
 
 ## Recommendations
 
-- Make the next visual study a camera storyboard, not another polished frontal
-  gameplay mockup.
-- Compare the same graybox from true top, high-oblique, true side, near-profile,
-  and temporary launch-follow views.
-- Keep only the bounce pad until the direct-shot and impact-history loop tests
-  well.
-- Keep the initial eleven-stage target bounce-pad-only; if later playtests show a
-  missing verb, prototype damping before airflow and a ball-triggered gate.
+- Use the screen-direction storyboard in `DESIGN_RULES.md` as the visual brief,
+  then compare a runtime-feasible graybox from true top, high-oblique, true side,
+  near-profile, and temporary launch-follow views.
+- Validate the direct-shot and bounce-pad loop before committing expansion-stage
+  counts, even though the later mechanic vocabulary is now selected.
 - Audit candidate code owners against `PRD.md` before any rename or rewrite.
 
 ## Limitations
@@ -180,7 +171,8 @@ that require local physics and camera validation.
   tolerances.
 - The local early concepts are generated illustrations, not feasible geometry,
   runtime screenshots, or approved layouts.
-- No current image demonstrates the required final camera grammar.
+- The screen-direction storyboard is generated design evidence, not feasible
+  geometry, a runtime capture, or a final camera-transition specification.
 - Exact aiming controls, camera transitions, mark retention, pad editing,
   settlement tolerances, and confirmed-ball collision treatment still require
   owner decisions.

@@ -25,6 +25,8 @@ an active plan.
 - [ ] Decide Q-01 through Q-04.
 - [ ] Produce one graybox camera storyboard of the same stage from top,
   high-oblique, side, near-profile, temporary cannon, and shot-follow views.
+- [x] Save a non-runtime screen-direction storyboard covering high-oblique,
+  side/profile, and Shot Follow composition in `DESIGN_RULES.md`.
 - [ ] Select the planning-camera grammar and record it in `DECISIONS.md` and
   `DESIGN_RULES.md`.
 
@@ -77,15 +79,27 @@ an active plan.
 - [ ] Prevent pad placement from creating trivial out-of-bounds or overlapping
   solutions.
 
-### 6. Validate the product loop
+### 6. Extend the mechanic vocabulary after the core loop
+
+- [ ] Implement a damping pad that is valid only on fully flat surfaces and
+  reduces rebound and rolling without freezing or teleporting the ball.
+- [ ] Implement an airflow device with valid mid-air placement, a readable
+  bounded stream, and a modest deterministic directional force.
+- [ ] Prototype a gravity zone under the current authored-map safe boundary; it
+  produces a sharp local downward acceleration and restores ordinary gravity
+  after exit.
+- [ ] Decide Q-16 through Q-18 before assigning expansion stages or exposing
+  gravity in player inventory.
+
+### 7. Validate the product loop
 
 - [ ] Run the prototype comprehension targets in `PRD.md`.
 - [ ] Verify newest-to-oldest impact ordering in lit and shaded terrain.
 - [ ] Verify goal and selected-pad readability in every planning view.
 - [ ] Verify that misses return to a stable planning state and confirmed goals
   persist through later shots and unlimited retries.
-- [ ] Decide whether the build case remains strong before accepting another
-  device family beyond bounce pads.
+- [ ] Verify that damping, airflow, and gravity each solve a distinct route
+  problem and remain readable without an exact trajectory preview.
 
 ## Progress
 
@@ -93,6 +107,8 @@ an active plan.
 - [x] Copied the Paint Mountain runtime baseline without code edits.
 - [x] Separated current product design from Paint Mountain product briefs.
 - [x] Saved external research and local visual comparators.
+- [x] Saved the current screen-direction storyboard and linked it from the
+  canonical visual specification.
 - [x] Confirmed that no gameplay, UI, scene, resource, test, script, project
   setting, or export setting was modified while establishing this specification.
 
