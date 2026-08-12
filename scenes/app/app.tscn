@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/app/app_root.gd" id="1_root"]
+[ext_resource type="Script" path="res://src/delivery/delivery_capture_runner.gd" id="2_capture"]
+
+[node name="App" type="Node"]
+script = ExtResource("1_root")
+
+[node name="DeliveryCaptureRunner" type="Node" parent="."]
+script = ExtResource("2_capture")
+

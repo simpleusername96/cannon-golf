@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="StageGenerationContract" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_contract"]
+
+[resource]
+script = ExtResource("1_contract")
+generation_version = 9
+profile_version = 9
+layout_version = 9
+cell_count = Vector2i(84, 48)
+local_bounds = Rect2(-105, -60, 210, 120)
+maximum_top_triangle_count = 8064
+cell_diagonal = 0
+mask_size = 512
+route_station_z = PackedFloat32Array(-44, -32, -20, -8, 4, 16, 30, 44)
+maximum_station_x_delta = 18.0
+outer_band_width = 12.0
+terrace_step = 4.0
+terrace_blend = 0.24
+bank_blend_distance = 8.0
+target_shoulder_distance = 12.0
+support_distance = 24.0
+noise_frequency = 0.035
+noise_octaves = 2
+noise_lacunarity = 2.0
+noise_gain = 0.45
+noise_amplitude = 0.5

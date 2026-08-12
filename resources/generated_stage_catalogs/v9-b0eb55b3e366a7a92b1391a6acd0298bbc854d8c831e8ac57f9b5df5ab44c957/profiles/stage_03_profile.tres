@@ -1,0 +1,63 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_0hf6s"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_bkjcc"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_k3jhm"]
+
+[sub_resource type="Resource" id="Resource_uxayc"]
+script = ExtResource("1_0hf6s")
+cell_count = Vector2i(84, 50)
+local_bounds = Rect2(-107, -61, 214, 122)
+maximum_top_triangle_count = 8400
+route_station_z = PackedFloat32Array(-45, -32.142857, -19.285715, -6.428571, 6.428571, 19.285715, 32.142857, 45)
+
+[sub_resource type="Resource" id="Resource_cngan"]
+script = ExtResource("2_bkjcc")
+role = 1
+endpoint_x = -48.0
+width = 27.5
+grade_signs = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1)
+drop_range = Vector2(6.2, 7.9)
+lateral_bend_range = Vector2(-4, 4)
+mechanism_kinds = PackedInt32Array()
+mechanism_pad_ts = PackedFloat32Array()
+mechanism_pad_radii = PackedFloat32Array()
+
+[sub_resource type="Resource" id="Resource_v4y5e"]
+script = ExtResource("2_bkjcc")
+role = 2
+width = 27.5
+grade_signs = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1)
+drop_range = Vector2(6.2, 7.9)
+lateral_bend_range = Vector2(-4, 4)
+mechanism_kinds = PackedInt32Array(1)
+mechanism_pad_ts = PackedFloat32Array(0.42)
+mechanism_pad_radii = PackedFloat32Array(10)
+
+[sub_resource type="Resource" id="Resource_iki54"]
+script = ExtResource("2_bkjcc")
+role = 3
+endpoint_x = 48.0
+width = 27.5
+grade_signs = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1)
+drop_range = Vector2(6.2, 7.9)
+lateral_bend_range = Vector2(-4, 4)
+mechanism_kinds = PackedInt32Array(2)
+mechanism_pad_ts = PackedFloat32Array(0.76)
+mechanism_pad_radii = PackedFloat32Array(1.5)
+
+[resource]
+script = ExtResource("3_k3jhm")
+profile_id = &"stage_03_v9"
+generation_contract = SubResource("Resource_uxayc")
+nominal_peak = 66.0
+accepted_height_range = Vector2(54, 76)
+undulation_amplitude = 2.4000000000000004
+route_width = 27.5
+routes = Array[ExtResource("2_bkjcc")]([SubResource("Resource_cngan"), SubResource("Resource_v4y5e"), SubResource("Resource_iki54")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0

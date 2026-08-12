@@ -1,0 +1,137 @@
+[gd_resource type="Resource" script_class="StageData" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_eud2v"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_ito7j"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_kvrcq"]
+[ext_resource type="Script" path="res://src/mechanisms/mechanism_data.gd" id="4_xyqjx"]
+[ext_resource type="Script" path="res://src/stage/stage_data.gd" id="5_yul2h"]
+
+[sub_resource type="Resource" id="Resource_8x8st"]
+script = ExtResource("1_eud2v")
+cell_count = Vector2i(92, 60)
+local_bounds = Rect2(-130, -74, 260, 148)
+maximum_top_triangle_count = 11040
+route_station_z = PackedFloat32Array(-58, -45.11111, -32.22222, -19.333334, -6.4444447, 6.4444447, 19.333334, 32.22222, 45.11111, 58)
+
+[sub_resource type="Resource" id="Resource_xytoc"]
+script = ExtResource("2_ito7j")
+role = 1
+endpoint_x = -62.720000000000006
+width = 25.0
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.586207, 8.448276)
+rise_range = Vector2(3.586207, 5.448276)
+lateral_bend_range = Vector2(-3.8275862, 3.8275862)
+mechanism_kinds = PackedInt32Array(1, 2)
+mechanism_pad_ts = PackedFloat32Array(0.55, 0.9)
+mechanism_pad_radii = PackedFloat32Array(10, 1.5)
+
+[sub_resource type="Resource" id="Resource_a5j4j"]
+script = ExtResource("2_ito7j")
+role = 2
+width = 21.0
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.586207, 8.448276)
+rise_range = Vector2(3.586207, 5.448276)
+lateral_bend_range = Vector2(-3.8275862, 3.8275862)
+mechanism_kinds = PackedInt32Array(0, 1)
+mechanism_pad_ts = PackedFloat32Array(0.12, 0.45)
+mechanism_pad_radii = PackedFloat32Array(10, 10)
+
+[sub_resource type="Resource" id="Resource_8qyr3"]
+script = ExtResource("2_ito7j")
+role = 3
+endpoint_x = 62.720000000000006
+width = 21.0
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.586207, 8.448276)
+rise_range = Vector2(3.586207, 5.448276)
+lateral_bend_range = Vector2(-3.8275862, 3.8275862)
+mechanism_kinds = PackedInt32Array(2)
+mechanism_pad_ts = PackedFloat32Array(0.68)
+mechanism_pad_radii = PackedFloat32Array(1.5)
+
+[sub_resource type="Resource" id="Resource_a50s4"]
+script = ExtResource("3_kvrcq")
+profile_id = &"stage_22_v10"
+generation_contract = SubResource("Resource_8x8st")
+nominal_peak = 84.5
+accepted_height_range = Vector2(80.5, 94.5)
+ridge_count = 7
+basin_count = 2
+pass_count = 3
+undulation_amplitude = 6.300000000000001
+route_width = 21.0
+routes = Array[ExtResource("2_ito7j")]([SubResource("Resource_xytoc"), SubResource("Resource_a5j4j"), SubResource("Resource_8qyr3")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0
+
+[sub_resource type="Resource" id="Resource_renqu"]
+script = ExtResource("4_xyqjx")
+kind = 1
+display_name_key = &"mechanism.splitter"
+description_key = &"mechanism.splitter.description"
+glyph_radius = 5.0
+maximum_charges = 0
+cooldown_seconds = 0.3
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[sub_resource type="Resource" id="Resource_dbjyy"]
+script = ExtResource("4_xyqjx")
+kind = 2
+display_name_key = &"mechanism.uphill_rebound"
+description_key = &"mechanism.uphill_rebound.description"
+glyph_radius = 5.2
+maximum_charges = 0
+cooldown_seconds = 0.8
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[sub_resource type="Resource" id="Resource_yt55d"]
+script = ExtResource("4_xyqjx")
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[sub_resource type="Resource" id="Resource_7rm0m"]
+script = ExtResource("4_xyqjx")
+kind = 1
+display_name_key = &"mechanism.splitter"
+description_key = &"mechanism.splitter.description"
+glyph_radius = 5.0
+maximum_charges = 0
+cooldown_seconds = 0.3
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[sub_resource type="Resource" id="Resource_skoo3"]
+script = ExtResource("4_xyqjx")
+kind = 2
+display_name_key = &"mechanism.uphill_rebound"
+description_key = &"mechanism.uphill_rebound.description"
+glyph_radius = 5.2
+maximum_charges = 0
+cooldown_seconds = 0.8
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[resource]
+script = ExtResource("5_yul2h")
+stage_id = &"stage_22"
+display_name_key = &"stage.generated_22.name"
+stage_number = 22
+target_coverage = 9.5
+maximum_shots = 6
+star_thresholds = Vector3(9.5, 12, 14.5)
+objective_key = &"stage.generated_22.objective"
+generation_profile = SubResource("Resource_a50s4")
+terrain_seed = 1347223552
+terrain_center = Vector3(0, -2, -130)
+terrain_size = Vector2(260, 148)
+cannon_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.875, 19)
+mechanism_loadout = Array[ExtResource("4_xyqjx")]([SubResource("Resource_renqu"), SubResource("Resource_dbjyy"), SubResource("Resource_yt55d"), SubResource("Resource_7rm0m"), SubResource("Resource_skoo3")])
+briefing_camera_target = Vector3(0, 24, -98)
+aiming_camera_position = Vector3(28, 24, 58)
+aiming_camera_target = Vector3(0, 10, -35.84)
+wide_camera_target = Vector3(0, 22, -98)
+result_camera_target = Vector3(0, 22, -98)
+follow_camera_max_distance = 140.0

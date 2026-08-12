@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="1_profile"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_route"]
+[ext_resource type="Resource" path="res://resources/stage_generation/version9_generation_contract.tres" id="3_contract"]
+
+[sub_resource type="Resource" id="Route_first_descent"]
+script = ExtResource("2_route")
+role = 0
+endpoint_x = 0.0
+width = 28.0
+grade_signs = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1)
+drop_range = Vector2(5.5, 7)
+rise_range = Vector2(0, 0)
+lateral_bend_range = Vector2(-8, 8)
+mechanism_kind = -1
+mechanism_pad_t = -1.0
+mechanism_pad_radius = 0.0
+
+[resource]
+script = ExtResource("1_profile")
+profile_id = &"first_descent_v9"
+profile_version = 9
+base_seed = 1347223552
+generation_contract = ExtResource("3_contract")
+nominal_peak = 64.0
+accepted_height_range = Vector2(60, 74)
+routes = Array[ExtResource("2_route")]([SubResource("Route_first_descent")])
+target_ratio_range = Vector2(0.24, 0.42)
+target_mean_slope_range = Vector2(16, 30)
+target_p95_slope_max = 34.0
+target_maximum_slope = 38.0
+route_core_p95_slope_max = 32.0
+corridor_lip_maximum_slope = 30.0

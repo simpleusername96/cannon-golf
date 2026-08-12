@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud/camera_interaction_control.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/target.png" id="2"]
+
+[node name="CameraInteractionControl" type="Button"]
+custom_minimum_size = Vector2(148, 44)
+offset_right = 148.0
+offset_bottom = 44.0
+tooltip_text = "hud.switch_to_map_inspection"
+text = "hud.aim_lock"
+icon = ExtResource("2")
+expand_icon = true
+icon_max_width = 20
+theme_type_variation = &"HudModeButtonCompact"
+script = ExtResource("1")

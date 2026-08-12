@@ -1,0 +1,60 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="1_profile"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_route"]
+[ext_resource type="Resource" path="res://resources/stage_generation/version9_generation_contract.tres" id="3_contract"]
+
+[sub_resource type="Resource" id="Route_split_left"]
+script = ExtResource("2_route")
+role = 1
+endpoint_x = -48.0
+width = 16.0
+grade_signs = PackedInt32Array(-1, -1, 1, 1, -1, -1, -1)
+drop_range = Vector2(6.5, 8.5)
+rise_range = Vector2(3.5, 5)
+lateral_bend_range = Vector2(-6, 6)
+mechanism_kind = -1
+mechanism_pad_t = -1.0
+mechanism_pad_radius = 0.0
+
+[sub_resource type="Resource" id="Route_split_center"]
+script = ExtResource("2_route")
+role = 2
+endpoint_x = 0.0
+width = 12.0
+grade_signs = PackedInt32Array(-1, 1, -1, 1, -1, -1, -1)
+drop_range = Vector2(7.5, 10)
+rise_range = Vector2(4.5, 6.5)
+lateral_bend_range = Vector2(-6, 6)
+mechanism_kind = 1
+mechanism_pad_t = 0.60
+mechanism_pad_radius = 10.0
+
+[sub_resource type="Resource" id="Route_split_right"]
+script = ExtResource("2_route")
+role = 3
+endpoint_x = 48.0
+width = 12.0
+grade_signs = PackedInt32Array(-1, 1, -1, 1, -1, -1, -1)
+drop_range = Vector2(7.5, 10)
+rise_range = Vector2(4.5, 6.5)
+lateral_bend_range = Vector2(-6, 6)
+mechanism_kind = 2
+mechanism_pad_t = 0.72
+mechanism_pad_radius = 1.5
+
+[resource]
+script = ExtResource("1_profile")
+profile_id = &"split_ridge_v9"
+profile_version = 9
+base_seed = 1347223552
+generation_contract = ExtResource("3_contract")
+nominal_peak = 66.0
+accepted_height_range = Vector2(54, 76)
+routes = Array[ExtResource("2_route")]([SubResource("Route_split_left"), SubResource("Route_split_center"), SubResource("Route_split_right")])
+target_ratio_range = Vector2(0.40, 0.70)
+target_mean_slope_range = Vector2(20, 35)
+target_p95_slope_max = 43.0
+target_maximum_slope = 46.0
+route_core_p95_slope_max = 42.0
+corridor_lip_maximum_slope = 34.0

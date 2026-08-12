@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MechanismData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/mechanisms/mechanism_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+kind = 0
+display_name_key = &"mechanism.burst"
+description_key = &"mechanism.burst.description"
+glyph_radius = 4.2
+maximum_charges = 1
+cooldown_seconds = 0.35
+burst_radius = 14.0

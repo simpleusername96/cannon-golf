@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/mechanisms/uphill_rebound_node.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/mechanisms/uphill_rebound_node.tres" id="2_data"]
+
+[node name="UphillReboundNode" type="Node3D"]
+script = ExtResource("1_script")
+data = ExtResource("2_data")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PaintSurfaceTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/paint/paint_surface_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+mask_size = 512
+painted_threshold_byte = 128
+core_ratio = 0.85
+maximum_bridge_ticks = 2
+maximum_bridge_chord = 10.0
+bridge_sample_spacing = 0.5
+surface_clearance = 0.4
+maximum_normal_delta_degrees = 30.0
+verification_ray_span = 1.0

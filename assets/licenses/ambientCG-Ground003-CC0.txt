@@ -1,0 +1,13 @@
+Asset: Ground 003
+Creator/source: ambientCG
+Asset page: https://ambientcg.com/view?id=Ground003
+License: Creative Commons CC0 1.0 Universal
+License details: https://docs.ambientcg.com/license/
+Retrieved: 2026-08-11
+
+Bundled file:
+- assets/environment/ambientcg/Ground003_1K-JPG_Color.jpg
+- SHA-256: 97849943AD98437D84FBB257A5D498134FBE52308EBB3985DAB6577514A86037
+
+Only the 1K JPG color map is bundled. Other maps and resolutions from the
+source archive are intentionally excluded.

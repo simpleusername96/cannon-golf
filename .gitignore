@@ -1,0 +1,19 @@
+# Godot-generated state
+.godot/
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local builds and transient validation output
+builds/
+/reports/
+*.log
+
+# Delivery screenshots are evidence, not runtime texture assets.
+screenshots/*.png.import
+# Documentation images are evidence or design inputs, never runtime textures.
+docs/**/*.import
+resources/generated_stage_catalogs/.*.staging/

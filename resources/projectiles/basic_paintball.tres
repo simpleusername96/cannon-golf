@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ProjectileData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/projectile/projectile_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+radius = 2.40
+mass = 2.4
+bounce = 0.03
+friction = 0.90
+linear_damp = 0.55
+angular_damp = 1.10
+minimum_launch_speed = 32.0
+maximum_launch_speed = 160.0
+never_contacted_timeout = 6.0
+predicted_contact_grace = 0.5
+predicted_contact_hard_maximum = 13.0
+paint_footprint_radius = 2.80
+impact_paint_radius = 3.50
+minimum_paint_travel_distance = 0.05

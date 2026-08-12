@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/terrain/open_play_environment.gd" id="1_environment"]
+[ext_resource type="Shader" path="res://src/terrain/open_ground.gdshader" id="2_ground_shader"]
+[ext_resource type="Texture2D" path="res://assets/environment/ambientcg/Ground003_1K-JPG_Color.jpg" id="3_ground_albedo"]
+
+[sub_resource type="ShaderMaterial" id="Material_apron"]
+shader = ExtResource("2_ground_shader")
+shader_parameter/ground_albedo = ExtResource("3_ground_albedo")
+shader_parameter/base_color = Color(0.62, 0.66, 0.48, 1)
+shader_parameter/world_scale = 0.032
+shader_parameter/detail_strength = 0.18
+shader_parameter/source_saturation = 0.15
+
+[node name="OpenPlayEnvironment" type="Node3D"]
+script = ExtResource("1_environment")
+
+[node name="ApronMesh" type="MeshInstance3D" parent="."]
+material_override = SubResource("Material_apron")
+cast_shadow = 0
+
+[node name="ApronBody" type="StaticBody3D" parent="."]
+
+[node name="ApronShape" type="CollisionShape3D" parent="ApronBody"]

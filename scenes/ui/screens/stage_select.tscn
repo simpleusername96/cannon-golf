@@ -1,0 +1,153 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/screens/stage_select_screen.gd" id="1"]
+
+[node name="StageSelect" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Shade" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.992157, 0.988235, 1)
+
+[node name="Back" type="Button" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 104.0
+offset_bottom = 68.0
+text = "ui.back"
+theme_type_variation = &"QuietButton"
+
+[node name="Heading" type="Label" parent="Root"]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 24.0
+offset_right = 600.0
+offset_bottom = 68.0
+theme_type_variation = &"ScreenTitle"
+text = "ui.choose_mountain"
+
+[node name="CardsPanel" type="Control" parent="Root"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 88.0
+offset_right = 656.0
+offset_bottom = 688.0
+
+[node name="Margin" type="MarginContainer" parent="Root/CardsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 12
+
+[node name="Content" type="VBoxContainer" parent="Root/CardsPanel/Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Cards" type="GridContainer" parent="Root/CardsPanel/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+columns = 2
+
+[node name="PageFooter" type="HBoxContainer" parent="Root/CardsPanel/Margin/Content"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+theme_override_constants/separation = 10
+
+[node name="PreviousPage" type="Button" parent="Root/CardsPanel/Margin/Content/PageFooter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 44)
+layout_mode = 2
+text = "ui.previous"
+
+[node name="PageRange" type="Label" parent="Root/CardsPanel/Margin/Content/PageFooter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextPage" type="Button" parent="Root/CardsPanel/Margin/Content/PageFooter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 44)
+layout_mode = 2
+text = "ui.next"
+
+[node name="PreviewPanel" type="Control" parent="Root"]
+layout_mode = 0
+offset_left = 720.0
+offset_top = 88.0
+offset_right = 1232.0
+offset_bottom = 688.0
+
+[node name="Margin" type="MarginContainer" parent="Root/PreviewPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 26
+
+[node name="Content" type="VBoxContainer" parent="Root/PreviewPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PreviewTitle" type="Label" parent="Root/PreviewPanel/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ScreenTitle"
+text = "첫 번째 하강"
+
+[node name="PreviewStats" type="Label" parent="Root/PreviewPanel/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StagePreviewFacts"
+
+[node name="PreviewBest" type="Label" parent="Root/PreviewPanel/Margin/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"StagePreviewBest"
+
+[node name="ActionSpacer" type="Control" parent="Root/PreviewPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Start" type="Button" parent="Root/PreviewPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 52)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"PrimaryButton"
+text = "ui.start_stage"

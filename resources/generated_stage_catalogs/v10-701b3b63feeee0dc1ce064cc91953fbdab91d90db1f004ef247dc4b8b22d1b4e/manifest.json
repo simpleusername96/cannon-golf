@@ -1,0 +1,1382 @@
+{
+	"baked_schema": 3,
+	"bundle_format": 5,
+	"bundle_manifest_path": "res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/manifest.json",
+	"catalog_version": 10,
+	"certificate_paths": [],
+	"coverage_metric_versions": [
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2,
+		2
+	],
+	"default_witnesses": [
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 41,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 41,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 41,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 41,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 25,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 42,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 28,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 29,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 29,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 29,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 43,
+				"cell_y": 29,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 31,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 31,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 44,
+				"cell_y": 30,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 33,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 33,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 33,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 33,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 45,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 34,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 46,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 35,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 36,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 36,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 36,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 47,
+				"cell_y": 36,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		}
+	],
+	"layout_paths": [
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_01_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_02_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_03_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_04_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_05_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_06_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_07_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_08_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_09_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_10_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_11_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_12_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_13_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_14_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_15_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_16_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_17_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_18_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_19_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_20_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_21_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_22_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_23_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_24_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_25_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_26_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_27_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_28_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_29_layout.res",
+		"res://resources/generated_stage_catalogs/v10-701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e/layouts/stage_30_layout.res"
+	],
+	"layout_payload_sha256": [
+		"43ed10dbbedc7c6dac8408da13c21442efe85a64a6ba222d4278a0cd7267c081",
+		"d54f279219bdcb6aa4ae4f2a680ad35cd361b023955dd4507f888cc9f93ea382",
+		"5c17e27de7b906f33ac12d223134f1042b668179e491dc094b485b329d4c7c00",
+		"755936be56d0568674441d56049ebbc10f510815b6cbb22db352ee31ee960098",
+		"96de7ab520888468cad16c5e2113188e658c62e119cd2e8f65e0b987241aae60",
+		"5d97e3d757baf2f6c260bda09ed5fb24312c531cd97e2477d0fd5b046a24163c",
+		"981d6936a24748ae440d701984319d01ed2dda440a30e3860533ae37349f07a5",
+		"cf9a92371f6173e7e7dfa49f22e4137e6d357101e125e5e034e100d5c33ada83",
+		"8f88b1dec77d5a50e289018267d2841927980cc84eadf1f633d4956ba38494ac",
+		"8011e353954619c179a33074ffb6a5e508e1a45167c960881dbfb6064180d381",
+		"fe8b66b0500ec787ee2128df7625fcee2fa3d8e29b46e802c6d26aa12c816d4a",
+		"d5490f7a6af78e583c2505ad2470aa2e33a4ab44838c82d018dfc1a3211bc021",
+		"763a99d301a29ed9144270e66c4edfb34d2ccd1d32fdc9686b6d0b4cd23df3d3",
+		"11659227757bc5fd11188d5e3f91d8ac4a5c647ec5598669852dfdb43ae257a6",
+		"a5486d76c3136467151cb0131dab475f9a6d2feaddef73492fc71918c0fda290",
+		"7313aa35c1ae51f5aaf193f052a590ec0ec4c2ca8b5402616dd586e35d790211",
+		"177b11f0c3d67b97ad150e98634ab80e4dcc9a7f6908aed646763ad3767f65ca",
+		"0680ccdaae9a9d7e612234f2ead4b0f1290db32b4b7bbde7a422c699d87842cc",
+		"879849c1d1974cb1bb8248c72a0122039b0ad494f7ae137a934f73f10dc449f8",
+		"9149ab3d9267ec82d8a006eb4f1decdb4ab12fefbd76f0c24ab5764da4b0e9ef",
+		"1484217d6c0b330c29040373e7002d9b65fe851bf7ea37d6481245f84141a1a2",
+		"9ce343e2aee05f621dba686397b9d04378dfe3e8e1aac1c5707c4fa752cec22c",
+		"684261ba55f0f0b5e48bbdf6849b553d014c7cd74b52a347d9a33bebf9938b83",
+		"5ebdc50544f8b746471deefd270bad7c25bff2be580b7db5820a244b89cd3c0f",
+		"85f3b17a9086a699dd49b5c32c03c91dbf613c637650bf1de4dba48dbc598e24",
+		"85c09c930f156b041c13f3279585fae4594f8c2ea37af82134e591684b22828c",
+		"bd0704b6ebf7411a11c373a7028a19d1be331dfadf5ad98c003d1def179cb142",
+		"2027fa9d363305b9839c019407c14ae19aab27deacdc54df319060fa2e18cdcf",
+		"997c9e7283aa07efc9b1429c446b50c74a721541fa7e92f2a364192b0346b49f",
+		"927d362cf3b8f8a2c23376403932ee655384d6a229ff6a0d1903940f5145d63c"
+	],
+	"manifest_sha256": "701b3b63feeee0dc1ce064cc91953fbdab91d90db1f004ef247dc4b8b22d1b4e",
+	"play_bounds_checksums": [
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888,
+		3521679888
+	],
+	"preview_paths": [],
+	"previews_ready": false,
+	"profile_ids": [
+		"stage_01_v10",
+		"stage_02_v10",
+		"stage_03_v10",
+		"stage_04_v10",
+		"stage_05_v10",
+		"stage_06_v10",
+		"stage_07_v10",
+		"stage_08_v10",
+		"stage_09_v10",
+		"stage_10_v10",
+		"stage_11_v10",
+		"stage_12_v10",
+		"stage_13_v10",
+		"stage_14_v10",
+		"stage_15_v10",
+		"stage_16_v10",
+		"stage_17_v10",
+		"stage_18_v10",
+		"stage_19_v10",
+		"stage_20_v10",
+		"stage_21_v10",
+		"stage_22_v10",
+		"stage_23_v10",
+		"stage_24_v10",
+		"stage_25_v10",
+		"stage_26_v10",
+		"stage_27_v10",
+		"stage_28_v10",
+		"stage_29_v10",
+		"stage_30_v10"
+	],
+	"stage_ids": [
+		"stage_01",
+		"stage_02",
+		"stage_03",
+		"stage_04",
+		"stage_05",
+		"stage_06",
+		"stage_07",
+		"stage_08",
+		"stage_09",
+		"stage_10",
+		"stage_11",
+		"stage_12",
+		"stage_13",
+		"stage_14",
+		"stage_15",
+		"stage_16",
+		"stage_17",
+		"stage_18",
+		"stage_19",
+		"stage_20",
+		"stage_21",
+		"stage_22",
+		"stage_23",
+		"stage_24",
+		"stage_25",
+		"stage_26",
+		"stage_27",
+		"stage_28",
+		"stage_29",
+		"stage_30"
+	],
+	"summit_witnesses": [
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 17,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 17,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 16,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 17,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 40,
+				"cell_y": 13,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 40,
+				"cell_y": 13,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 28,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 28,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 28,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 28,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 60,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 60,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 24,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 24,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 63,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 63,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 24,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 24,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 16,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 62,
+				"cell_y": 16,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 23,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 63,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 63,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 67,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 67,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 65,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 65,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 67,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 67,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 64,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 23,
+				"cell_y": 22,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 23,
+				"cell_y": 22,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 65,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 65,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 70,
+				"cell_y": 22,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 70,
+				"cell_y": 22,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 26,
+				"cell_y": 19,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 25,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 25,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 23,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 23,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 72,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 72,
+				"cell_y": 20,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 70,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 70,
+				"cell_y": 18,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 1
+			}
+		},
+		{
+			"physical": {
+				"body_shape": 0,
+				"cell_x": 69,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			},
+			"predicted": {
+				"body_shape": 0,
+				"cell_x": 69,
+				"cell_y": 21,
+				"owner": "terrain/top",
+				"shape": "TerrainTopShape",
+				"triangle": 0
+			}
+		}
+	],
+	"target_surface_area_checksums": [
+		3810871323,
+		2677893475,
+		2101861306,
+		2859634235,
+		1611465061,
+		1941893609,
+		3836670560,
+		3554860189,
+		3295910684,
+		4226923072,
+		382355270,
+		964940592,
+		1712416745,
+		940378843,
+		1751220845,
+		403499137,
+		1085140977,
+		2823023492,
+		3339194793,
+		2465226798,
+		4051163166,
+		2971836687,
+		4110985328,
+		366980171,
+		3966709538,
+		2012581215,
+		1925991867,
+		3758612886,
+		2373631296,
+		1966369367
+	],
+	"terrain_seeds": [
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552,
+		1347223552
+	],
+	"total_target_surface_areas": [
+		9081.31926112776,
+		8977.49381468509,
+		14948.0035616239,
+		9574.01418321427,
+		9557.47673547882,
+		9572.81632362366,
+		10025.1883578104,
+		14224.9712560522,
+		14275.0517584194,
+		14275.1372566464,
+		14299.0216039027,
+		14607.9203085937,
+		15036.99913241,
+		14830.5661991172,
+		15129.7469281306,
+		15350.0442658739,
+		15588.0549649847,
+		19876.0728760905,
+		19845.3589788986,
+		20832.4646606922,
+		20857.357413938,
+		20854.2016231821,
+		20895.7520341688,
+		21215.2629750604,
+		21140.0023734796,
+		21954.5700397564,
+		22109.6396959294,
+		21976.9220105276,
+		22180.1470868593,
+		22433.8538564102
+	]
+}

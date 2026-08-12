@@ -1,0 +1,162 @@
+[gd_scene load_steps=27 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/gameplay_scene.gd" id="1_root"]
+[ext_resource type="Resource" path="res://resources/stages/first_descent.tres" id="2_stage"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/cannon.tscn" id="3_cannon"]
+[ext_resource type="Script" path="res://src/cannon/trajectory_preview.gd" id="4_preview"]
+[ext_resource type="Script" path="res://src/projectile/projectile_manager.gd" id="5_projectiles"]
+[ext_resource type="Script" path="res://src/paint/paint_system.gd" id="6_paint"]
+[ext_resource type="Script" path="res://src/stage/stage_controller.gd" id="7_stage_controller"]
+[ext_resource type="Script" path="res://src/camera/camera_director.gd" id="8_camera"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud/hud.tscn" id="9_hud"]
+[ext_resource type="Script" path="res://src/stage/attempt_recorder.gd" id="10_attempt"]
+[ext_resource type="Script" path="res://src/agent/gameplay_agent_api.gd" id="11_agent"]
+[ext_resource type="Script" path="res://src/effects/presentation_effects.gd" id="12_effects"]
+[ext_resource type="Script" path="res://src/terrain/environment_dressing.gd" id="13_dressing"]
+[ext_resource type="Script" path="res://src/debug/debug_overlay.gd" id="14_debug"]
+[ext_resource type="Script" path="res://src/input/aim_input_controller.gd" id="15_aim_input"]
+[ext_resource type="Script" path="res://src/terrain/terrain_surface.gd" id="16_terrain_surface"]
+[ext_resource type="Texture2D" path="res://assets/environment/kenney/skybox-day.png" id="17_sky_panorama"]
+[ext_resource type="PackedScene" path="res://scenes/gameplay/open_play_environment.tscn" id="18_open_environment"]
+[ext_resource type="Script" path="res://src/cannon/trajectory_prediction_scheduler.gd" id="21_prediction_scheduler"]
+[ext_resource type="Script" path="res://src/cannon/terrain_target_preview.gd" id="22_target_preview"]
+[ext_resource type="Script" path="res://src/cannon/terrain_aim_controller.gd" id="23_target_controller"]
+
+[sub_resource type="PanoramaSkyMaterial" id="SkyMaterial"]
+panorama = ExtResource("17_sky_panorama")
+
+[sub_resource type="Sky" id="Sky"]
+sky_material = SubResource("SkyMaterial")
+
+[sub_resource type="Environment" id="Environment_gameplay"]
+background_mode = 2
+sky = SubResource("Sky")
+ambient_light_source = 2
+ambient_light_color = Color(0.913725, 0.929412, 0.94902, 1)
+ambient_light_energy = 0.34
+reflected_light_source = 1
+
+[sub_resource type="StandardMaterial3D" id="Material_platform"]
+albedo_color = Color(0.36, 0.37, 0.39, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="Mesh_platform"]
+material = SubResource("Material_platform")
+size = Vector3(10, 0.7, 9)
+
+[node name="Gameplay" type="Node3D"]
+script = ExtResource("1_root")
+stage_data = ExtResource("2_stage")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_gameplay")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-48, -58, 0)
+light_color = Color(1, 0.95, 0.84, 1)
+light_energy = 1.05
+shadow_enabled = true
+directional_shadow_max_distance = 260.0
+
+[node name="Camera" type="Camera3D" parent="."]
+unique_name_in_owner = true
+position = Vector3(0, 7.2, 17)
+current = true
+fov = 48.0
+far = 460.0
+
+[node name="OpenPlayEnvironment" parent="." instance=ExtResource("18_open_environment")]
+unique_name_in_owner = true
+unique_name_in_owner = true
+
+[node name="TerrainSurface" type="Node3D" parent="."]
+unique_name_in_owner = true
+position = Vector3(0, -2, -112)
+script = ExtResource("16_terrain_surface")
+
+[node name="TerrainMesh" type="MeshInstance3D" parent="TerrainSurface"]
+unique_name_in_owner = true
+
+[node name="TerrainTopBody" type="StaticBody3D" parent="TerrainSurface"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TerrainSurface/TerrainTopBody"]
+
+[node name="TerrainShellBody" type="StaticBody3D" parent="TerrainSurface"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TerrainSurface/TerrainShellBody"]
+
+[node name="CannonPlatform" type="MeshInstance3D" parent="."]
+visible = false
+position = Vector3(0, -0.55, 6)
+mesh = SubResource("Mesh_platform")
+
+[node name="Cannon" parent="." instance=ExtResource("3_cannon")]
+unique_name_in_owner = true
+position = Vector3(0, 0, 5)
+
+[node name="TrajectoryPreview" type="Node3D" parent="."]
+unique_name_in_owner = true
+visible = false
+script = ExtResource("4_preview")
+
+[node name="TerrainTargetPreview" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("22_target_preview")
+
+[node name="TrajectoryPredictionScheduler" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("21_prediction_scheduler")
+
+[node name="TerrainAimController" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("23_target_controller")
+
+[node name="AimInputController" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("15_aim_input")
+
+[node name="ProjectileManager" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_projectiles")
+
+[node name="PaintSystem" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("6_paint")
+
+[node name="StageController" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("7_stage_controller")
+
+[node name="CameraDirector" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("8_camera")
+
+[node name="Mechanisms" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="EnvironmentDressing" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("13_dressing")
+
+[node name="AttemptRecorder" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("10_attempt")
+
+[node name="GameplayAgentApi" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("11_agent")
+
+[node name="PresentationEffects" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("12_effects")
+
+[node name="HUD" parent="." instance=ExtResource("9_hud")]
+unique_name_in_owner = true
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+script = ExtResource("14_debug")

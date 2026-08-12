@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/stage/stage_data.gd" id="1_stage"]
+[ext_resource type="Resource" path="res://resources/stage_generation/first_descent_profile.tres" id="2_profile"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = &"first_descent"
+stage_version = 9
+display_name_key = &"stage.first_descent.name"
+stage_number = 1
+target_coverage = 4.0
+maximum_shots = 4
+paint_color = Color(0.03, 0.38, 1, 1)
+star_thresholds = Vector3(4, 6.5, 9)
+objective_key = &"stage.first_descent.objective"
+generation_profile = ExtResource("2_profile")
+terrain_seed = 1347223552
+terrain_center = Vector3(0, -2, -130)
+terrain_size = Vector2(210, 120)
+cannon_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.875, 5)
+briefing_camera_position = Vector3(92, 62, 24)
+briefing_camera_target = Vector3(0, 24, -112)
+aiming_camera_position = Vector3(28, 24, 58)
+aiming_camera_target = Vector3(0, 10, -62)
+wide_camera_position = Vector3(82, 52, 8)
+wide_camera_target = Vector3(0, 22, -112)
+result_camera_position = Vector3(-78, 50, 4)
+result_camera_target = Vector3(0, 22, -112)
+follow_camera_max_distance = 140.0

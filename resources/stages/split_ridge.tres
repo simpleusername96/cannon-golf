@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/stage/stage_data.gd" id="1_stage"]
+[ext_resource type="Resource" path="res://resources/stage_generation/split_ridge_profile.tres" id="2_profile"]
+[ext_resource type="Resource" path="res://resources/mechanisms/splitter_node.tres" id="3_splitter"]
+[ext_resource type="Resource" path="res://resources/mechanisms/uphill_rebound_node.tres" id="4_uphill"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = &"split_ridge"
+stage_version = 9
+display_name_key = &"stage.split_ridge.name"
+stage_number = 3
+target_coverage = 5.0
+maximum_shots = 4
+paint_color = Color(0.03, 0.38, 1, 1)
+star_thresholds = Vector3(5, 7.5, 10)
+objective_key = &"stage.split_ridge.objective"
+generation_profile = ExtResource("2_profile")
+terrain_seed = 1347223552
+terrain_center = Vector3(0, -2, -130)
+terrain_size = Vector2(214, 122)
+cannon_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.875, 6)
+mechanism_loadout = Array[ExtResource("3_splitter")]([ExtResource("3_splitter"), ExtResource("4_uphill")])
+briefing_camera_position = Vector3(96, 66, 18)
+briefing_camera_target = Vector3(0, 26, -112)
+aiming_camera_position = Vector3(30, 28, 60)
+aiming_camera_target = Vector3(0, 14, -62)
+wide_camera_position = Vector3(86, 57, 2)
+wide_camera_target = Vector3(0, 23, -112)
+result_camera_position = Vector3(-84, 55, -2)
+result_camera_target = Vector3(0, 23, -112)
+follow_camera_max_distance = 140.0

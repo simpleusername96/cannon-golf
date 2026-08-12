@@ -1,0 +1,179 @@
+keys,en,ko
+app.title,PAINT MOUNTAIN,페인트 마운틴
+ui.play,PLAY,플레이
+ui.stage_select,STAGE SELECT,스테이지 선택
+ui.settings,SETTINGS,설정
+ui.quit,QUIT,종료
+ui.back,BACK,뒤로
+ui.start_stage,START STAGE,스테이지 시작
+ui.preparing_stage,PREPARING...,지형 준비 중…
+ui.stage_unavailable,STAGE UNAVAILABLE,스테이지 준비 실패
+ui.start_aiming,START AIMING,조준 시작
+ui.restart,RESTART,다시 시작
+ui.fire,FIRE,발사
+ui.finish,FINISH,완료
+fire.not_editable,AIMING SCREEN ONLY,조준 화면에서만 발사할 수 있습니다
+fire.invalid,AIM AT THE TERRAIN,지형을 조준하세요
+fire.invalid_aim,AIM VALUES ARE INVALID,조준 값이 올바르지 않습니다
+fire.capacity,INITIAL LAUNCH LIMIT %d/%d,초기 발사 동시 한도 %d/%d
+fire.empty,NO SHOTS LEFT,남은 탄 없음
+fire.terminal,RESOLVING RESULT,결과 계산 중
+fire.aim_revision_pending,LOCKING TARGET,탄착 지점 조정 중
+ui.pause,PAUSE,일시정지
+ui.resume,RESUME,계속
+ui.next,NEXT,다음
+ui.previous,PREVIOUS,이전
+ui.retry,RETRY,재도전
+ui.loading_stage,LOADING STAGE...,스테이지 불러오는 중…
+ui.stage_load_failed,STAGE LOAD FAILED,스테이지 불러오기 실패
+ui.retry_stage_load,RETRY LOAD,다시 불러오기
+ui.close,CLOSE,닫기
+ui.restore_defaults,RESTORE DEFAULTS,기본값 복원
+ui.main_menu,QUIT TO MAIN MENU,메인 메뉴로
+ui.menu,MENU,메뉴
+ui.stages,STAGES,스테이지
+ui.choose_mountain,CHOOSE A MOUNTAIN,산을 선택하세요
+hud.stage,STAGE,스테이지
+hud.target,TARGET,목표
+hud.coverage,TARGET AREA,목표 영역
+hud.coverage_tooltip,Painted physical surface inside the marked Target Area,표시된 목표 영역 안에서 실제로 칠한 표면
+hud.shots,SHOTS LEFT,남은 탄
+hud.time,TIME,남은 시간
+hud.timer_starts_on_first_shot,Timer starts with the first shot,첫 발사와 함께 시간이 흐릅니다
+hud.finish_tooltip,Finish and score target-area coverage (F),목표 영역 칠함으로 완료 (F)
+hud.finish_disabled_tooltip,Available after the first shot,첫 발사 후 사용할 수 있습니다
+hud.aim,AIM,조준
+hud.angle,ANGLE,각도
+hud.direction,DIRECTION,방향
+hud.direction_left,LEFT,왼쪽
+hud.direction_right,RIGHT,오른쪽
+hud.direction_center,CENTER,중앙
+hud.power,POWER,파워
+hud.orbit,ORBIT,회전
+hud.zoom,ZOOM,확대
+hud.angle_decrease,DECREASE ANGLE,각도 낮추기
+hud.angle_increase,INCREASE ANGLE,각도 높이기
+hud.power_decrease,DECREASE POWER BY 2%,파워 2% 낮추기
+hud.power_increase,INCREASE POWER BY 2%,파워 2% 높이기
+hud.total,TOTAL,누적
+hud.coverage_format,Target area %.1f%% / Goal %.1f%%,목표 영역 %.1f%% / 목표 %.1f%%
+hud.aim_context,TERRAIN CLICK/DRAG · W S ANGLE · WHEEL POWER,지형 클릭·드래그 · W S 각도 · 휠 파워
+hud.map_context,DRAG TO ROTATE · WHEEL ZOOM,드래그 회전 · 휠 확대
+hud.map,MAP,지도
+hud.camera_hint,LEFT-DRAG ORBIT · WHEEL ZOOM,왼쪽 드래그 회전 · 휠 확대
+hud.aim_lock,AIM VIEW,조준
+hud.map_inspection,MAP VIEW,지도 보기
+hud.switch_to_map_inspection,Switch to Map View (Tab) · Drag orbit · Wheel zoom,지도 보기로 전환 (Tab) · 드래그 회전 · 휠 확대/축소
+hud.switch_to_aim_lock,Switch to Aim View (Tab) · Drag aim · Wheel power,조준으로 전환 (Tab) · 드래그 조준 · 휠 파워
+hud.return_to_cannon,RETURN TO CANNON,대포로 돌아가기
+hud.return_to_cannon_hint,Return camera to Aim View (Tab); the paintball keeps moving.,조준 화면으로 돌아갑니다(Tab). 페인트볼은 계속 움직입니다.
+input.drag,DRAG,드래그
+hud.briefing,BRIEFING,지형 확인
+hud.aiming,AIMING,조준
+hud.in_flight,IN FLIGHT,비행 중
+hud.paint_settling,PAINT SETTLING,페인트 정착 중
+hud.shot_result,SHOT RESULT,탄 결과
+hud.finishing,FINALIZING,결과 계산
+hud.result,RESULT,결과
+result.completed,COMPLETE,완료
+result.time_expired,TIME EXPIRED,시간 종료
+result.grade,GRADE,등급
+result.shots_used,SHOTS USED,사용한 탄
+result.previous_best,PREVIOUS BEST,이전 최고
+result.elapsed,ELAPSED,경과 시간
+stage.first_descent.name,FIRST DESCENT,첫 번째 하강
+stage.first_descent.objective,Aim high on the broad slope and let the ball paint as it rolls.,넓은 경사면의 높은 지점을 노리고 공이 구르며 칠하게 하세요.
+stage.burst_basin.name,BURST BASIN,폭발 분지
+stage.burst_basin.objective,Hit the high Burst to cover the basin below.,높은 폭발 장치를 맞혀 아래 분지를 넓게 칠하세요.
+stage.split_ridge.name,SPLIT RIDGE,분열 능선
+stage.split_ridge.objective,Use the Splitter and Uphill Rebound to reach all three routes.,분열과 오르막 반동 문양으로 세 갈래 경로를 모두 공략하세요.
+mechanism.burst,BURST,폭발
+mechanism.splitter,SPLITTER,분열
+mechanism.bumper,BUMPER,범퍼
+mechanism.uphill_rebound,UPHILL REBOUND,오르막 반동
+mechanism.burst.description,Paints a broad mark on the nearby target surface when struck.,명중하면 주변 목표 표면에 넓은 자국을 칠합니다.
+mechanism.splitter.description,Creates three balls that paint independently along multiple routes.,각자 칠하는 공 세 개를 만들어 여러 경로로 보냅니다.
+mechanism.bumper.description,Redirects the ball toward the next slope in the arrow direction.,공을 화살표 방향의 다음 경사로 되돌려 보냅니다.
+mechanism.uphill_rebound.description,Launches the ball back toward the steepest uphill direction.,공을 지형에서 가장 높은 오르막 방향으로 다시 튕겨 보냅니다.
+mechanism.none,NONE,없음
+mechanism.no_mechanisms,NO MECHANISMS · FOLLOW THE NATURAL DESCENT,장치 없음 · 자연 경사를 따라가세요
+settings.title,SETTINGS,설정
+settings.audio,AUDIO,오디오
+settings.gameplay,GAMEPLAY,게임플레이
+settings.display,DISPLAY,화면
+settings.language,LANGUAGE,언어
+settings.master,MASTER VOLUME,전체 음량
+settings.music,MUSIC VOLUME,음악 음량
+settings.sfx,SOUND EFFECTS,효과음
+settings.camera_shake,CAMERA SHAKE,카메라 흔들림
+settings.reduced_motion,REDUCE DECORATIVE MOTION,장식 움직임 줄이기
+settings.trajectory,TRAJECTORY PREVIEW,궤적 미리 보기
+settings.fullscreen,FULLSCREEN,전체 화면
+settings.resolution,RESOLUTION,해상도
+settings.quality,GRAPHICS QUALITY,그래픽 품질
+settings.quality_low,LOW,낮음
+settings.quality_medium,MEDIUM,보통
+settings.quality_high,HIGH,높음
+settings.interface_language,INTERFACE LANGUAGE,인터페이스 언어
+settings.korean,KOREAN,한국어
+settings.english,ENGLISH,영어
+stage.target,TARGET,목표
+stage.shots,SHOTS,탄 수
+stage.mechanisms,MECHANISMS,장치
+stage.best,BEST,최고 기록
+stage.locked,LOCKED,잠김
+stage.generated.objective,Paint the connected mountain range with two rolling shot families.,연결된 산맥을 두 번의 연속 발사로 칠하세요.
+stage.generated_04.name,FOURTH RANGE,네 번째 산맥
+stage.generated_04.objective,Paint the next connected mountain range.,다음 연결 산맥을 칠하세요.
+stage.generated_05.name,FIFTH RANGE,다섯 번째 산맥
+stage.generated_05.objective,Paint the next connected mountain range.,다음 연결 산맥을 칠하세요.
+stage.generated_06.name,SIXTH RANGE,여섯 번째 산맥
+stage.generated_06.objective,Use the Burst to widen your rolling paint path.,폭발 장치로 굴러가는 페인트 길을 넓히세요.
+stage.generated_07.name,SEVENTH RANGE,일곱 번째 산맥
+stage.generated_07.objective,Use the Burst to widen your rolling paint path.,폭발 장치로 굴러가는 페인트 길을 넓히세요.
+stage.generated_08.name,EIGHTH RANGE,여덟 번째 산맥
+stage.generated_08.objective,Use the Burst to widen your rolling paint path.,폭발 장치로 굴러가는 페인트 길을 넓히세요.
+stage.generated_09.name,NINTH RANGE,아홉 번째 산맥
+stage.generated_09.objective,Use the Burst to widen your rolling paint path.,폭발 장치로 굴러가는 페인트 길을 넓히세요.
+stage.generated_10.name,TENTH RANGE,열 번째 산맥
+stage.generated_10.objective,Use the Burst to widen your rolling paint path.,폭발 장치로 굴러가는 페인트 길을 넓히세요.
+stage.generated_11.name,ELEVENTH RANGE,열한 번째 산맥
+stage.generated_11.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_12.name,TWELFTH RANGE,열두 번째 산맥
+stage.generated_12.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_13.name,THIRTEENTH RANGE,열세 번째 산맥
+stage.generated_13.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_14.name,FOURTEENTH RANGE,열네 번째 산맥
+stage.generated_14.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_15.name,FIFTEENTH RANGE,열다섯 번째 산맥
+stage.generated_15.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_16.name,SIXTEENTH RANGE,열여섯 번째 산맥
+stage.generated_16.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_17.name,SEVENTEENTH RANGE,열일곱 번째 산맥
+stage.generated_17.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_18.name,EIGHTEENTH RANGE,열여덟 번째 산맥
+stage.generated_18.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_19.name,NINETEENTH RANGE,열아홉 번째 산맥
+stage.generated_19.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_20.name,TWENTIETH RANGE,스무 번째 산맥
+stage.generated_20.objective,Keep both shot families moving across the range.,두 발사 가족을 산맥 위에서 계속 굴리세요.
+stage.generated_21.name,TWENTY-FIRST RANGE,스물한 번째 산맥
+stage.generated_21.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_22.name,TWENTY-SECOND RANGE,스물두 번째 산맥
+stage.generated_22.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_23.name,TWENTY-THIRD RANGE,스물세 번째 산맥
+stage.generated_23.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_24.name,TWENTY-FOURTH RANGE,스물네 번째 산맥
+stage.generated_24.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_25.name,TWENTY-FIFTH RANGE,스물다섯 번째 산맥
+stage.generated_25.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_26.name,TWENTY-SIXTH RANGE,스물여섯 번째 산맥
+stage.generated_26.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_27.name,TWENTY-SEVENTH RANGE,스물일곱 번째 산맥
+stage.generated_27.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_28.name,TWENTY-EIGHTH RANGE,스물여덟 번째 산맥
+stage.generated_28.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_29.name,TWENTY-NINTH RANGE,스물아홉 번째 산맥
+stage.generated_29.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.
+stage.generated_30.name,THIRTIETH RANGE,서른 번째 산맥
+stage.generated_30.objective,Use Splitter and Uphill Rebound to cover the branching range.,분열과 오르막 반동 문양으로 갈라지는 산맥을 칠하세요.

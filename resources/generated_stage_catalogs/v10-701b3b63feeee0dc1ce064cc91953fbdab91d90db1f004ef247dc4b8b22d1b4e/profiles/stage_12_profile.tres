@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_t4ybm"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_jbm3m"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_o4h13"]
+
+[sub_resource type="Resource" id="Resource_rtk7r"]
+script = ExtResource("1_t4ybm")
+cell_count = Vector2i(88, 54)
+local_bounds = Rect2(-118, -68, 236, 136)
+maximum_top_triangle_count = 9504
+route_station_z = PackedFloat32Array(-52, -39, -26, -13, 0, 13, 26, 39, 52)
+
+[sub_resource type="Resource" id="Resource_q5j7v"]
+script = ExtResource("2_jbm3m")
+role = 1
+endpoint_x = -36.36
+width = 28.0
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, 1, -1, -1)
+drop_range = Vector2(6.0689654, 7.7586207)
+rise_range = Vector2(3.0689654, 4.7586207)
+lateral_bend_range = Vector2(-4.862069, 4.862069)
+mechanism_kinds = PackedInt32Array(0, 2)
+mechanism_pad_ts = PackedFloat32Array(0.55, 0.9)
+mechanism_pad_radii = PackedFloat32Array(10, 1.5)
+
+[sub_resource type="Resource" id="Resource_atnh6"]
+script = ExtResource("2_jbm3m")
+role = 2
+endpoint_x = 36.36
+width = 24.0
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, 1, -1, -1)
+drop_range = Vector2(6.0689654, 7.7586207)
+rise_range = Vector2(3.0689654, 4.7586207)
+lateral_bend_range = Vector2(-4.862069, 4.862069)
+mechanism_kinds = PackedInt32Array(0)
+mechanism_pad_ts = PackedFloat32Array(0.68)
+mechanism_pad_radii = PackedFloat32Array(10)
+
+[resource]
+script = ExtResource("3_o4h13")
+profile_id = &"stage_12_v10"
+generation_contract = SubResource("Resource_rtk7r")
+nominal_peak = 74.5
+accepted_height_range = Vector2(70.5, 84.5)
+ridge_count = 5
+basin_count = 1
+pass_count = 1
+undulation_amplitude = 4.3
+route_width = 24.0
+routes = Array[ExtResource("2_jbm3m")]([SubResource("Resource_q5j7v"), SubResource("Resource_atnh6")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0

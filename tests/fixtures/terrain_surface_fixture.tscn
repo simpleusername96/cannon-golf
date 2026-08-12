@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/terrain/terrain_surface.gd" id="1_surface"]
+
+[node name="TerrainSurfaceFixture" type="Node3D"]
+script = ExtResource("1_surface")
+
+[node name="TerrainMesh" type="MeshInstance3D" parent="."]
+
+[node name="TerrainTopBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TerrainTopBody"]
+
+[node name="TerrainShellBody" type="StaticBody3D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TerrainShellBody"]

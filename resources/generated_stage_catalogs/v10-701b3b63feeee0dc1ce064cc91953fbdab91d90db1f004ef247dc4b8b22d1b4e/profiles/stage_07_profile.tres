@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_oyqmt"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_q40kl"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_jr1lg"]
+
+[sub_resource type="Resource" id="Resource_e0odn"]
+script = ExtResource("1_oyqmt")
+cell_count = Vector2i(86, 52)
+local_bounds = Rect2(-112, -64, 224, 128)
+maximum_top_triangle_count = 8944
+route_station_z = PackedFloat32Array(-48, -34.285713, -20.571428, -6.857143, 6.857143, 20.571428, 34.285713, 48)
+
+[sub_resource type="Resource" id="Resource_yk1pd"]
+script = ExtResource("2_q40kl")
+role = 1
+width = 30.0
+grade_signs = PackedInt32Array(-1, -1, -1, -1, 1, 1, 1)
+drop_range = Vector2(5.8103447, 7.413793)
+rise_range = Vector2(2.810345, 4.413793)
+lateral_bend_range = Vector2(-5.37931, 5.37931)
+mechanism_kinds = PackedInt32Array(0, 2, 0)
+mechanism_pad_ts = PackedFloat32Array(0.48, 0.7, 0.9)
+mechanism_pad_radii = PackedFloat32Array(10, 1.5, 10)
+
+[resource]
+script = ExtResource("3_jr1lg")
+profile_id = &"stage_07_v10"
+generation_contract = SubResource("Resource_e0odn")
+nominal_peak = 70.0
+accepted_height_range = Vector2(66, 80)
+ridge_count = 4
+basin_count = 1
+pass_count = 1
+undulation_amplitude = 3.2
+route_width = 26.0
+routes = Array[ExtResource("2_q40kl")]([SubResource("Resource_yk1pd")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0

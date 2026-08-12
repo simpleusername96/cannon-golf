@@ -1,0 +1,323 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://src/ui/screens/settings_screen.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/volume_master.png" id="2_master"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/volume_music.png" id="3_music"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/volume_sfx.png" id="4_sfx"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/display.png" id="5_display"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/camera_shake.png" id="6_camera"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/reduced_motion.png" id="7_motion"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/trajectory.png" id="8_trajectory"]
+
+[node name="Settings" type="CanvasLayer"]
+layer = 50
+process_mode = 3
+script = ExtResource("1_script")
+
+[node name="SettingsRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="SettingsRoot"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.035, 0.055, 0.08, 0.72)
+
+[node name="Panel" type="PanelContainer" parent="SettingsRoot"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -300.0
+offset_right = 540.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="SettingsRoot/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 26
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 22
+
+[node name="Content" type="VBoxContainer" parent="SettingsRoot/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="SettingsRoot/Panel/Margin/Content/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ScreenTitle"
+text = "settings.title"
+
+[node name="Columns" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 52
+
+[node name="Audio" type="VBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Heading" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+layout_mode = 2
+theme_type_variation = &"HudAccentSection"
+text = "settings.audio"
+
+[node name="MasterGroup" type="VBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MasterGroup"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MasterGroup/Header"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("2_master")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MasterLabel" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MasterGroup/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsLabel"
+text = "settings.master"
+
+[node name="MasterValue" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MasterGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SettingsValue"
+text = "80%"
+
+[node name="Master" type="HSlider" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MasterGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+
+[node name="MusicGroup" type="VBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MusicGroup"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MusicGroup/Header"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("3_music")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MusicLabel" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MusicGroup/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsLabel"
+text = "settings.music"
+
+[node name="MusicValue" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MusicGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SettingsValue"
+text = "60%"
+
+[node name="Music" type="HSlider" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MusicGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+
+[node name="SfxGroup" type="VBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/SfxGroup"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/SfxGroup/Header"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("4_sfx")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SfxLabel" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/SfxGroup/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsLabel"
+text = "settings.sfx"
+
+[node name="SfxValue" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/SfxGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SettingsValue"
+text = "70%"
+
+[node name="Sfx" type="HSlider" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/SfxGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 38)
+layout_mode = 2
+max_value = 100.0
+step = 1.0
+
+[node name="GameplayHeading" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+layout_mode = 2
+theme_type_variation = &"HudAccentSection"
+text = "settings.gameplay"
+
+[node name="CameraRow" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/CameraRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("6_camera")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CameraShake" type="CheckButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/CameraRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsSwitchRow"
+text = "settings.camera_shake"
+
+[node name="MotionRow" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MotionRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("7_motion")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ReducedMotion" type="CheckButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/MotionRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsSwitchRow"
+text = "settings.reduced_motion"
+
+[node name="TrajectoryRow" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/TrajectoryRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("8_trajectory")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Trajectory" type="CheckButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Audio/TrajectoryRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsSwitchRow"
+text = "settings.trajectory"
+
+[node name="Display" type="VBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns"]
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Heading" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+layout_mode = 2
+theme_type_variation = &"HudAccentSection"
+text = "settings.display"
+
+[node name="FullscreenRow" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Icon" type="TextureRect" parent="SettingsRoot/Panel/Margin/Content/Columns/Display/FullscreenRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("5_display")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Fullscreen" type="CheckButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Display/FullscreenRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SettingsSwitchRow"
+text = "settings.fullscreen"
+
+[node name="ResolutionLabel" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+layout_mode = 2
+theme_type_variation = &"SettingsLabel"
+text = "settings.resolution"
+
+[node name="Resolution" type="OptionButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="QualityLabel" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+layout_mode = 2
+theme_type_variation = &"SettingsLabel"
+text = "settings.quality"
+
+[node name="Quality" type="OptionButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="LanguageHeading" type="Label" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+layout_mode = 2
+theme_type_variation = &"HudAccentSection"
+text = "settings.language"
+
+[node name="Language" type="OptionButton" parent="SettingsRoot/Panel/Margin/Content/Columns/Display"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="SettingsRoot/Panel/Margin/Content"]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 12
+
+[node name="Defaults" type="Button" parent="SettingsRoot/Panel/Margin/Content/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 46)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "ui.restore_defaults"
+
+[node name="Close" type="Button" parent="SettingsRoot/Panel/Margin/Content/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(160, 46)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "ui.close"

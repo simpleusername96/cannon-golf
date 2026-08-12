@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_xq3j4"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_6s7rm"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_bs564"]
+
+[sub_resource type="Resource" id="Resource_40xqy"]
+script = ExtResource("1_xq3j4")
+cell_count = Vector2i(94, 60)
+local_bounds = Rect2(-132, -75, 264, 150)
+maximum_top_triangle_count = 11280
+route_station_z = PackedFloat32Array(-59, -45.88889, -32.77778, -19.666666, -6.5555553, 6.5555553, 19.666666, 32.77778, 45.88889, 59)
+
+[sub_resource type="Resource" id="Resource_uoc8h"]
+script = ExtResource("2_6s7rm")
+role = 1
+endpoint_x = -63.28000000000001
+width = 24.5
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.637931, 8.5172415)
+rise_range = Vector2(3.637931, 5.5172415)
+lateral_bend_range = Vector2(-3.724138, 3.724138)
+mechanism_kinds = PackedInt32Array(2, 0)
+mechanism_pad_ts = PackedFloat32Array(0.55, 0.9)
+mechanism_pad_radii = PackedFloat32Array(1.5, 10)
+
+[sub_resource type="Resource" id="Resource_530xe"]
+script = ExtResource("2_6s7rm")
+role = 2
+width = 20.5
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.637931, 8.5172415)
+rise_range = Vector2(3.637931, 5.5172415)
+lateral_bend_range = Vector2(-3.724138, 3.724138)
+mechanism_kinds = PackedInt32Array(1, 2)
+mechanism_pad_ts = PackedFloat32Array(0.12, 0.45)
+mechanism_pad_radii = PackedFloat32Array(10, 1.5)
+
+[sub_resource type="Resource" id="Resource_d22fc"]
+script = ExtResource("2_6s7rm")
+role = 3
+endpoint_x = 63.28000000000001
+width = 20.5
+grade_signs = PackedInt32Array(-1, -1, -1, 1, 1, -1, -1, 1, 1)
+drop_range = Vector2(6.637931, 8.5172415)
+rise_range = Vector2(3.637931, 5.5172415)
+lateral_bend_range = Vector2(-3.724138, 3.724138)
+mechanism_kinds = PackedInt32Array(0)
+mechanism_pad_ts = PackedFloat32Array(0.68)
+mechanism_pad_radii = PackedFloat32Array(10)
+
+[resource]
+script = ExtResource("3_bs564")
+profile_id = &"stage_23_v9"
+generation_contract = SubResource("Resource_40xqy")
+nominal_peak = 85.0
+accepted_height_range = Vector2(81, 95)
+ridge_count = 7
+basin_count = 2
+pass_count = 3
+undulation_amplitude = 6.6000000000000005
+route_width = 20.5
+routes = Array[ExtResource("2_6s7rm")]([SubResource("Resource_uoc8h"), SubResource("Resource_530xe"), SubResource("Resource_d22fc")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0

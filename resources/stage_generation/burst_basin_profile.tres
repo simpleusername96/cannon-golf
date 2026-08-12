@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="StageGenerationProfile" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="1_profile"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_route"]
+[ext_resource type="Resource" path="res://resources/stage_generation/version9_generation_contract.tres" id="3_contract"]
+
+[sub_resource type="Resource" id="Route_burst_a"]
+script = ExtResource("2_route")
+role = 0
+endpoint_x = -26.0
+width = 18.0
+grade_signs = PackedInt32Array(-1, -1, 1, 1, -1, -1, -1)
+drop_range = Vector2(6, 8)
+rise_range = Vector2(3, 4.5)
+lateral_bend_range = Vector2(-7, 7)
+mechanism_kind = 0
+mechanism_pad_t = 0.52
+mechanism_pad_radius = 8.0
+
+[sub_resource type="Resource" id="Route_burst_b"]
+script = ExtResource("2_route")
+role = 0
+endpoint_x = 26.0
+width = 18.0
+grade_signs = PackedInt32Array(-1, -1, 1, 1, -1, -1, -1)
+drop_range = Vector2(6, 8)
+rise_range = Vector2(3, 4.5)
+lateral_bend_range = Vector2(-7, 7)
+mechanism_kind = -1
+mechanism_pad_t = -1.0
+mechanism_pad_radius = 0.0
+
+[resource]
+script = ExtResource("1_profile")
+profile_id = &"burst_basin_v9"
+profile_version = 9
+base_seed = 1347223552
+generation_contract = ExtResource("3_contract")
+nominal_peak = 65.0
+accepted_height_range = Vector2(61, 75)
+routes = Array[ExtResource("2_route")]([SubResource("Route_burst_a"), SubResource("Route_burst_b")])
+target_ratio_range = Vector2(0.32, 0.58)
+target_mean_slope_range = Vector2(18, 32)
+target_p95_slope_max = 38.0
+target_maximum_slope = 42.0
+route_core_p95_slope_max = 36.0
+corridor_lip_maximum_slope = 32.0

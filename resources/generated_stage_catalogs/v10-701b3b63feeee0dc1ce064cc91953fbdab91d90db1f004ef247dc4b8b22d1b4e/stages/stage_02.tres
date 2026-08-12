@@ -1,0 +1,66 @@
+[gd_resource type="Resource" script_class="StageData" format=3]
+
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_contract.gd" id="1_eo5jw"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_route_profile.gd" id="2_4ik08"]
+[ext_resource type="Script" path="res://src/stage_generation/stage_generation_profile.gd" id="3_wmun7"]
+[ext_resource type="Script" path="res://src/mechanisms/mechanism_data.gd" id="4_jp5ot"]
+[ext_resource type="Script" path="res://src/stage/stage_data.gd" id="5_eqbqt"]
+
+[sub_resource type="Resource" id="Resource_0x4h0"]
+script = ExtResource("1_eo5jw")
+local_bounds = Rect2(-106, -61, 212, 122)
+route_station_z = PackedFloat32Array(-45, -32.142857, -19.285715, -6.428571, 6.428571, 19.285715, 32.142857, 45)
+
+[sub_resource type="Resource" id="Resource_r8hcp"]
+script = ExtResource("2_4ik08")
+width = 27.5
+grade_signs = PackedInt32Array(-1, -1, -1, -1, -1, -1, -1)
+drop_range = Vector2(5.85, 7.45)
+lateral_bend_range = Vector2(-10, 10)
+mechanism_kinds = PackedInt32Array(0)
+mechanism_pad_ts = PackedFloat32Array(0.25)
+mechanism_pad_radii = PackedFloat32Array(10)
+
+[sub_resource type="Resource" id="Resource_5600f"]
+script = ExtResource("3_wmun7")
+profile_id = &"stage_02_v10"
+generation_contract = SubResource("Resource_0x4h0")
+nominal_peak = 65.0
+accepted_height_range = Vector2(61, 75)
+undulation_amplitude = 2.2
+route_width = 27.5
+routes = Array[ExtResource("2_4ik08")]([SubResource("Resource_r8hcp")])
+target_ratio_range = Vector2(0.18, 0.72)
+target_mean_slope_range = Vector2(12, 45)
+target_p95_slope_max = 60.0
+target_maximum_slope = 68.0
+route_core_p95_slope_max = 60.0
+corridor_lip_maximum_slope = 50.0
+
+[sub_resource type="Resource" id="Resource_dtxx1"]
+script = ExtResource("4_jp5ot")
+child_target_route_roles = PackedInt32Array(1, 2, 3)
+
+[resource]
+script = ExtResource("5_eqbqt")
+stage_id = &"stage_02"
+display_name_key = &"stage.burst_basin.name"
+stage_number = 2
+target_coverage = 4.5
+star_thresholds = Vector3(4.5, 7, 9.5)
+objective_key = &"stage.burst_basin.objective"
+generation_profile = SubResource("Resource_5600f")
+terrain_seed = 1347223552
+terrain_center = Vector3(0, -2, -130)
+terrain_size = Vector2(212, 122)
+cannon_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.875, 6)
+mechanism_loadout = Array[ExtResource("4_jp5ot")]([SubResource("Resource_dtxx1")])
+briefing_camera_position = Vector3(-60, 110, -30)
+briefing_camera_target = Vector3(0, 27, -112)
+aiming_camera_position = Vector3(29, 26, 58)
+aiming_camera_target = Vector3(0, 12, -62)
+wide_camera_position = Vector3(84, 56, 4)
+wide_camera_target = Vector3(0, 24, -112)
+result_camera_position = Vector3(-82, 54, 0)
+result_camera_target = Vector3(0, 24, -112)
+follow_camera_max_distance = 140.0

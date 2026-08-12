@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ui/screens/main_menu_screen.gd" id="1"]
+
+[node name="MainMenu" type="CanvasLayer"]
+layer = 20
+script = ExtResource("1")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Shade" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="BrandPanel" type="Control" parent="Root"]
+layout_mode = 0
+offset_left = 56.0
+offset_top = 176.0
+offset_right = 470.0
+offset_bottom = 620.0
+
+[node name="Margin" type="MarginContainer" parent="Root/BrandPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="Content" type="VBoxContainer" parent="Root/BrandPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Root/BrandPanel/Margin/Content"]
+layout_mode = 2
+theme_type_variation = &"MenuTitle"
+text = "app.title"
+autowrap_mode = 2
+
+[node name="ActionSpacer" type="Control" parent="Root/BrandPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="Play" type="Button" parent="Root/BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"PrimaryButton"
+text = "ui.play"
+
+[node name="StageSelect" type="Button" parent="Root/BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"QuietButton"
+text = "ui.stage_select"
+
+[node name="Settings" type="Button" parent="Root/BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"QuietButton"
+text = "ui.settings"
+
+[node name="Quit" type="Button" parent="Root/BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_type_variation = &"QuietButton"
+text = "ui.quit"

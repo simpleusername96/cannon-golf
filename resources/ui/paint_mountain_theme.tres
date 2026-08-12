@@ -1,0 +1,551 @@
+[gd_resource type="Theme" load_steps=43 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/pretendard/PretendardVariable.woff2" id="1_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/panel_neutral_depth.png" id="2_neutral_depth"]
+[ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/panel_neutral_flat.png" id="3_neutral_flat"]
+[ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/button_primary_depth.png" id="4_primary_depth"]
+[ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/button_primary_flat.png" id="5_primary_flat"]
+[ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/button_danger_depth.png" id="6_danger_depth"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/switch_on.png" id="7_switch_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/switch_off.png" id="8_switch_off"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/settings/slider_grabber.png" id="9_slider_grabber"]
+
+[sub_resource type="FontVariation" id="FontWeight500"]
+base_font = ExtResource("1_font")
+variation_opentype = {
+"weight": 500.0
+}
+
+[sub_resource type="FontVariation" id="FontWeight600"]
+base_font = ExtResource("1_font")
+variation_opentype = {
+"weight": 600.0
+}
+
+[sub_resource type="FontVariation" id="FontWeight700"]
+base_font = ExtResource("1_font")
+variation_opentype = {
+"weight": 700.0
+}
+
+[sub_resource type="StyleBoxTexture" id="KenneyNeutralDepth"]
+texture = ExtResource("2_neutral_depth")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 16.0
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxTexture" id="KenneyNeutralFlat"]
+texture = ExtResource("3_neutral_flat")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+content_margin_left = 16.0
+content_margin_top = 10.0
+content_margin_right = 16.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="KenneyPrimaryDepth"]
+texture = ExtResource("4_primary_depth")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 16.0
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxTexture" id="KenneyPrimaryFlat"]
+texture = ExtResource("5_primary_flat")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 12.0
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxTexture" id="KenneyDangerDepth"]
+texture = ExtResource("6_danger_depth")
+texture_margin_left = 12.0
+texture_margin_top = 12.0
+texture_margin_right = 12.0
+texture_margin_bottom = 16.0
+content_margin_left = 18.0
+content_margin_top = 10.0
+content_margin_right = 18.0
+content_margin_bottom = 14.0
+
+[sub_resource type="StyleBoxFlat" id="Panel"]
+bg_color = Color(1, 0.992157, 0.988235, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.85098, 0.866667, 0.890196, 0.78)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+shadow_color = Color(0.09, 0.145, 0.22, 0.1)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[sub_resource type="StyleBoxFlat" id="HudStagePanel"]
+bg_color = Color(1, 0.992157, 0.988235, 0.62)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ModePanel"]
+bg_color = Color(0.090196, 0.145098, 0.219608, 0.97)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="DebugPanel"]
+bg_color = Color(0.015, 0.025, 0.045, 0.93)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ButtonNormal"]
+bg_color = Color(1, 0.992157, 0.988235, 0.74)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.788235, 0.803922, 0.823529, 0.82)
+
+[sub_resource type="StyleBoxFlat" id="ButtonHover"]
+bg_color = Color(0.921569, 0.952941, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.439216, 0.666667, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="ButtonPressed"]
+bg_color = Color(0.823529, 0.886275, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="ButtonDisabled"]
+bg_color = Color(0.831373, 0.839216, 0.85098, 0.46)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.788235, 0.803922, 0.823529, 0.52)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="Focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.439216, 0.666667, 1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="HudModeNormal"]
+bg_color = Color(1, 0.992157, 0.988235, 0.58)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="HudModeHover"]
+bg_color = Color(0.921569, 0.952941, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="HudModePressed"]
+bg_color = Color(0.823529, 0.886275, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="HudModeDisabled"]
+bg_color = Color(0.831373, 0.839216, 0.85098, 0.42)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxEmpty" id="HudModeCompactNormal"]
+
+[sub_resource type="StyleBoxEmpty" id="QuietButtonNormal"]
+
+[sub_resource type="StyleBoxFlat" id="StageCardNormal"]
+bg_color = Color(0.968627, 0.972549, 0.980392, 0.62)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0.090196, 0.145098, 0.219608, 0.04)
+shadow_size = 2
+shadow_offset = Vector2(0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StageCardHover"]
+bg_color = Color(0.921569, 0.952941, 1, 0.78)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StageCardSelected"]
+bg_color = Color(0.921569, 0.952941, 1, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.145098, 0.517647, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="HudModeFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.439216, 0.666667, 1, 1)
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="ProgressBackground"]
+bg_color = Color(0.788235, 0.803922, 0.823529, 0.78)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="ProgressFill"]
+bg_color = Color(0.145098, 0.517647, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="SettingsSliderRail"]
+bg_color = Color(0.788235, 0.803922, 0.823529, 1)
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="SettingsSliderFill"]
+bg_color = Color(0.145098, 0.517647, 1, 1)
+content_margin_top = 3.0
+content_margin_bottom = 3.0
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="Danger"]
+bg_color = Color(0.85098, 0.298039, 0.298039, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxLine" id="TargetMarker"]
+color = Color(0.145098, 0.517647, 1, 1)
+thickness = 2
+
+[resource]
+default_font = ExtResource("1_font")
+default_font_size = 16
+Label/font_sizes/font_size = 17
+Label/colors/font_outline_color = Color(1, 1, 1, 0.18)
+Label/constants/outline_size = 0
+Button/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+Button/colors/font_hover_color = Color(0.090196, 0.145098, 0.219608, 1)
+Button/colors/font_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+Button/colors/font_focus_color = Color(0.090196, 0.145098, 0.219608, 1)
+Button/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.9)
+Button/font_sizes/font_size = 17
+Button/styles/normal = SubResource("ButtonNormal")
+Button/styles/hover = SubResource("ButtonHover")
+Button/styles/pressed = SubResource("ButtonPressed")
+Button/styles/disabled = SubResource("ButtonDisabled")
+Button/styles/focus = SubResource("Focus")
+Label/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+Label/font_sizes/font_size = 16
+PanelContainer/styles/panel = SubResource("Panel")
+ProgressBar/styles/background = SubResource("ProgressBackground")
+ProgressBar/styles/fill = SubResource("ProgressFill")
+HSlider/icons/grabber = ExtResource("9_slider_grabber")
+HSlider/icons/grabber_highlight = ExtResource("9_slider_grabber")
+HSlider/styles/slider = SubResource("SettingsSliderRail")
+HSlider/styles/grabber_area = SubResource("SettingsSliderFill")
+HSlider/styles/grabber_area_highlight = SubResource("SettingsSliderFill")
+PrimaryButton/base_type = &"Button"
+PrimaryButton/colors/font_color = Color(1, 1, 1, 1)
+PrimaryButton/colors/font_hover_color = Color(1, 1, 1, 1)
+PrimaryButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+PrimaryButton/colors/font_focus_color = Color(1, 1, 1, 1)
+PrimaryButton/fonts/font = SubResource("FontWeight600")
+PrimaryButton/font_sizes/font_size = 20
+PrimaryButton/styles/normal = SubResource("KenneyPrimaryDepth")
+PrimaryButton/styles/hover = SubResource("KenneyPrimaryFlat")
+PrimaryButton/styles/pressed = SubResource("KenneyPrimaryFlat")
+PrimaryButton/styles/focus = SubResource("Focus")
+QuietButton/base_type = &"Button"
+QuietButton/styles/normal = SubResource("QuietButtonNormal")
+QuietButton/styles/hover = SubResource("ButtonHover")
+QuietButton/styles/pressed = SubResource("ButtonPressed")
+QuietButton/styles/disabled = SubResource("QuietButtonNormal")
+QuietButton/styles/focus = SubResource("Focus")
+ModePanel/base_type = &"PanelContainer"
+ModePanel/styles/panel = SubResource("ModePanel")
+DebugPanel/base_type = &"PanelContainer"
+DebugPanel/styles/panel = SubResource("DebugPanel")
+DangerButton/base_type = &"Button"
+DangerButton/colors/font_color = Color(1, 1, 1, 1)
+DangerButton/colors/font_hover_color = Color(1, 1, 1, 1)
+DangerButton/colors/font_pressed_color = Color(1, 1, 1, 1)
+DangerButton/colors/font_focus_color = Color(1, 1, 1, 1)
+DangerButton/styles/normal = SubResource("KenneyDangerDepth")
+DangerButton/styles/hover = SubResource("Danger")
+DangerButton/styles/pressed = SubResource("Danger")
+DangerButton/styles/focus = SubResource("Focus")
+HudCaption/base_type = &"Label"
+HudCaption/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
+HudCaption/fonts/font = SubResource("FontWeight500")
+HudCaption/font_sizes/font_size = 14
+HudLegend/base_type = &"Label"
+HudLegend/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudLegend/fonts/font = SubResource("FontWeight500")
+HudLegend/font_sizes/font_size = 14
+HudBody/base_type = &"Label"
+HudBody/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudBody/fonts/font = SubResource("FontWeight500")
+HudBody/font_sizes/font_size = 16
+HudSection/base_type = &"Label"
+HudSection/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudSection/fonts/font = SubResource("FontWeight600")
+HudSection/font_sizes/font_size = 18
+HudStageLabel/base_type = &"Label"
+HudStageLabel/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudStageLabel/fonts/font = SubResource("FontWeight600")
+HudStageLabel/font_sizes/font_size = 20
+HudValue/base_type = &"Label"
+HudValue/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudValue/fonts/font = SubResource("FontWeight600")
+HudValue/font_sizes/font_size = 22
+HudMetric/base_type = &"Label"
+HudMetric/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudMetric/fonts/font = SubResource("FontWeight600")
+HudMetric/font_sizes/font_size = 28
+HudControlValue/base_type = &"Label"
+HudControlValue/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudControlValue/fonts/font = SubResource("FontWeight600")
+HudControlValue/font_sizes/font_size = 24
+HudAccentSection/base_type = &"Label"
+HudAccentSection/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+HudAccentSection/fonts/font = SubResource("FontWeight600")
+HudAccentSection/font_sizes/font_size = 18
+HudAccentValue/base_type = &"Label"
+HudAccentValue/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+HudAccentValue/fonts/font = SubResource("FontWeight600")
+HudAccentValue/font_sizes/font_size = 22
+ResultCoverage/base_type = &"Label"
+ResultCoverage/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+ResultCoverage/fonts/font = SubResource("FontWeight700")
+ResultCoverage/font_sizes/font_size = 52
+HudAccentCaption/base_type = &"Label"
+HudAccentCaption/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+HudAccentCaption/fonts/font = SubResource("FontWeight500")
+HudAccentCaption/font_sizes/font_size = 14
+ScreenTitle/base_type = &"Label"
+ScreenTitle/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+ScreenTitle/fonts/font = SubResource("FontWeight700")
+ScreenTitle/font_sizes/font_size = 34
+ScreenTitleLight/base_type = &"ScreenTitle"
+ScreenTitleLight/colors/font_color = Color(1, 1, 1, 1)
+MenuEyebrow/base_type = &"Label"
+MenuEyebrow/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+MenuEyebrow/fonts/font = SubResource("FontWeight600")
+MenuEyebrow/font_sizes/font_size = 15
+MenuTitle/base_type = &"Label"
+MenuTitle/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+MenuTitle/fonts/font = SubResource("FontWeight700")
+MenuTitle/font_sizes/font_size = 64
+MenuSubtitle/base_type = &"Label"
+MenuSubtitle/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
+MenuSubtitle/fonts/font = SubResource("FontWeight500")
+MenuSubtitle/font_sizes/font_size = 17
+StageCardButton/base_type = &"Button"
+StageCardButton/colors/font_color = Color(0, 0, 0, 0)
+StageCardButton/colors/font_hover_color = Color(0, 0, 0, 0)
+StageCardButton/colors/font_pressed_color = Color(0, 0, 0, 0)
+StageCardButton/colors/font_hover_pressed_color = Color(0, 0, 0, 0)
+StageCardButton/colors/font_focus_color = Color(0, 0, 0, 0)
+StageCardButton/fonts/font = SubResource("FontWeight600")
+StageCardButton/font_sizes/font_size = 1
+StageCardButton/styles/normal = SubResource("StageCardNormal")
+StageCardButton/styles/hover = SubResource("StageCardHover")
+StageCardButton/styles/pressed = SubResource("StageCardSelected")
+StageCardButton/styles/hover_pressed = SubResource("StageCardSelected")
+StageCardButton/styles/disabled = SubResource("StageCardNormal")
+StageCardButton/styles/focus = SubResource("Focus")
+StageCardNumber/base_type = &"Label"
+StageCardNumber/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+StageCardNumber/fonts/font = SubResource("FontWeight700")
+StageCardNumber/font_sizes/font_size = 17
+StageCardNumberSelected/base_type = &"StageCardNumber"
+StageCardNumberSelected/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+StageCardName/base_type = &"Label"
+StageCardName/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+StageCardName/fonts/font = SubResource("FontWeight700")
+StageCardName/font_sizes/font_size = 20
+StageCardFacts/base_type = &"Label"
+StageCardFacts/colors/font_color = Color(0.180392, 0.243137, 0.329412, 1)
+StageCardFacts/fonts/font = SubResource("FontWeight600")
+StageCardFacts/font_sizes/font_size = 14
+StagePreviewFacts/base_type = &"Label"
+StagePreviewFacts/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
+StagePreviewFacts/fonts/font = SubResource("FontWeight500")
+StagePreviewFacts/font_sizes/font_size = 16
+StagePreviewBest/base_type = &"Label"
+StagePreviewBest/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+StagePreviewBest/fonts/font = SubResource("FontWeight600")
+StagePreviewBest/font_sizes/font_size = 19
+SettingsSwitchRow/base_type = &"CheckButton"
+SettingsSwitchRow/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsSwitchRow/colors/font_hover_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsSwitchRow/colors/font_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsSwitchRow/colors/font_hover_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsSwitchRow/colors/font_focus_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsSwitchRow/fonts/font = SubResource("FontWeight500")
+SettingsSwitchRow/font_sizes/font_size = 16
+SettingsSwitchRow/icons/checked = ExtResource("7_switch_on")
+SettingsSwitchRow/icons/unchecked = ExtResource("8_switch_off")
+SettingsSwitchRow/icons/checked_disabled = ExtResource("7_switch_on")
+SettingsSwitchRow/icons/unchecked_disabled = ExtResource("8_switch_off")
+SettingsSwitchRow/styles/normal = SubResource("QuietButtonNormal")
+SettingsSwitchRow/styles/hover = SubResource("StageCardHover")
+SettingsSwitchRow/styles/pressed = SubResource("QuietButtonNormal")
+SettingsSwitchRow/styles/hover_pressed = SubResource("StageCardHover")
+SettingsSwitchRow/styles/disabled = SubResource("QuietButtonNormal")
+SettingsSwitchRow/styles/focus = SubResource("Focus")
+SettingsLabel/base_type = &"Label"
+SettingsLabel/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+SettingsLabel/fonts/font = SubResource("FontWeight500")
+SettingsLabel/font_sizes/font_size = 16
+SettingsValue/base_type = &"Label"
+SettingsValue/colors/font_color = Color(0.180392, 0.243137, 0.329412, 1)
+SettingsValue/fonts/font = SubResource("FontWeight600")
+SettingsValue/font_sizes/font_size = 16
+ResultTitle/base_type = &"Label"
+ResultTitle/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+ResultTitle/fonts/font = SubResource("FontWeight700")
+ResultTitle/font_sizes/font_size = 30
+ResultTarget/base_type = &"Label"
+ResultTarget/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
+ResultTarget/fonts/font = SubResource("FontWeight500")
+ResultTarget/font_sizes/font_size = 15
+ResultGrade/base_type = &"Label"
+ResultGrade/colors/font_color = Color(0.145098, 0.517647, 1, 1)
+ResultGrade/fonts/font = SubResource("FontWeight600")
+ResultGrade/font_sizes/font_size = 21
+ResultFact/base_type = &"Label"
+ResultFact/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+ResultFact/fonts/font = SubResource("FontWeight500")
+ResultFact/font_sizes/font_size = 17
+ResultMetadata/base_type = &"Label"
+ResultMetadata/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
+ResultMetadata/fonts/font = SubResource("FontWeight500")
+ResultMetadata/font_sizes/font_size = 15
+HudStagePanel/base_type = &"PanelContainer"
+HudStagePanel/styles/panel = SubResource("HudStagePanel")
+HudRailPanel/base_type = &"PanelContainer"
+HudRailPanel/styles/panel = SubResource("Panel")
+HudCalloutPanel/base_type = &"PanelContainer"
+HudCalloutPanel/styles/panel = SubResource("QuietButtonNormal")
+HudModeButton/base_type = &"Button"
+HudModeButton/colors/icon_normal_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudModeButton/colors/icon_hover_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudModeButton/colors/icon_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudModeButton/colors/icon_hover_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudModeButton/colors/icon_focus_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudModeButton/colors/icon_disabled_color = Color(0.407843, 0.45098, 0.517647, 1)
+HudModeButton/fonts/font = SubResource("FontWeight600")
+HudModeButton/font_sizes/font_size = 16
+HudModeButton/styles/normal = SubResource("HudModeNormal")
+HudModeButton/styles/hover = SubResource("HudModeHover")
+HudModeButton/styles/pressed = SubResource("HudModePressed")
+HudModeButton/styles/disabled = SubResource("HudModeDisabled")
+HudModeButton/styles/focus = SubResource("HudModeFocus")
+HudModeButtonCompact/base_type = &"HudModeButton"
+HudModeButtonCompact/font_sizes/font_size = 14
+HudModeButtonCompact/styles/normal = SubResource("HudModeCompactNormal")
+HudIconButton/base_type = &"Button"
+HudIconButton/colors/icon_normal_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudIconButton/colors/icon_hover_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudIconButton/colors/icon_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudIconButton/colors/icon_hover_pressed_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudIconButton/colors/icon_focus_color = Color(0.090196, 0.145098, 0.219608, 1)
+HudIconButton/colors/icon_disabled_color = Color(0.407843, 0.45098, 0.517647, 1)
+HudIconButton/styles/normal = SubResource("ButtonNormal")
+HudIconButton/styles/hover = SubResource("ButtonHover")
+HudIconButton/styles/pressed = SubResource("ButtonPressed")
+HudIconButton/styles/disabled = SubResource("ButtonDisabled")
+HudIconButton/styles/focus = SubResource("Focus")
+HudFinishButton/base_type = &"Button"
+HudFinishButton/fonts/font = SubResource("FontWeight600")
+HudFinishButton/font_sizes/font_size = 16
+HudFinishButton/styles/normal = SubResource("ButtonNormal")
+HudFinishButton/styles/hover = SubResource("ButtonHover")
+HudFinishButton/styles/pressed = SubResource("ButtonPressed")
+HudFinishButton/styles/disabled = SubResource("ButtonDisabled")
+HudFinishButton/styles/focus = SubResource("Focus")
+HudCoverageProgress/base_type = &"ProgressBar"
+HudCoverageProgress/styles/background = SubResource("ProgressBackground")
+HudCoverageProgress/styles/fill = SubResource("ProgressFill")
+HudModePanel/base_type = &"PanelContainer"
+HudModePanel/styles/panel = SubResource("HudModeNormal")
+HudTargetMarker/base_type = &"HSeparator"
+HudTargetMarker/styles/separator = SubResource("TargetMarker")

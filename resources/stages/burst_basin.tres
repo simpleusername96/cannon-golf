@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="StageData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/stage/stage_data.gd" id="1_stage"]
+[ext_resource type="Resource" path="res://resources/stage_generation/burst_basin_profile.tres" id="2_profile"]
+[ext_resource type="Resource" path="res://resources/mechanisms/burst_node.tres" id="3_burst"]
+
+[resource]
+script = ExtResource("1_stage")
+stage_id = &"burst_basin"
+stage_version = 9
+display_name_key = &"stage.burst_basin.name"
+stage_number = 2
+target_coverage = 4.5
+maximum_shots = 4
+paint_color = Color(0.03, 0.38, 1, 1)
+star_thresholds = Vector3(4.5, 7, 9.5)
+objective_key = &"stage.burst_basin.objective"
+generation_profile = ExtResource("2_profile")
+terrain_seed = 1347223552
+terrain_center = Vector3(0, -2, -130)
+terrain_size = Vector2(212, 122)
+cannon_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.875, 6)
+mechanism_loadout = Array[ExtResource("3_burst")]([ExtResource("3_burst")])
+briefing_camera_position = Vector3(-60, 110, -30)
+briefing_camera_target = Vector3(0, 27, -112)
+aiming_camera_position = Vector3(29, 26, 58)
+aiming_camera_target = Vector3(0, 12, -62)
+wide_camera_position = Vector3(84, 56, 4)
+wide_camera_target = Vector3(0, 24, -112)
+result_camera_position = Vector3(-82, 54, 0)
+result_camera_target = Vector3(0, 24, -112)
+follow_camera_max_distance = 140.0

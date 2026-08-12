@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="MechanismData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/mechanisms/mechanism_data.gd" id="1_data"]
+
+[resource]
+script = ExtResource("1_data")
+kind = 2
+display_name_key = &"mechanism.uphill_rebound"
+description_key = &"mechanism.uphill_rebound.description"
+glyph_radius = 5.2
+maximum_charges = 0
+cooldown_seconds = 0.8
+uphill_sample_distance = 3.0
+minimum_uphill_rise = 0.5
+rebound_speed_multiplier = 0.85
+rebound_minimum_speed = 18.0
+rebound_maximum_speed = 32.0
+rebound_lift_ratio = 0.22
