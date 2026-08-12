@@ -14,6 +14,7 @@ var _course: CannonGolfCourseData
 func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
 	assert(camera != null and course != null and course.is_valid())
 	_camera = camera
+	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_course = course
 	view_mode = &"oblique"
 	pan_offset = Vector3.ZERO

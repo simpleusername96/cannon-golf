@@ -176,13 +176,37 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-020 — Begin with manually authored terraced shelf courses
 
-- Status: accepted for the two-course prototype.
+- Status: superseded by D-021 on 2026-08-12.
 - The first two courses use connected, heightfield-like terraced shelves built
   from editor-readable resource data. They may bend laterally and change height
   but do not use caves, bridges, overhangs, disconnected islands, or devices.
 - Human-authored direct-solution witnesses are verified through the real rigid
   body simulation. A custom level editor remains deferred until repeated manual
   authoring work justifies it.
+
+### D-021 — Generate the first courses with Paint Mountain's mountain pipeline
+
+- Status: accepted for the two-course prototype.
+- Each course calls the retained route resolver and route-graph mountain
+  synthesizer, adapts the generated coordinates to the Cannon Golf world, then
+  passes the result through the retained top-topology and geometry builders.
+- Cannon Golf selects a deterministic generation key and route-adjacent high
+  point. It modifies only the local height samples needed to make a shallow goal
+  depression before topology construction; it does not rebuild the mountain as
+  authored shelves.
+- The generated terrain owns the goal floor and side collision. The goal owner
+  contains settlement rules plus non-colliding ring and flag markers only.
+- Courses remain connected heightfield-like masses without caves, bridges,
+  overhangs, disconnected islands, or preinstalled devices.
+
+### D-022 — Keep the initial setup separate from the solution witness
+
+- Status: accepted for the two-course prototype.
+- A course's visible default angle and power must not equal or clear with its
+  certified direct solution. The default is an intentional, readable miss that
+  asks the player to adjust both controls.
+- The solution witness remains course metadata for real-physics regression
+  replay; it is not copied into the launch controls shown to the player.
 
 ## Rationale
 

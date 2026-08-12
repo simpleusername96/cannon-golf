@@ -6,10 +6,15 @@ extends Resource
 @export var display_name: String
 @export_multiline var short_brief: String
 
-@export_category("Terrain Blocks")
-@export var block_centers: PackedVector3Array
-@export var block_sizes: PackedVector3Array
-@export var block_yaw_degrees: PackedFloat32Array
+@export_category("Generated Terrain")
+@export var generation_profile: StageGenerationProfile
+@export var terrain_seed: int = StageProgressionData.CANONICAL_TERRAIN_SEED
+@export_range(0.25, 1.0, 0.01) var terrain_horizontal_scale := 0.55
+@export_range(0.08, 0.4, 0.01) var terrain_vertical_scale := 0.16
+@export var terrain_origin := Vector3(0.0, -4.0, 0.0)
+@export_range(0.05, 0.45, 0.01) var goal_route_t := 0.18
+@export_range(0.7, 1.0, 0.01) var cannon_route_t := 1.0
+@export_range(0.3, 1.5, 0.05) var goal_recess_depth := 0.8
 @export var terrain_color := Color("9DA6A3")
 @export var terrain_accent_color := Color("87938F")
 
@@ -35,15 +40,12 @@ extends Resource
 func is_valid() -> bool:
 	if course_id.is_empty() or display_name.strip_edges().is_empty():
 		return false
-	if block_centers.size() < 2 or block_centers.size() != block_sizes.size() \
-			or block_centers.size() != block_yaw_degrees.size():
+	if generation_profile == null or not generation_profile.is_valid() \
+			or terrain_seed == 0 or terrain_horizontal_scale <= 0.0 \
+			or terrain_vertical_scale <= 0.0 or not terrain_origin.is_finite() \
+			or goal_route_t <= 0.0 or goal_route_t >= cannon_route_t \
+			or cannon_route_t > 1.0 or goal_recess_depth <= 0.0:
 		return false
-	for index in range(block_sizes.size()):
-		var size := block_sizes[index]
-		if not block_centers[index].is_finite() or not size.is_finite() \
-				or size.x <= 0.0 or size.y <= 0.0 or size.z <= 0.0 \
-				or not is_finite(block_yaw_degrees[index]):
-			return false
 	return cannon_position.is_finite() and goal_position.is_finite() \
 			and planning_focus.is_finite() and oblique_offset.is_finite() \
 			and side_offset.is_finite() and goal_radius >= 3.5 \

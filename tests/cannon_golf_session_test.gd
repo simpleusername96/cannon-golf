@@ -12,7 +12,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	_assert_true(game.active_course().course_id == &"quiet_shelf", "First course must load.")
+	_assert_true(game.active_course().course_id == &"first_ridge", "First course must load.")
 	var launcher := game._course_builder.launcher
 	var elevation := launcher.elevation_degrees
 	var power := launcher.power_percent

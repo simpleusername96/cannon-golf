@@ -20,6 +20,10 @@ func _initialize() -> void:
 		_assert_true(not visible_copy.contains(retired_term), "HUD must not expose retired term: %s" % retired_term)
 	for required_term in ["골", "고도각", "파워", "전체", "측면", "발사", "재발사", "코스 초기화", "일시정지", "설정", "코스 선택", "메인 메뉴"]:
 		_assert_true(visible_copy.contains(required_term), "HUD must expose real action: %s" % required_term)
+	var shortcut_panel := hud.get_node_or_null("Root/ShortcutPanel") as PanelContainer
+	_assert_true(shortcut_panel != null, "Secondary shortcuts must live in one compact panel.")
+	_assert_true(shortcut_panel.size.y <= 100.0, "Shortcut panel must stay compact.")
+	_assert_true(hud.get_node_or_null("Root/ActionPanel/Margin/Rows/Hint") == null, "Long sentence shortcut hint must be removed.")
 	print("Cannon Golf HUD copy and target-size contract passed.")
 	quit(0)
 

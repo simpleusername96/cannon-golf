@@ -1,7 +1,7 @@
 class_name CannonGolfCourseCatalog
 extends RefCounted
 
-const COURSE_ONE := preload("res://resources/cannon_golf/courses/quiet_shelf.tres")
+const COURSE_ONE := preload("res://resources/cannon_golf/courses/first_ridge.tres")
 const COURSE_TWO := preload("res://resources/cannon_golf/courses/rising_bend.tres")
 
 

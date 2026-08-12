@@ -10,9 +10,17 @@ learn from first-contact marks, and settle the ball safely inside the goal.
 Retry is unlimited. High-oblique and side planning views preserve the current
 launch setup and course state.
 
-Both courses are built as a single faceted terrain body with an elevated goal
-basin. The game and menu preview share the retained Paint Mountain panorama,
-open-ground material, daylight palette, and restrained low-poly nature props.
+Both courses call Paint Mountain's retained route-graph mountain synthesizer,
+then use its topology and geometry builders for the rendered and colliding
+faceted mountain. Cannon Golf only scales that generated field and lowers the
+samples around a selected high point into the shallow goal basin. The terrain
+itself owns the goal floor and slope collision; the ring and flag are visual
+markers. The game and menu preview share the retained panorama, open-ground
+material, daylight palette, and restrained low-poly nature props.
+
+The initial angle and power are intentionally not the solution. Each course
+stores a separate solution witness that is replayed against the real rigid-body
+simulation by the focused test suite.
 
 Controls:
 

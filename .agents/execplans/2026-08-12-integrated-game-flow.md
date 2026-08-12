@@ -2,7 +2,7 @@
 type: plan
 status: done
 created: 2026-08-12
-scope: Paint Mountain-derived application flow, player conveniences, and faceted mountain presentation for the two-course Cannon Golf prototype
+scope: Paint Mountain-derived application flow, player conveniences, and native generated mountain terrain for the two-course Cannon Golf prototype
 related:
   - project-specs/cannon-golf/PRD.md
   - project-specs/cannon-golf/DESIGN_RULES.md
@@ -47,16 +47,17 @@ In scope:
 - Existing audio, display, quality, reduced-motion, and language settings where
   they have a real runtime effect. Camera shake and exact trajectory-preview
   settings are excluded from the visible Cannon Golf settings surface.
-- One connected faceted terrain mesh per course, generated deterministically
-  from the existing authored shelf data, with collision, flat launch shelves,
-  lateral/vertical mountain variation, and a shallow elevated goal basin.
+- One connected faceted terrain mesh per course, generated deterministically by
+  Paint Mountain's route-graph mountain pipeline, with only Cannon Golf scale
+  adaptation and a shallow local goal depression applied before topology and
+  geometry construction.
 - Paint Mountain's existing panorama sky texture, light palette, open-ground
   material, and low-poly nature dressing as retained environmental primitives.
 
 Out of scope:
 
-- New courses, multi-goal stages, player-placeable devices, procedural course
-  generation, a level editor, mobile layouts, save migration, public-title
+- New courses, multi-goal stages, player-placeable devices, a level editor,
+  mobile layouts, save migration, public-title
   approval, or deletion of retained Paint Mountain source-history files.
 - Paint, coverage, exact landing prediction, score, stars, timer, lives, finite
   shots, locked-course progression, or best-score records.
@@ -78,7 +79,11 @@ Constraints and invariants:
   conversion. The witness may be retuned in its course resource only when the
   physical replay proves the new deterministic value.
 - The connected terrain mesh must use triangle collision and the existing
-  `impact_mark_surface` identity, and must expose one terrain body to callers.
+  `impact_mark_surface` identity. The terrain top and support shell may use
+  separate shapes under one Cannon Golf terrain owner; no separate physical
+  goal floor or rim may compete with the depressed terrain surface.
+- Each course's default angle/power pair must be a learnable miss and must not
+  equal or clear with the recorded solution witness.
 - All routine buttons remain at least 40 px high, focus is visible, Escape
   returns predictably, Korean text does not clip at 1280x720, and reduced-motion
   skips decorative fades.
@@ -103,9 +108,12 @@ Exact actions requiring owner or user approval:
 | Settings and persistence | Retained settings implement audio, display, quality, language, and legacy camera/prediction options; current main path removed autoloads | Direct `settings_screen.gd`, `game_state.gd`, and `save_system.gd` inspection | Add a small Cannon Golf settings store and reuse only settings with real effects; use a distinct `user://cannon_golf_settings.json` file | 1.2 |
 | Pause and navigation | Current Cannon Golf game has no pause/settings/menu shell; legacy overlay has correct action shape | Direct runtime and scene inspection | Gameplay exposes pause and navigation signals; app root owns scene removal/return and settings overlay | 1.3, 2.1 |
 | Retry semantics | Failed launches currently auto-remove the ball; `R` resets the whole course | `CannonGolfGame._fail_launch`, `_finish_failed_launch`, and user direction | `R` becomes quick attempt retry/cancel; `Shift+R` and the explicit HUD button perform full course reset | 2.1, 2.2 |
-| Terrain | `course_builder.gd` creates four disconnected/overlapping box bodies from authored shelf arrays | Builder and course-resource inspection | Convert shelves into a deterministic faceted route with overlapping mountain skirts, preserve one physical terrain owner, and carve a shallow goal basin around the authored elevated goal | 3.1, 3.2 |
+| Terrain correction | The completed first pass replaced shelf bodies with a custom shelf-mesh factory, but it does not call Paint Mountain's generator | Direct comparison of `course_terrain_factory.gd` with `route_graph_mountain_synthesizer.gd`, `terrain_top_topology.gd`, and `terrain_geometry_factory.gd` | Replace the custom shelf tessellator with an adapter that calls the retained route resolver and mountain synthesizer, maps the generated heightfield to Cannon Golf scale, depresses only the selected goal samples, then calls the retained topology and geometry factory | 5.1, 5.2 |
+| Goal collision ownership | `settlement_goal.gd` currently creates an independent cylinder floor and 16 static rim bodies above the terrain | Direct goal-owner inspection and user correction | Terrain owns the entire goal floor and slope collision; the goal node keeps only containment logic and non-colliding visual markers | 5.2 |
+| Setup defaults | Both course resources currently set default angle/power equal to the certified solution witness | Direct resource inspection and user correction | Record separate non-winning defaults, retain a hidden solution witness for regression replay, and prove the default does not clear | 5.3 |
+| Shortcut presentation | The HUD presents shortcuts as a long sentence and large action treatment | Direct HUD scene inspection and user correction | Keep Fire as the sole primary action and place secondary shortcuts in a small icon/keycap panel at the HUD edge | 5.4 |
 | Sky and ground | Retained gameplay uses `skybox-day.png`, a panorama environment, warm sun, and `open_ground.gdshader` on an apron | `gameplay.tscn` and `open_play_environment.tscn` inspection | Use the same sky texture, environment/light values, and ground shader/texture in the Cannon Golf main and preview worlds | 3.2, 3.3 |
-| Course solvability | Direct witnesses are `39/52` and `42/63` and pass real rigid-body replay on current block terrain | Course resources and `cannon_golf_solution_test.gd` | Real replay remains the release condition; retune only the witness values if the connected mesh changes contact geometry | 3.2, 4.1 |
+| Course solvability | The superseded shelf build used witnesses `39/52` and `42/63`; the generated mountains change launch and contact geometry | Course resources, generated-terrain captures, and `cannon_golf_solution_test.gd` | Real replay remains the release condition; keep visible defaults separate and record newly proven witnesses in each course resource | 5.3 |
 | Validation and packaging | Godot 4.7.1, focused tests, source verify, capture script, Windows export preset, and built executable exist | Toolchain audit and direct command inspection | Extend the focused suite and capture tool; use the existing source verify, release export, and built-app smoke at final gate | 4.1, 4.2 |
 
 Readiness statement:
@@ -264,6 +272,56 @@ Source owners: `scripts/test-cannon-golf.ps1`, `scripts/verify.ps1`,
   - Accept: export exits zero; the built executable starts at the main menu,
     exposes the two-course flow, and terminates cleanly after the bounded smoke.
 
+### Phase 5: Correct terrain provenance, goal ownership, and control teaching
+
+Goal: make both courses visibly and physically use Paint Mountain's native
+mountain generator, while preserving Cannon Golf's puzzle and compact HUD.
+
+Preconditions:
+
+- The integrated shell and session conveniences from Phases 1-4 remain intact.
+
+Source owners: `src/cannon_golf/course_data.gd`,
+`src/cannon_golf/course_terrain_factory.gd`,
+`src/cannon_golf/course_builder.gd`, `src/cannon_golf/settlement_goal.gd`,
+`resources/cannon_golf/courses/`, `scenes/cannon_golf/cannon_golf_hud.tscn`
+
+- [x] **5.1** Both courses are generated by the retained mountain pipeline.
+  - Change: course resources reference a retained `StageGenerationProfile` and
+    deterministic generation key; the Cannon Golf factory calls
+    `RouteGraphResolver`, `RouteGraphMountainSynthesizer`,
+    `TerrainTopTopology`, and `TerrainGeometryFactory` in that order. It may
+    scale generated coordinates but must not replace the height synthesizer.
+  - Accept: the focused terrain test finds valid route graph, generated
+    heightfield/topology, one render surface, top/shell concave collision, and
+    deterministic but distinct results for the two course IDs.
+  - Guard: course resources and the factory contain no authored block/shelf
+    arrays or custom block tessellation path.
+- [x] **5.2** The goal is a shallow depression in the generated terrain.
+  - Change: select a stable route-adjacent high point, lower local height
+    samples into a flat-enough floor with a smooth shallow blend, then build the
+    retained topology and geometry; keep goal visuals non-colliding.
+  - Accept: terrain samples prove the center is below the surrounding ring,
+    the goal node owns no `StaticBody3D`, and entry/bounce-out/settlement checks
+    run only against the generated terrain collision.
+- [x] **5.3** Defaults teach adjustment instead of revealing the answer.
+  - Change: record a non-winning default pair and a separately certified direct
+    solution witness for each course.
+  - Accept: rigid-body replay proves each default attempt does not clear and
+    each recorded witness does clear under the same generated terrain.
+- [x] **5.4** Secondary shortcuts use a compact icon/keycap panel.
+  - Change: remove the long shortcut sentence, keep Fire as the sole primary
+    action, and render angle, power, view, zoom, retry, reset, and pause cues as
+    small keycaps/icons in one edge panel without detached tiles.
+  - Accept: the UI contract and 1280x720 planning/side captures show a readable
+    compact panel that does not obscure the cannon, route, goal, or ball.
+
+Batch gate:
+
+- Run the focused Cannon Golf suite once, inspect both courses in planning and
+  side views at 1280x720, then run source verification, release export, and the
+  bounded built-app smoke once before closing the contract.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -308,7 +366,7 @@ Anti-rework execution rules:
 | Trigger | Required response | Boundary or escalation point |
 | --- | --- | --- |
 | A verified material fact contradicts this contract | Stop the affected branch, update this contract, and obtain any required approval before resuming | Do not silently choose a new product, architecture, dependency, data, UX, safety, or validation contract |
-| The connected mesh breaks a recorded solution | First preserve the required flat launch/goal zones and tune only local surface samples; if replay still fails, retune that course's angle/power witness and record the evidence | Do not restore disconnected box terrain or weaken safe-settlement rules |
+| The generated mountain breaks a recorded solution | Keep the retained generator, goal depression, and launch/goal route landmarks fixed; retune only the recorded angle/power witness and default miss | Do not restore the custom shelf factory or weaken safe-settlement rules |
 | A retained settings option has no observable Cannon Golf effect | Remove it from the Cannon Golf settings UI and store rather than present a fake control | Do not implement a new gameplay feature solely to justify a legacy toggle |
 | The panorama or ground texture fails to import or render | Use the existing imported resource path and current renderer-compatible material; report the exact asset/import failure if unavailable | Do not add or download replacement dependencies or assets |
 
@@ -320,14 +378,24 @@ acceptance.
 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
-- Next task: none; the integrated two-course game flow is ready for playtesting.
-- Last completed gate: final source, focused-suite, rendered UI, Windows export,
-  and built-app smoke gate on 2026-08-12.
-- Evidence: all 11 focused Cannon Golf tests passed on Godot 4.7.1; the direct
-  solution replay cleared both courses at the existing witnesses; 1280x720
-  menu, course-select, settings, planning, side, pause, and clear captures were
-  inspected; `scripts/verify.ps1`, Windows release export, and the bounded
-  exported-app startup smoke passed without script or runtime errors.
+- Next task: none; the generated-mountain correction is ready for playtesting.
+- Last completed gate: Phase 5 final focused-suite, source verification,
+  Windows release export, and built-app smoke gate on 2026-08-13.
+- Evidence: all 11 focused Cannon Golf tests passed on Godot 4.7.1. Terrain
+  tests proved direct consumption of `RouteGraphMountainSynthesizer`, shared
+  depressed topology for rendering and collision, deterministic but distinct
+  course results, and no goal-owned static collision. Real rigid-body replay
+  proved default misses at `24/30` and `22/32` and direct clears at `28/41`
+  and `30/44`. `scripts/verify.ps1`, the Windows release export, and the
+  bounded exported-app startup smoke all passed.
+- Level 3 UIUX evidence: 1280x720 high-oblique and side captures for both
+  courses were inspected. The faceted mountain silhouette, elevated depressed
+  goal, cannon, and launch route remain readable; Korean labels fit; the
+  88-pixel-high shortcut panel does not cover the angle or power controls; Fire
+  remains the sole primary action; and 40-pixel icon buttons retain mouse
+  access to retry, reset, and menu. Keyboard focus and action coverage are
+  guarded by `cannon_golf_ui_contract_test.gd` and the app/session tests. No
+  visual blocker or unresolved warning remains.
 - Update rule: after a checkpoint passes, record its concise evidence, check the
   task, and advance this pointer in the same edit.
 

@@ -7,13 +7,20 @@ var course: CannonGolfCourseData
 var terrain_body: StaticBody3D
 var launcher: CannonGolfLauncher
 var goal: CannonGolfSettlementGoal
+var terrain_layout: GeneratedStageLayout
+var terrain_geometry: TerrainGeometry
 
 
 func build(selected_course: CannonGolfCourseData) -> void:
 	assert(selected_course != null and selected_course.is_valid(), "Course builder requires valid data.")
 	clear_course()
-	course = selected_course
+	# Generated positions are runtime data. Keep catalog resources immutable so
+	# preview and gameplay builds cannot overwrite each other's course metadata.
+	course = selected_course.duplicate(true) as CannonGolfCourseData
 	var terrain: Dictionary = TERRAIN_FACTORY.build(course)
+	terrain_layout = terrain.layout as GeneratedStageLayout
+	terrain_geometry = terrain.geometry as TerrainGeometry
+	_apply_generated_play_data(terrain)
 	terrain_body = StaticBody3D.new()
 	terrain_body.name = "Terrain"
 	terrain_body.collision_layer = 1
@@ -24,13 +31,17 @@ func build(selected_course: CannonGolfCourseData) -> void:
 	terrain_physics.friction = 0.86
 	terrain_body.physics_material_override = terrain_physics
 	add_child(terrain_body)
-	var terrain_collision := CollisionShape3D.new()
-	terrain_collision.name = "TerrainCollision"
-	terrain_collision.shape = terrain["collision_shape"] as ConcavePolygonShape3D
-	terrain_body.add_child(terrain_collision)
+	var top_collision := CollisionShape3D.new()
+	top_collision.name = "TerrainTopCollision"
+	top_collision.shape = terrain_geometry.top_shape
+	terrain_body.add_child(top_collision)
+	var shell_collision := CollisionShape3D.new()
+	shell_collision.name = "TerrainShellCollision"
+	shell_collision.shape = terrain_geometry.skirt_shape
+	terrain_body.add_child(shell_collision)
 	var terrain_mesh := MeshInstance3D.new()
 	terrain_mesh.name = "TerrainMesh"
-	terrain_mesh.mesh = terrain["mesh"] as ArrayMesh
+	terrain_mesh.mesh = terrain_geometry.render_mesh
 	terrain_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	terrain_body.add_child(terrain_mesh)
 	launcher = CannonGolfLauncher.new()
@@ -39,7 +50,7 @@ func build(selected_course: CannonGolfCourseData) -> void:
 	add_child(launcher)
 	goal = CannonGolfSettlementGoal.new()
 	goal.name = "SettlementGoal"
-	goal.configure(course.goal_position, course.goal_radius)
+	goal.configure(course.goal_position, course.goal_radius, float(terrain.goal_rim_y))
 	add_child(goal)
 	_add_dressing()
 
@@ -51,6 +62,8 @@ func clear_course() -> void:
 	terrain_body = null
 	launcher = null
 	goal = null
+	terrain_layout = null
+	terrain_geometry = null
 	course = null
 
 
@@ -62,37 +75,41 @@ func terrain_body_count() -> int:
 	return count
 
 
+func _apply_generated_play_data(terrain: Dictionary) -> void:
+	course.cannon_position = terrain.cannon_position
+	course.goal_position = terrain.goal_position
+	course.shot_yaw_degrees = float(terrain.shot_yaw_degrees)
+	course.play_bounds = terrain.play_bounds
+	course.planning_focus = course.cannon_position.lerp(course.goal_position, 0.5) + Vector3.UP * 2.0
+
+
 func _add_dressing() -> void:
 	var placements := [
-		{"model": "res://assets/nature/kenney/rock_smallA.glb", "block": 0, "side": -1.0, "depth": -0.22, "scale": 0.9},
-		{"model": "res://assets/nature/kenney/tree_pineSmallA.glb", "block": 1, "side": 1.0, "depth": -0.28, "scale": 0.82},
-		{"model": "res://assets/nature/kenney/rock_largeA.glb", "block": 2, "side": -1.0, "depth": 0.26, "scale": 0.72},
-		{"model": "res://assets/nature/kenney/tree_pineSmallB.glb", "block": 3, "side": 1.0, "depth": 0.22, "scale": 0.78},
+		{"model": "res://assets/nature/kenney/rock_smallA.glb", "t": 0.78, "side": -1.0, "scale": 0.82},
+		{"model": "res://assets/nature/kenney/tree_pineSmallA.glb", "t": 0.62, "side": 1.0, "scale": 0.72},
+		{"model": "res://assets/nature/kenney/rock_largeA.glb", "t": 0.40, "side": -1.0, "scale": 0.68},
+		{"model": "res://assets/nature/kenney/tree_pineSmallB.glb", "t": 0.27, "side": 1.0, "scale": 0.70},
 	]
+	var graph := terrain_layout.route_graph
 	for index in range(placements.size()):
 		var placement: Dictionary = placements[index]
-		var model_path := String(placement["model"])
-		var packed := load(model_path) as PackedScene
+		var packed := load(String(placement.model)) as PackedScene
 		if packed == null:
 			continue
 		var decoration := packed.instantiate() as Node3D
 		if decoration == null:
 			continue
+		var source_point := graph.route_position(0, float(placement.t))
+		var source_tangent := graph.route_tangent(0, float(placement.t))
+		var tangent := Vector2(source_tangent.x, source_tangent.z).normalized()
+		var side := Vector2(-tangent.y, tangent.x) * float(placement.side) * 10.0
+		var xz := Vector2(source_point.x, source_point.z) + side
+		var surface_y := terrain_layout.height_at_local(xz.x, xz.y)
 		decoration.name = "NatureDressing%02d" % (index + 1)
-		var block_index := int(placement["block"])
-		var center := course.block_centers[block_index]
-		var size := course.block_sizes[block_index]
-		var yaw := deg_to_rad(course.block_yaw_degrees[block_index])
-		var local_offset := Vector3(
-			float(placement["side"]) * size.x * 0.72,
-			-size.y * 0.5,
-			float(placement["depth"]) * size.z
-		)
-		var world_offset := Basis(Vector3.UP, yaw) * local_offset
-		decoration.position = center + world_offset + Vector3.UP * (size.y * 0.5)
+		decoration.position = Vector3(xz.x, surface_y, xz.y)
 		decoration.rotation.y = deg_to_rad(float(index * 37 - 18))
-		decoration.scale = Vector3.ONE * float(placement["scale"])
-		_apply_dressing_material(decoration, model_path.contains("tree_"))
+		decoration.scale = Vector3.ONE * float(placement.scale)
+		_apply_dressing_material(decoration, String(placement.model).contains("tree_"))
 		add_child(decoration)
 
 

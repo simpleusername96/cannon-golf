@@ -258,6 +258,12 @@ than the inherited frontal cannon composition.
   zones must not be preinstalled. A stage may still store non-world metadata
   such as play bounds, camera bookmarks, goal tolerances, per-device stock,
   placement legality, and certified solution witnesses.
+- Prototype baseline: the first two courses must use Paint Mountain's retained
+  route-graph mountain height synthesis, topology, and geometry pipeline. A
+  course may select deterministic generation inputs and adapt world scale, then
+  lower only the samples around a route-adjacent high point to form its goal.
+  That depressed terrain remains the sole physical goal floor and wall; goal
+  rings and flags are non-colliding markers.
 - Reason: the course supplies the spatial problem while the player supplies all
   route-changing mechanisms.
 
@@ -358,6 +364,9 @@ than the inherited frontal cannon composition.
 - Applies to: FR-15.
 - Conditions for done: loading a fresh stage creates no route-changing mechanism
   in the course; only terrain, cannon, and goals are visible gameplay objects.
+  For the first two courses, the terrain and goal collision must come from the
+  retained generated-mountain topology rather than an authored shelf mesh or a
+  separate physical cup.
 
 ### AC-12: Certified solution [assumption]
 
@@ -375,10 +384,11 @@ than the inherited frontal cannon composition.
   remain available as source history.
 - No new production dependency is approved.
 - Current product name, exact camera transition grammar, angle-control
-  presentation, impact-mark retention rule, goal-order rule, bounce tuning, and
-  device editing rules remain open. Exact damping, airflow, and gravity values,
-  inventory limits, introduction stages, terrain topology family, and solution
-  robustness tolerances also remain open.
+  presentation, goal-order rule, and device editing rules remain open. Exact
+  damping, airflow, and gravity values, inventory limits, introduction stages,
+  later-course terrain variation, and solution robustness tolerances also
+  remain open. The first two courses' generated heightfield topology, impact
+  retention, and ordinary rebound baseline are accepted prototype decisions.
 - UI should remain Korean-first with persistent English support when
   implementation begins.
 

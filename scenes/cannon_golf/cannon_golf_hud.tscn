@@ -44,7 +44,7 @@ text = "COURSE 01  /  02"
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HudStageLabel"
-text = "고요한 선반"
+text = "첫 능선"
 
 [node name="Brief" type="Label" parent="Root/CoursePanel/Margin/Rows"]
 unique_name_in_owner = true
@@ -245,8 +245,8 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -338.0
-offset_top = -200.0
+offset_left = -244.0
+offset_top = -158.0
 offset_right = -24.0
 offset_bottom = -24.0
 grow_horizontal = 0
@@ -264,46 +264,134 @@ theme_override_constants/margin_bottom = 14
 layout_mode = 2
 theme_override_constants/separation = 9
 
-[node name="TopActions" type="HBoxContainer" parent="Root/ActionPanel/Margin/Rows"]
+[node name="QuickActions" type="HBoxContainer" parent="Root/ActionPanel/Margin/Rows"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RetryButton" type="Button" parent="Root/ActionPanel/Margin/Rows/TopActions"]
+[node name="RetryButton" type="Button" parent="Root/ActionPanel/Margin/Rows/QuickActions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(132, 44)
+custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"QuietButton"
-text = "R  재발사"
+text = "↻"
+tooltip_text = "재발사 (R)"
 
-[node name="PauseButton" type="Button" parent="Root/ActionPanel/Margin/Rows/TopActions"]
+[node name="ResetButton" type="Button" parent="Root/ActionPanel/Margin/Rows/QuickActions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(132, 44)
+custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"QuietButton"
-text = "Esc  메뉴"
+text = "⟲"
+tooltip_text = "코스 초기화 (Shift+R)"
 
-[node name="ResetButton" type="Button" parent="Root/ActionPanel/Margin/Rows"]
+[node name="PauseButton" type="Button" parent="Root/ActionPanel/Margin/Rows/QuickActions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 44)
+custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"QuietButton"
-text = "Shift+R  코스 초기화"
+text = "Ⅱ"
+tooltip_text = "메뉴 (Esc)"
 
 [node name="FireButton" type="Button" parent="Root/ActionPanel/Margin/Rows"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 70)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "발사"
 
-[node name="Hint" type="Label" parent="Root/ActionPanel/Margin/Rows"]
+[node name="ShortcutPanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -4.0
+offset_top = -112.0
+offset_right = 388.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Root/ShortcutPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Shortcuts" type="GridContainer" parent="Root/ShortcutPanel/Margin"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 6
+columns = 4
+
+[node name="AngleShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
 layout_mode = 2
 theme_type_variation = &"HudCaption"
-text = "Space 발사 · 1/2 시점 · W/S 각도 · A/D 파워 · 방향키 탐색 · 휠 확대"
-horizontal_alignment = 1
-autowrap_mode = 2
+text = "↕  W/S  각도"
+vertical_alignment = 1
+
+[node name="PowerShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "↔  A/D  파워"
+vertical_alignment = 1
+
+[node name="ViewShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "◉  1/2  시점"
+vertical_alignment = 1
+
+[node name="ZoomShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "⌕  휠  확대"
+vertical_alignment = 1
+
+[node name="ExploreShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "✥  방향키  탐색"
+vertical_alignment = 1
+
+[node name="RetryShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "↻  R  재발사"
+vertical_alignment = 1
+
+[node name="ResetShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "⟲  ⇧R  초기화"
+vertical_alignment = 1
+
+[node name="PauseShortcut" type="Label" parent="Root/ShortcutPanel/Margin/Shortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(84, 28)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "Ⅱ  Esc  메뉴"
+vertical_alignment = 1
 
 [node name="ResultOverlay" type="Control" parent="Root"]
 unique_name_in_owner = true

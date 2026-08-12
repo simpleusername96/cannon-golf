@@ -158,10 +158,17 @@ func apply_language(language: String) -> void:
 	$Root/ViewPanel/Margin/Views/ViewLabel.text = "VIEW" if english else "시점"
 	%ObliqueButton.text = "1  OVERVIEW" if english else "1  전체"
 	%SideButton.text = "2  SIDE" if english else "2  측면"
-	%RetryButton.text = "R  RELAUNCH" if english else "R  재발사"
-	%PauseButton.text = "Esc  MENU" if english else "Esc  메뉴"
-	%ResetButton.text = "Shift+R  RESET COURSE" if english else "Shift+R  코스 초기화"
-	$Root/ActionPanel/Margin/Rows/Hint.text = "Space fire · 1/2 view · W/S angle · A/D power · Arrows explore · Wheel zoom" if english else "Space 발사 · 1/2 시점 · W/S 각도 · A/D 파워 · 방향키 탐색 · 휠 확대"
+	%AngleShortcut.text = "↕  W/S  ANGLE" if english else "↕  W/S  각도"
+	%PowerShortcut.text = "↔  A/D  POWER" if english else "↔  A/D  파워"
+	%ViewShortcut.text = "◉  1/2  VIEW" if english else "◉  1/2  시점"
+	%ZoomShortcut.text = "⌕  WHEEL  ZOOM" if english else "⌕  휠  확대"
+	%ExploreShortcut.text = "✥  ARROWS  PAN" if english else "✥  방향키  탐색"
+	%RetryShortcut.text = "↻  R  RETRY" if english else "↻  R  재발사"
+	%ResetShortcut.text = "⟲  ⇧R  RESET" if english else "⟲  ⇧R  초기화"
+	%PauseShortcut.text = "Ⅱ  Esc  MENU" if english else "Ⅱ  Esc  메뉴"
+	%RetryButton.tooltip_text = "Relaunch (R)" if english else "재발사 (R)"
+	%ResetButton.tooltip_text = "Reset course (Shift+R)" if english else "코스 초기화 (Shift+R)"
+	%PauseButton.tooltip_text = "Menu (Esc)" if english else "메뉴 (Esc)"
 	$Root/SetupPanel/Margin/Rows/Title.text = "LAUNCH SETUP" if english else "발사 설정"
 	$Root/SetupPanel/Margin/Rows/ElevationRow/Label.text = "ANGLE" if english else "고도각"
 	$Root/SetupPanel/Margin/Rows/PowerRow/Label.text = "POWER" if english else "파워"
@@ -182,7 +189,7 @@ func apply_language(language: String) -> void:
 func _course_name_for(course: CannonGolfCourseData) -> String:
 	if _language != "en":
 		return course.display_name
-	return "RISING BEND" if course.course_id == &"rising_bend" else "QUIET SHELF"
+	return "RISING BEND" if course.course_id == &"rising_bend" else "FIRST RIDGE"
 
 
 func _course_brief_for(course: CannonGolfCourseData) -> String:

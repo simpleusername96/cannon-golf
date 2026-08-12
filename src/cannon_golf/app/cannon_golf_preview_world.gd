@@ -38,7 +38,7 @@ func show_course(index: int) -> bool:
 		return false
 	course_index = index
 	_builder.build(course)
-	_camera_rig.configure(_camera, course)
+	_camera_rig.configure(_camera, _builder.course)
 	_camera.current = visible
 	return true
 

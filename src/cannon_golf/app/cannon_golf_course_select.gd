@@ -61,7 +61,7 @@ func apply_language(language: String) -> void:
 	var english := language == "en"
 	$Heading.text = "COURSE SELECT" if english else "코스 선택"
 	_back.text = "BACK" if english else "뒤로"
-	_course_one.text = "QUIET SHELF" if english else "고요한 선반"
+	_course_one.text = "FIRST RIDGE" if english else "첫 능선"
 	_course_two.text = "RISING BEND" if english else "오르는 굽이"
 	$CardsPanel/Margin/Cards/CourseOneHint.text = "01  ·  DIRECT SHOT" if english else "01  ·  직접 조준"
 	$CardsPanel/Margin/Cards/CourseTwoHint.text = "02  ·  READ THE HEIGHT" if english else "02  ·  높이 차 읽기"
@@ -86,7 +86,7 @@ func _refresh_course_copy() -> void:
 
 
 func _english_course_name(course_id: StringName) -> String:
-	return "RISING BEND" if course_id == &"rising_bend" else "QUIET SHELF"
+	return "RISING BEND" if course_id == &"rising_bend" else "FIRST RIDGE"
 
 
 func _english_course_brief(course_id: StringName) -> String:

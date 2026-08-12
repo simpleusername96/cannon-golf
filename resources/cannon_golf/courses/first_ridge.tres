@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1_course"]
+[ext_resource type="Resource" path="res://resources/cannon_golf/courses/cannon_golf_mountain_profile.tres" id="2_profile"]
+
+[resource]
+script = ExtResource("1_course")
+course_id = &"first_ridge"
+display_name = "첫 능선"
+short_brief = "넓은 첫 홀. 각도와 파워만 맞춰 안전하게 착지하세요."
+generation_profile = ExtResource("2_profile")
+terrain_seed = 1347223552
+terrain_horizontal_scale = 0.42
+terrain_vertical_scale = 0.16
+terrain_origin = Vector3(0, -4, -3)
+goal_route_t = 0.20
+cannon_route_t = 1.0
+goal_recess_depth = 0.85
+terrain_color = Color(0.35, 0.40, 0.38, 1)
+terrain_accent_color = Color(0.28, 0.33, 0.31, 1)
+cannon_position = Vector3(0, -3.95, 24)
+shot_yaw_degrees = 0.0
+goal_position = Vector3(0, 4, -17)
+goal_radius = 5.8
+play_bounds = AABB(-38, -14, -72, 76, 58, 108)
+planning_focus = Vector3(1.5, 2.4, -13)
+oblique_offset = Vector3(43, 38, 50)
+side_offset = Vector3(50, 14, 2)
+default_elevation_degrees = 24.0
+default_power_percent = 30.0
+solution_elevation_degrees = 28.0
+solution_power_percent = 41.0

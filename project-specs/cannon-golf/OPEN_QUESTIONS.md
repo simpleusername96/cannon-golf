@@ -57,7 +57,7 @@ affected code path is designed.
 | Q-02 | High-oblique is the default, side/profile is the alternate, and temporary Shot Follow restores the stored planning pose and setup. | `DECISIONS.md` D-018 |
 | Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
-| Q-12 | The first slice uses two manually authored, connected terraced shelf courses. | `DECISIONS.md` D-020 |
+| Q-12 | The first slice uses two deterministic Paint Mountain-generated, connected heightfield mountains with a locally depressed terrain goal. | `DECISIONS.md` D-021 |
 
 ## Recommendations
 
