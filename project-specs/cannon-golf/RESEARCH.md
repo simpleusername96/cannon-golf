@@ -17,7 +17,7 @@ related:
 
 Record the closest reference games and local visual evidence without treating
 any reference as the product specification. The build case is the combination:
-no reviewed product joins 3D cannon estimation, multiple physical holes,
+no reviewed product joins 3D cannon estimation, multiple settlement goals,
 recency-ordered first-impact history, and player-placed bounce pads in the same
 loop.
 
@@ -36,6 +36,39 @@ loop.
 | [Launchball](https://www.sciencemuseumgroup.org.uk/learning/resources/launchball-game/) | Thirty obstacle levels and a level creator built around springing a ball through a course | Small mechanical vocabulary can teach through authored obstacle stages | The official summary does not establish the exact desired cannon or multi-hole rules |
 | [Aperture Tag](https://store.steampowered.com/app/280740/Aperture_Tag_The_Paint_Gun_Testing_Initiative/) | A first-person 3D paint gun applies movement-altering surface gels | A surface effect can communicate speed or rebound through material and shape | It is a player-navigation puzzle; paint changes mechanics and is not just impact memory |
 | [Worms design comparison](https://www.team17.com/news/team17s-100-games-part-eighteen-2017-the-escapists-2-yooka-laylee-more) | Team17 describes Worms play in terms of power, angle, and wind | Result-based artillery correction remains legible without reflex control | Combat, destructible terrain, wind, and weapon variety are outside scope |
+
+### Additional device candidate portfolio
+
+These candidates are research only. None is accepted for the initial course,
+which remains a bounce-pad progression. Ball-specific uses below are inferences
+that require local physics and camera validation.
+
+| Candidate family | Directly evidenced behavior | Distinct Cannon Golf verb | Main fit limit |
+| --- | --- | --- | --- |
+| Damping or brake pad | [Physics Puzzle Ball](https://store.steampowered.com/app/3744310/Physics_Puzzle_Ball/) describes ball strategy changing with bounce and dynamic/static friction | Remove energy at a chosen contact so a rebound-capable ball can settle in a small goal | A placeable damping pad is an inference; excessive damping could make settlement automatic |
+| Fixed airflow device or corridor | [Croteam's device reference](https://taloseditor.croteam.com/device_reference/) exposes fan stream direction, size, and push speed; [Portal 2's tractor beam](https://developer.valvesoftware.com/wiki/Portal_2_Puzzle_Maker/Tractor_Beam) pushes or pulls objects through a visible volume | Intersect and ride a sustained force volume instead of reflecting from a surface | Oscillation, hidden falloff, or variable strength would make correction hard without an exact preview |
+| Ball-triggered gate or latch | [Croteam's device reference](https://taloseditor.croteam.com/device_reference/) documents pressure plates, switches, and doors | Settle one ball to change route availability for a later shot | Adds state and reset rules; may feel like a generic key-and-lock puzzle if overused |
+| Magnetic attractor or repulsor | [Balls and Magnets](https://store.steampowered.com/app/788320/Balls_and_Magnets/) uses attraction and repulsion to guide balls into holes | Curve a route around an obstacle without contact | Nonlinear force and invisible range may weaken result-based correction and require extra visualization |
+| Transport beam | [Portal 2's tractor beam](https://developer.valvesoftware.com/wiki/Portal_2_Puzzle_Maker/Tractor_Beam) conveys objects in a straight line while suppressing gravity and prior momentum | Capture a ball into a guided aerial lane | May remove too much angle-and-power agency once entered |
+| Fixed portal pair | [Portal](https://store.steampowered.com/app/400/Portal/) centers spatial puzzles on maneuvering objects through portals | Preserve an entry relationship while connecting separated course regions | High camera-disorientation and route-bypass risk; free endpoint placement would trivialize authored courses |
+| Local gravity change | [Gravity Control](https://store.steampowered.com/app/1133350/Gravity_Control/) guides objects indirectly by changing gravity direction | Change which surface is down for a bounded region | Very high camera, physics, and golf-metaphor cost; invalidates ordinary ballistic assumptions |
+
+#### Provisional fit after portfolio freeze
+
+- Keep the first approximately eleven stages bounce-pad-only. Another inventory
+  device should not interrupt the direct-shot and multi-pad learning sequence.
+- First inspect a limited damping or brake pad after that sequence. It supplies
+  the complementary verb `remove energy and settle` while the bounce pad owns
+  `redirect and continue`. This priority is a project-fit inference, not an
+  externally validated selection.
+- Next inspect fixed, visible airflow if the game needs a mid-air verb. Keep
+  direction and strength authored or discretely oriented; do not require live
+  activation or exact trajectory prediction.
+- Treat a ball-triggered gate as a later course mechanism rather than another
+  trajectory modifier when multi-goal ordering needs more depth.
+- Defer magnets, portals, transport beams, and gravity changes until simpler
+  verbs prove insufficient; each adds larger prediction, camera, or metaphor
+  costs.
 
 ### Local Paint Mountain baseline
 
@@ -121,6 +154,10 @@ loop.
   solve the user's camera concern. Their camera is evidence of what to change.
 - Paint Mountain's HUD system is more reusable than its world composition or
   product semantics.
+- The additional-device search separates three useful later verbs: remove energy
+  for settlement, apply a sustained mid-air force, or change route state after a
+  ball-triggered event. Portals, magnets, and gravity changes add materially more
+  prediction or camera cost.
 - This is not a weak build case: no reviewed reference supplies the complete
   combination, and the existing local runtime materially reduces technical
   startup cost.
@@ -133,6 +170,8 @@ loop.
   and temporary launch-follow views.
 - Keep only the bounce pad until the direct-shot and impact-history loop tests
   well.
+- Keep the initial eleven-stage target bounce-pad-only; if later playtests show a
+  missing verb, prototype damping before airflow and a ball-triggered gate.
 - Audit candidate code owners against `PRD.md` before any rename or rewrite.
 
 ## Limitations
@@ -142,5 +181,6 @@ loop.
 - The local early concepts are generated illustrations, not feasible geometry,
   runtime screenshots, or approved layouts.
 - No current image demonstrates the required final camera grammar.
-- Exact aiming controls, camera transitions, mark retention, pad editing, and
-  occupied-hole behavior still require owner decisions.
+- Exact aiming controls, camera transitions, mark retention, pad editing,
+  settlement tolerances, and confirmed-ball collision treatment still require
+  owner decisions.

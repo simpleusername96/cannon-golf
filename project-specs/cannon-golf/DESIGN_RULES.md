@@ -4,7 +4,7 @@ status: active
 created: 2026-08-12
 last_reviewed: 2026-08-12
 canonical_for: Current visual composition and UI direction for the provisional Cannon Golf project
-scope: Camera, terrain readability, impact marks, holes, devices, HUD, and visual hierarchy
+scope: Camera, terrain readability, impact marks, settlement goals, devices, HUD, and visual hierarchy
 source: Paint Mountain design system plus user direction recorded on 2026-08-12
 related:
   - PRD.md
@@ -23,8 +23,8 @@ game.
 
 ## Scope
 
-These rules govern planning and shot cameras, terrain presentation, physical
-holes, impact-history marks, placeable devices, overlay HUD, typography, color,
+These rules govern planning and shot cameras, terrain presentation, settlement
+goals, impact-history marks, placeable devices, overlay HUD, typography, color,
 and information hierarchy. They do not decide ball physics, stage data formats,
 or code ownership.
 
@@ -34,15 +34,15 @@ or code ownership.
 
 - The world must read as a 3D golf puzzle first and an artillery launcher
   second.
-- A stage is a physical course with one or more holes, not a paintable target
-  surface.
-- The cannon, current ball, holes, settled balls, recent impact history, and
+- A stage is a physical course with one or more settlement goals, not a
+  paintable target surface. A goal may be a hole or a small bounded landing zone.
+- The cannon, current ball, goals, settled balls, recent impact history, and
   selected device are the only persistent gameplay accents.
 
 ### Camera grammar
 
 - Do not treat the inherited frontal Aim View as the default composition.
-- Use a top or high-oblique planning view to explain lateral alignment, hole
+- Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
 - Use a side or near-profile planning view to explain height, launch elevation,
   ledges, gaps, and rebound direction.
@@ -51,8 +51,11 @@ or code ownership.
   hide the course structure or become the only way to plan.
 - Shot Follow should reveal cause and effect, then return to the prior planning
   context without changing the stored setup.
-- Camera changes must preserve stage identity, selected hole, selected device,
+- Camera changes must preserve stage identity, selected goal, selected device,
   and launch parameters.
+- Whatever exploration controls are selected must not move gameplay objects,
+  clear selection, alter aim, or invalidate confirmed goals. Returning to
+  planning must restore a readable course framing.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language
@@ -66,16 +69,22 @@ or code ownership.
   flat height strip.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
-- Decorative rocks and trees may communicate scale but must not hide holes,
+- Decorative rocks and trees may communicate scale but must not hide goals,
   impact marks, balls, or pad faces.
 
-### Holes and settled balls
+### Settlement goals and settled balls
 
-- A goal is a real cup or recessed basin with visible inner depth, not a floating
-  ring, target decal, or waypoint icon.
+- A hole goal is a real cup or recessed basin with visible inner depth, not a
+  floating ring, target decal, or waypoint icon.
+- A landing-zone goal is a small physical surface with a clear perimeter,
+  containment shape, or material boundary. It must not be an invisible trigger
+  or a broad arbitrary patch of terrain.
 - Hole rims may use restrained material contrast, but the depression and shadow
   must carry the primary meaning.
-- An occupied hole must show the settled ball clearly from every planning view.
+- Entering a goal is not enough: a ball that bounces out before settlement must
+  remain visibly unsuccessful.
+- A confirmed goal must show the settled ball clearly from every planning view,
+  and the ball must not move when later shots occur.
 - A completed state must not rely on color alone.
 
 ### Impact-history marks
@@ -110,8 +119,9 @@ or code ownership.
 - Keep the course center open. Place persistent status and controls at safe
   edges and verify them against every supported planning view.
 - Use one primary action per state. During launch setup, that action is Fire.
-- Angle, power, goal progress, ball or shot stock, camera mode, device stock,
-  and menu are valid only when they support a current decision.
+- Angle, power, goal progress, camera mode, device stock, and menu are valid only
+  when they support a current decision. Do not show time, lives, finite ball
+  stock, or remaining shots as failure resources.
 - Remove coverage rails, coverage percentages, paint icons, paint-result copy,
   and any control that implies terrain painting.
 - Do not add dashboard cards, decorative borders, detached shortcut tiles,
@@ -125,22 +135,25 @@ or code ownership.
   primary action, and semantic state.
 - Older impact marks should lose contrast and saturation while remaining
   distinguishable from terrain shading.
-- Hole rims and pads must remain distinct when viewed in grayscale through
+- Goal boundaries and pads must remain distinct when viewed in grayscale through
   shape, depth, and orientation.
 
 ## Acceptance Criteria
 
 - A still from a planning state reads as 3D golf without explanatory copy.
 - At least one top/high-oblique and one side/near-profile view show every
-  required hole and the selected pad without persistent HUD obstruction.
+  required goal and the selected pad without persistent HUD obstruction.
+- Switching views, exploring the course, and returning from Shot Follow retains
+  angle, power, placements, selection, and confirmed goals without clipping or
+  invalid framing.
 - Three retained impact marks can be ordered newest to oldest from appearance
   alone.
 - No normal gameplay capture shows surface coverage, continuous paint, an exact
   impact predictor, or a frontal-only planning composition.
 - Korean labels fit without clipping at the 1280x720 logical baseline and at a
   wider desktop aspect ratio.
-- The visible pad face, goal recess, and occupied-hole state remain readable
-  without depending on hue alone.
+- The visible pad face, goal boundary, safe-settlement state, and occupied-goal
+  state remain readable without depending on hue alone.
 
 ## Non-Goals
 

@@ -30,16 +30,26 @@ an active plan.
 
 ### 2. Define the new domain boundaries
 
-- [ ] Decide Q-05 through Q-11 and Q-14.
-- [ ] Specify `ImpactHistory`, `GoalHole`, `GoalSet`, `BouncePadPlacement`, and
-  stage-result invariants without reusing paint/coverage terminology.
+- [ ] Decide Q-07 through Q-10 and Q-14; Q-05, Q-06, and Q-11 are resolved in
+  `DECISIONS.md`.
+- [ ] Specify `ImpactHistory`, `SettlementGoal`, `GoalSet`,
+  `BouncePadPlacement`, launch outcome, and stage-result invariants without
+  reusing paint/coverage terminology.
 - [ ] Map every accepted PRD requirement to a current Paint Mountain owner that
   will be reused, adapted, or retired.
 
-### 3. Establish one direct-hole vertical slice
+### 3. Establish one direct-goal vertical slice
 
-- [ ] Replace coverage-based completion with one physical settled-hole goal in
-  a test stage.
+- [ ] Replace coverage-based completion with one safe-settlement goal in a test
+  stage.
+- [ ] Confirm only after the ball remains within goal tolerances; preserve the
+  visible confirmed ball and prevent later displacement.
+- [ ] Provide unlimited unsuccessful launches without a timer, life, ball-stock,
+  or shot-count game over.
+- [ ] Clear each unsuccessful ball before the next launch while preserving every
+  confirmed settled ball.
+- [ ] Give the standard ball a predictable energy-losing rebound on ordinary
+  hard terrain.
 - [ ] Replace continuous paint behavior with one first-contact history mark per
   launch.
 - [ ] Remove exact landing guidance from normal play while preserving accessible
@@ -49,15 +59,21 @@ an active plan.
 ### 4. Establish planning views
 
 - [ ] Implement the selected top/oblique and side/profile planning views.
-- [ ] Preserve launch setup across view changes and Shot Follow.
+- [ ] Preserve launch setup, placed devices, confirmed goals, and selection
+  across map exploration, view changes, and Shot Follow.
 - [ ] Recompose inherited HUD elements around the selected views; remove
   coverage and paint-specific UI.
 
-### 5. Add the first bounce-pad course
+### 5. Build the initial course progression
 
 - [ ] Implement legal placement, orientation, invalid state, edit rules, and
   deterministic collision response for one pad family.
-- [ ] Build one two-hole graybox with a certified device-dependent solution.
+- [ ] Build two direct one-goal stages that teach angle and power.
+- [ ] Build two direct multi-goal stages that require several successful
+  settlements without a device.
+- [ ] Build two stages with certified solutions that use one bounce pad.
+- [ ] Build five stages that progressively increase multi-pad route complexity;
+  determine exact later-stage pad counts through balancing.
 - [ ] Prevent pad placement from creating trivial out-of-bounds or overlapping
   solutions.
 
@@ -66,8 +82,10 @@ an active plan.
 - [ ] Run the prototype comprehension targets in `PRD.md`.
 - [ ] Verify newest-to-oldest impact ordering in lit and shaded terrain.
 - [ ] Verify goal and selected-pad readability in every planning view.
-- [ ] Decide whether the build case remains strong before expanding stage or
-  device count.
+- [ ] Verify that misses return to a stable planning state and confirmed goals
+  persist through later shots and unlimited retries.
+- [ ] Decide whether the build case remains strong before accepting another
+  device family beyond bounce pads.
 
 ## Progress
 
@@ -96,5 +114,5 @@ an active plan.
 
 - Executing this draft as if decisions were closed would allow the inherited
   target solver, coverage state, and frontal camera to choose the product.
-- Building multiple devices before one direct-hole loop is proven would expand
+- Building multiple devices before one direct-goal loop is proven would expand
   scope before the core learning signal is validated.

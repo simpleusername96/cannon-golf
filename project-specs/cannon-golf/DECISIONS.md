@@ -31,8 +31,9 @@ in `OPEN_QUESTIONS.md`.
 ### D-002 — 3D golf is the primary product metaphor
 
 - Status: accepted.
-- The player must settle balls in physical holes. Artillery supplies the launch
-  method; golf supplies the objective and correction loop.
+- The player must settle balls safely in physical holes or small bounded landing
+  zones. Artillery supplies the launch method; golf supplies the objective and
+  correction loop.
 
 ### D-003 — Impact history replaces explicit landing feedback
 
@@ -40,11 +41,12 @@ in `OPEN_QUESTIONS.md`.
 - The newest impact mark is darkest and older marks are lighter. The terrain
   mark itself is the feedback; there is no separate prior-impact callout.
 
-### D-004 — Stage complexity grows through hole count and reachability
+### D-004 — Stage complexity grows through goal count and reachability
 
 - Status: accepted.
-- Early content starts with one easy direct hole. Later content adds more holes,
-  and some cannot be completed from the terrain and cannon alone.
+- Early content starts with one easy direct goal. Later content requires several
+  successful settlements and then adds goals that cannot be completed from the
+  terrain and cannon alone.
 
 ### D-005 — The first placeable device is a bounce pad
 
@@ -58,6 +60,8 @@ in `OPEN_QUESTIONS.md`.
 - Top, side, and oblique planning compositions are required exploration areas.
   The existing frontal view and the three early concept images are only rough
   references.
+- View switching, Shot Follow return, and course exploration must preserve the
+  player's aim, placed devices, completed goals, and current selection.
 
 ### D-007 — Reuse the overlay system, not the existing world composition
 
@@ -79,14 +83,63 @@ in `OPEN_QUESTIONS.md`.
 - The folder and repository need a stable local identifier, but the public game
   title remains open.
 
+### D-010 — Goal completion requires safe settlement and then persists
+
+- Status: accepted.
+- Brief contact with a goal is not success. The ball must remain inside its hole
+  or bounded landing zone under the configured settlement tolerance.
+- A ball that enters and bounces out before confirmation is an unsuccessful
+  launch.
+- After confirmation, the ball remains visibly present and cannot be knocked out
+  or have its completed goal invalidated by a later shot.
+
+### D-011 — Misses allow unlimited retry
+
+- Status: accepted.
+- The game has no timer, lives, finite ball stock, or shot limit that ends a
+  stage. A miss ends only the current launch and returns the player to planning.
+- An unsuccessful ball leaves the active simulation before the next launch;
+  only confirmed settled balls persist between launches.
+- Stage success occurs after every required goal is confirmed.
+
+### D-012 — The standard ball has baseline rebound
+
+- Status: accepted.
+- Ordinary hard-surface contact must produce a visible, predictable bounce with
+  energy loss. Exact restitution, friction, and settlement thresholds remain
+  tuning decisions.
+
+### D-013 — Planning and map exploration must be state-stable
+
+- Status: accepted.
+- Switching view, exploring the course, and returning from ball follow must not
+  alter launch parameters, placed devices, completed goals, or current
+  selection, and must return to a valid readable framing.
+
+### D-014 — Target an eleven-stage initial progression
+
+- Status: accepted as a content target, not a final balancing lock.
+- Target approximately two direct one-goal stages, two direct stages requiring
+  several successful settlements, two stages using one bounce pad, and five
+  stages that progressively increase multi-pad route complexity.
+- Exact terrain, goal count, and pad count within the later stages remain level
+  design and balancing decisions.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
   from defining the new product by accident.
 - The golf metaphor explains holes, settling, course reading, and iterative
   correction more directly than a shooter metaphor.
+- Separating launch failure from stage failure permits high difficulty without
+  punishing experimentation.
+- Persistent confirmed goals make multi-goal progress legible; baseline rebound
+  makes controlled settlement a real part of the puzzle.
 - Multiple planning angles are necessary because later solutions depend on both
-  height and lateral pad orientation.
+  height and lateral pad orientation, while stable transitions keep the player
+  from losing a carefully prepared solution.
+- The staged content target teaches one variable set at a time before combining
+  several pads.
 - An unchanged technical baseline makes later reuse decisions auditable: any
   runtime divergence will appear in future commits rather than being hidden in
   project creation.
@@ -101,6 +154,10 @@ in `OPEN_QUESTIONS.md`.
   retirement before coding.
 - Camera and input decisions must be resolved before the first gameplay rewrite;
   otherwise the copied frontal target solver may dictate the experience.
+- Stage-result logic must distinguish an unsuccessful launch from a cleared
+  settlement goal and must make confirmed goals irreversible within the stage.
+- HUD and save state must not assume a timer, finite shot stock, or later
+  displacement of confirmed balls.
 - New reference images must demonstrate top, side, or mixed planning rather than
   refine the current frontal mockups.
 

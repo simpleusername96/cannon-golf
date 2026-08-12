@@ -27,13 +27,15 @@ not claim that the copied code already implements the new rules.
 
 Cannon Golf is a deliberate, retry-driven 3D golf puzzle. The player launches
 balls from a stationary cannon, reads the result, adjusts angle and power, and
-settles one ball in each physical hole on the stage. A shot leaves one visible
-mark at its first terrain impact. That mark is aiming history, not paintable
-area, a resource, a route trail, or a score. The newest impact is darkest and
-older impacts are progressively lighter. Later stages add multiple holes that
-cannot all be reached from the cannon and terrain alone, so the player places a
-limited bounce pad to redirect a shot. Strategic top, side, and oblique views
-are more important than the inherited frontal cannon composition.
+settles one ball in each goal on the stage. A goal may be a physical hole or a
+small bounded landing zone, but it counts only after the ball remains safely at
+rest. A shot leaves one visible mark at its first terrain impact. That mark is
+aiming history, not paintable area, a resource, a route trail, or a score. The
+newest impact is darkest and older impacts are progressively lighter. Later
+stages add multiple goals that cannot all be reached from the cannon and terrain
+alone, so the player places limited bounce pads to redirect shots. Strategic
+top, side, and oblique views and stable course exploration are more important
+than the inherited frontal cannon composition.
 
 ## Problem Statement
 
@@ -57,18 +59,23 @@ are more important than the inherited frontal cannon composition.
 
 ## Job To Be Done
 
-- When a ball cannot reach a visible hole directly, the player wants to compare
+- When a ball cannot reach a visible goal directly, the player wants to compare
   recent impact marks, adjust the launch, and place a small number of trajectory
   devices so they can produce a physical solution they understand.
 
 ## Goals
 
 - Make misses useful without drawing an exact predicted landing point.
-- Make the terrain, holes, settled balls, impact history, and device orientation
+- Make the terrain, goals, settled balls, impact history, and device orientation
   readable from planning cameras.
-- Teach one direct hole first, then increase hole count and route dependency.
+- Preserve angle, power, placed devices, completed goals, and selected context
+  while the player changes view or explores the course.
+- Teach direct one-goal shots first, then increase goal count and route
+  dependency.
 - Preserve deterministic enough physics that the same setup produces nearly
   the same first impact and outcome.
+- Allow unlimited retries so difficulty comes from learning the course rather
+  than exhausting time, lives, balls, or shot stock.
 - Reuse the calm overlay HUD language and proven runtime boundaries where they
   remain compatible with the new product.
 
@@ -78,6 +85,7 @@ are more important than the inherited frontal cannon composition.
 - Continuous paint trails after impact.
 - Combat, enemies, damage, destructible terrain, or reflex shooting.
 - In-flight steering.
+- Timers, finite shot stock, lives, or a score threshold that can fail a stage.
 - A broad collection of pads, balls, cannons, upgrades, currencies, or live
   service systems in the first playable slice.
 - Treating the inherited frontal Aim View as the required primary composition.
@@ -89,29 +97,32 @@ are more important than the inherited frontal cannon composition.
 ### Flow 1: Learn a direct shot
 
 - Trigger: the player starts an introductory stage with one nearby, unobstructed
-  hole and no required device.
+  goal and no required device.
 - Main steps: inspect the course, set the cannon angle and power, fire, observe
   the ball and its first-impact mark, then correct the next launch if needed.
-- Expected outcome: one ball settles in the hole and the stage clears.
+- Expected outcome: one ball settles safely in the goal and the stage clears.
 
-### Flow 2: Solve a multi-hole course
+### Flow 2: Solve a multi-goal course
 
-- Trigger: the player starts a later stage with several holes at different
+- Trigger: the player starts a later stage with several goals at different
   heights, depths, or branches.
-- Main steps: inspect the course from planning views, decide which hole to
+- Main steps: inspect the course from planning views, decide which goal to
   attempt, compare prior impact marks, place and orient a limited bounce pad
   when the natural route is insufficient, then fire and observe.
-- Expected outcome: each required hole contains a settled ball at the same time
-  or remains recorded as completed according to the unresolved persistence rule.
+- Expected outcome: each required goal contains a confirmed settled ball. A
+  confirmed ball remains visible and cannot be displaced from its completed
+  goal by later shots.
 
 ### Flow 3: Learn from a miss
 
-- Trigger: a launched ball first contacts terrain outside the intended route.
+- Trigger: a launched ball first contacts terrain outside the intended route,
+  leaves a goal before settling, exits the playable course, or comes to rest
+  outside every incomplete goal.
 - Main steps: the game stamps one impact mark, makes it the darkest mark, fades
   earlier marks in visual priority, and returns control without an exact landing
   callout.
-- Expected outcome: the player can identify the newest miss relative to the
-  hole and make a directional correction.
+- Expected outcome: only that launch is unsuccessful. The player can identify
+  the newest miss relative to the goal and retry without losing the stage.
 
 ## Functional Requirements
 
@@ -135,25 +146,35 @@ are more important than the inherited frontal cannon composition.
   prominent. Older retained marks must form a clear monotonic fade by recency.
 - Reason: the player needs an ordered visual memory without numbered callouts.
 
-### FR-4: Physical goal holes
+### FR-4: Settlement goals
 
-- Requirement: every goal must read as a physical recess or cup in the terrain.
-  A ball counts only after it enters and remains settled under the stage's goal
-  tolerance.
-- Reason: the closest product metaphor is 3D golf, not target shooting.
+- Requirement: a goal must be either a physical recess or cup, or a small
+  bounded landing zone with a readable physical footprint. A ball counts only
+  after it remains inside the goal under the stage's position, speed, and
+  settle-duration tolerances. Entering and then bouncing out is an unsuccessful
+  launch.
+- Reason: success is controlled settlement, not brief trigger contact or target
+  shooting.
 
 ### FR-5: Multi-goal completion
 
-- Requirement: a stage may require one or more holes. Stage completion depends
-  on satisfying every required hole, not on surface coverage or score.
-- Reason: the hole set is the stage objective and the main difficulty axis.
+- Requirement: a stage may require one or more goals. Once a goal confirms a
+  settled ball, that ball remains visibly present and protected from later
+  displacement. Stage completion depends on confirming every required goal,
+  not on surface coverage or score.
+- Reason: persistent goal occupancy makes progress legible and prevents later
+  shots from invalidating an already completed route.
 
 ### FR-6: Difficulty progression
 
-- Requirement: the first teaching stage must have one directly reachable hole.
-  Later stages may add holes, height separation, occlusion, branch choice,
-  narrower safe routes, and device-dependent solutions.
-- Reason: the player should learn launch correction before route construction.
+- Requirement: the initial course targets eleven stages: two simple one-goal
+  stages solved directly with angle and power, two direct stages that require
+  several successful goal settlements, two stages whose certified solution uses
+  one bounce pad, and five stages that progressively increase the required or
+  available bounce-pad count. Exact terrain and pad counts within the last five
+  stages remain balancing decisions.
+- Reason: the player should learn one launch, then repeated settlement, then one
+  pad, then multi-pad route construction.
 
 ### FR-7: Placeable bounce pad
 
@@ -167,7 +188,9 @@ are more important than the inherited frontal cannon composition.
 - Requirement: planning must support terrain-reading compositions such as
   top/oblique and side/profile views. A behind-cannon view may support launch
   drama or local aim, but must not be the only or automatically dominant view.
-- Reason: height, depth, hole position, and pad orientation are difficult to
+  View changes and course exploration must preserve aim parameters, device
+  placements, completed goals, current selection, and a stable return context.
+- Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
 ### FR-9: Information restraint
@@ -188,10 +211,20 @@ are more important than the inherited frontal cannon composition.
 ### FR-11: Rapid and repeatable retry
 
 - Requirement: the player must be able to retry a shot or stage without a long
-  transition, and identical launch/device state must produce materially similar
-  first impacts.
+  transition or consumable limit. A miss never creates a timer, life, ball-stock,
+  or shot-count game over. Before the next launch, the unsuccessful ball leaves
+  the active simulation; only confirmed settled balls persist. Identical
+  launch/device state must produce materially similar first impacts.
 - Reason: iterative correction becomes frustrating when setup is slow or the
   physics result is noisy.
+
+### FR-12: Baseline ball bounce
+
+- Requirement: the standard ball must have a visible, predictable baseline
+  rebound on ordinary hard terrain, with energy loss sufficient for eventual
+  rest. It must neither stick dead on ordinary impact nor gain unstable energy.
+- Reason: bounce is part of the aiming challenge and makes safe settlement a
+  meaningful success condition.
 
 ## Acceptance Criteria
 
@@ -209,25 +242,30 @@ are more important than the inherited frontal cannon composition.
   lighter, and the first is lightest; no contact trail or exact landing callout
   appears.
 
-### AC-3: Direct introductory goal
+### AC-3: Direct introductory goals
 
 - Applies to: FR-4, FR-6.
-- Conditions for done: the first teaching stage contains one unobstructed hole
-  with at least one direct solution that does not require a device.
+- Conditions for done: the first two teaching stages each contain one
+  unobstructed goal with at least one direct angle-and-power solution that does
+  not require a device.
 
-### AC-4: Device-dependent later goal
+### AC-4: Initial course progression
 
 - Applies to: FR-5, FR-7.
-- Conditions for done: a later test stage contains multiple required holes and
-  at least one certified solution that requires a placed bounce pad; the same
-  hole cannot be completed from the permitted cannon states without that pad.
+- Conditions for done: two following stages require several direct settlements
+  without a pad; two following stages each have a certified solution that uses
+  one pad; five further stages increase multi-pad route complexity. Every
+  pad-dependent goal has no certified direct solution from permitted cannon
+  states.
 
 ### AC-5: Strategic composition
 
 - Applies to: FR-8, FR-10.
 - Conditions for done: planning provides at least one top/oblique view and one
-  side/profile view in which holes, settled balls, retained marks, and the
-  selected pad are not hidden by persistent HUD elements.
+  side/profile view in which goals, settled balls, retained marks, and the
+  selected pad are not hidden by persistent HUD elements. Changing view,
+  exploring the map, and returning from Shot Follow preserves the complete
+  planning state and does not strand the player in an invalid framing.
 
 ### AC-6: Repeatability
 
@@ -236,14 +274,38 @@ are more important than the inherited frontal cannon composition.
   and pad state place the first terrain contact within one quarter of a ball
   diameter of the reference contact.
 
+### AC-7: Safe settlement and persistent completion
+
+- Applies to: FR-4, FR-5, FR-12.
+- Conditions for done: entering a goal at excessive speed and bouncing out does
+  not complete it; remaining within its tolerances for the required settle time
+  does. After confirmation, the ball stays visible in that goal and cannot be
+  knocked out by later shots.
+
+### AC-8: Unlimited recovery from misses
+
+- Applies to: FR-11.
+- Conditions for done: repeated misses never exhaust time, lives, balls, or
+  shots; each unsuccessful launch returns to a stable planning state with prior
+  confirmed goals intact and without leaving a failed ball that can affect the
+  next launch.
+
+### AC-9: Predictable baseline rebound
+
+- Applies to: FR-12.
+- Conditions for done: an ordinary hard-surface impact above the configured
+  minimum produces a visible rebound, repeated identical impacts remain within
+  the repeatability tolerance, and successive rebounds lose energy until rest.
+
 ## Constraints
 
 - Windows desktop and Godot 4.x remain the initial platform and engine.
 - The copied runtime is Paint Mountain commit `32c0b33`; no runtime code was
   changed while establishing this specification.
 - No new production dependency is approved.
-- Current product name, camera transitions, launch parameter model, impact-mark
-  retention rule, ball persistence, and device editing rules remain open.
+- Current product name, exact camera transition grammar, angle-control
+  presentation, impact-mark retention rule, goal-order rule, bounce tuning, and
+  device editing rules remain open.
 - UI should remain Korean-first with persistent English support when
   implementation begins.
 
@@ -262,14 +324,14 @@ are more important than the inherited frontal cannon composition.
 
 - Reusing class and resource boundaries without redefining their responsibility
   could preserve surface coverage under a different name.
-- A purely frontal camera could make height, depth, hidden holes, and pad
+- A purely frontal camera could make height, depth, hidden goals, and pad
   orientation unreadable.
 - Too many retained marks could become noise; too few could make correction
   arbitrary.
 - Player-placeable devices may trivialize direct shots unless placement area,
   count, and orientation are constrained.
-- A physical ball that remains in a hole may obstruct later balls; removing it
-  may weaken the multi-goal physical fantasy.
+- A confirmed ball must remain visible without becoming an accidental obstacle
+  that invalidates later certified routes.
 - The current exact impact prediction and target-click inverse solver may remove
   the estimation challenge if reused without a product decision.
 
@@ -277,7 +339,7 @@ are more important than the inherited frontal cannon composition.
 
 - [assumption] In a first five-player prototype test, at least four players can
   identify the newest of three impact marks without explanation.
-- [assumption] At least four of five players complete the introductory one-hole
+- [assumption] At least four of five players complete the introductory one-goal
   stage within three launches.
 - [assumption] At least four of five players can explain how the bounce pad
   changed a failed shot after one device tutorial stage.
@@ -287,17 +349,18 @@ are more important than the inherited frontal cannon composition.
 
 ## Rollout or Validation Plan
 
-- First validate one direct-hole graybox with no device.
+- First validate two direct one-goal grayboxes with no device.
 - Add impact-history readability and test it without a trajectory preview.
 - Compare planning-camera storyboards or captures before selecting the default
   camera and transition grammar.
-- Add one constrained bounce pad and one two-hole graybox only after direct-shot
-  correction is understandable.
-- Expand content only after direct and pad-dependent solutions are deterministic.
+- Validate two repeated-settlement stages before introducing devices.
+- Add two one-pad stages only after direct-shot correction is understandable.
+- Expand through five multi-pad stages only after direct and one-pad solutions
+  are deterministic and planning-state transitions are stable.
 
 ## Open Questions Summary
 
 - The material choices that still affect implementation are tracked in
   [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md), especially camera transitions,
-  launch controls, impact fading, goal persistence, shot economy, and pad
-  placement timing.
+  launch controls, impact fading, goal order, bounce tuning, pad behavior,
+  placement timing, and any post-bounce device family.
