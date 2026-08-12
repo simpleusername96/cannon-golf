@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-12
 scope: Two-course playable Cannon Golf vertical slice
 related:
@@ -114,12 +114,12 @@ Source owners: `project-specs/cannon-golf/DECISIONS.md`,
 `project-specs/cannon-golf/OPEN_QUESTIONS.md`, `project.godot`,
 `scenes/cannon_golf/cannon_golf.tscn`
 
-- [ ] **1.1** Product decisions and the isolated runtime entry point agree.
+- [x] **1.1** Product decisions and the isolated runtime entry point agree.
   - Change: resolve Q-01 through Q-04 and Q-12 for this slice, add the new main
     scene, and identify the window/export as a prototype rather than a public
     title.
   - Accept: Godot editor parse exits zero with no `ERROR:` or `SCRIPT ERROR`.
-- [ ] **1.2** The two-course contract is machine-checkable.
+- [x] **1.2** The two-course contract is machine-checkable.
   - Change: add a focused PowerShell test runner and a course-data test that
     verifies catalog size, identifiers, bounds, direct-solution witnesses, and
     absence of device stock.
@@ -140,27 +140,27 @@ Source owners: `src/cannon_golf/course_data.gd`,
 `src/cannon_golf/cannon_golf_launcher.gd`, `src/cannon_golf/golf_ball.gd`,
 `src/cannon_golf/settlement_goal.gd`, `resources/cannon_golf/courses/`
 
-- [ ] **2.1** Course data owns only authored geometry and play metadata.
+- [x] **2.1** Course data owns only authored geometry and play metadata.
   - Change: define editor-readable blocks, cannon and goal transforms, bounds,
     camera bookmarks, defaults, and direct-solution witnesses for two courses.
   - Accept: the course-data test rejects malformed geometry and accepts exactly
     the two shipped resources.
-- [ ] **2.2** The launcher exposes only the chosen launch setup.
+- [x] **2.2** The launcher exposes only the chosen launch setup.
   - Change: build a stationary cannon with fixed course yaw and adjustable
     elevation and power; expose deterministic launch origin and velocity.
   - Accept: the ballistics test proves identical setup produces identical origin
     and velocity and that power monotonically increases speed.
-- [ ] **2.3** The standard ball rebounds and reports one first contact.
+- [x] **2.3** The standard ball rebounds and reports one first contact.
   - Change: build a rigid golf ball with visible restitution, energy loss,
     continuous collision detection, stage bounds, and one first-contact signal.
   - Accept: the runtime physics test observes a rebound, exactly one first
     contact, and lower post-contact vertical speed than incoming speed.
-- [ ] **2.4** The goal is a physical, bounded settlement owner.
+- [x] **2.4** The goal is a physical, bounded settlement owner.
   - Change: build a recessed-looking landing zone with floor, rim, and explicit
     containment/settlement queries that do not depend on color.
   - Accept: the goal test distinguishes inside, outside, too-fast, and settled
     states using the configured tolerances.
-- [ ] **2.5** Both course resources build into valid collision worlds.
+- [x] **2.5** Both course resources build into valid collision worlds.
   - Change: build faceted connected terrain blocks, subtle world dressing,
     launcher, goal, and collision identities from each resource.
   - Accept: the runtime test instantiates each course and finds one launcher,
@@ -186,18 +186,18 @@ Source owners: `src/cannon_golf/cannon_golf_game.gd`,
 `scenes/cannon_golf/cannon_golf_hud.tscn`,
 `scenes/cannon_golf/cannon_golf.tscn`
 
-- [ ] **3.1** The launch state machine enforces the accepted outcomes.
+- [x] **3.1** The launch state machine enforces the accepted outcomes.
   - Change: admit one active ball, retain five ordered first-contact marks,
     fail on goal escape/rest/bounds/timeout, remove failed balls before retry,
     and freeze a confirmed ball after safe settlement.
   - Accept: the session test proves Fire admission, miss recovery, mark cap and
     ordering, goal confirmation, immutable confirmed ball, and unlimited retry.
-- [ ] **3.2** Planning and follow cameras preserve setup and context.
+- [x] **3.2** Planning and follow cameras preserve setup and context.
   - Change: implement high-oblique and side views, arrow pan, wheel zoom,
     temporary shot follow, and return to the stored mode/pan/zoom.
   - Accept: the session test changes view and exploration state around a launch
     and observes unchanged elevation, power, course index, and goal progress.
-- [ ] **3.3** The Korean-first HUD exposes only real actions and states.
+- [x] **3.3** The Korean-first HUD exposes only real actions and states.
   - Change: add course identity, goal progress, concise outcome feedback,
     elevation/power controls, view controls, reset, course switch, Fire, and
     clear actions with visible focus and 40px-or-larger routine targets.
@@ -222,12 +222,12 @@ Preconditions:
 Source owners: `scripts/verify.ps1`, `export_presets.cfg`, `README.md`,
 `project-specs/cannon-golf/PRD.md`, this contract
 
-- [ ] **4.1** Source and project configuration pass final verification.
+- [x] **4.1** Source and project configuration pass final verification.
   - Change: update verification copy, export identity, README, and implemented
     product notes without presenting unbuilt devices as available.
   - Accept: `scripts/verify.ps1` and `scripts/test-cannon-golf.ps1` both pass
     with the shared Godot executable; `git diff --check` is clean.
-- [ ] **4.2** The Windows prototype exports and starts.
+- [x] **4.2** The Windows prototype exports and starts.
   - Change: export the `Windows Desktop` release preset to
     `builds/windows/CannonGolfPrototype.exe`.
   - Accept: Godot export exits zero and the exported executable completes a
@@ -268,9 +268,11 @@ acceptance.
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 1.
-- Next task: 1.1.
-- Last completed gate: Discovery Closure Gate.
+- Current phase: Complete.
+- Next task: none; start a new execution contract for later content.
+- Last completed gate: final source verification, focused suite, rendered UI
+  review, Windows release export, built-app smoke, and diff check passed on
+  2026-08-12.
 - Update rule: after a checkpoint passes, record concise evidence, check the
   task, and advance this pointer in the same edit.
 - On start or resume, read this contract and inspect the worktree only enough to

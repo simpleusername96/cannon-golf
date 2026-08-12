@@ -1,0 +1,354 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/cannon_golf_hud.gd" id="1_hud"]
+
+[node name="CannonGolfHUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CoursePanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 440.0
+offset_bottom = 184.0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Root/CoursePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Rows" type="VBoxContainer" parent="Root/CoursePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="CourseIndex" type="Label" parent="Root/CoursePanel/Margin/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "COURSE 01  /  02"
+
+[node name="CourseName" type="Label" parent="Root/CoursePanel/Margin/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudStageLabel"
+text = "고요한 선반"
+
+[node name="Brief" type="Label" parent="Root/CoursePanel/Margin/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "각도와 파워를 맞춰 안전하게 착지하세요."
+autowrap_mode = 2
+
+[node name="GoalProgress" type="Label" parent="Root/CoursePanel/Margin/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudAccentSection"
+text = "골  0 / 1"
+
+[node name="CourseNavigation" type="HBoxContainer" parent="Root"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 194.0
+offset_right = 440.0
+offset_bottom = 240.0
+theme_override_constants/separation = 8
+mouse_filter = 1
+
+[node name="PreviousCourse" type="Button" parent="Root/CourseNavigation"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(116, 44)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "이전 코스"
+
+[node name="NextCourse" type="Button" parent="Root/CourseNavigation"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(116, 44)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "다음 코스"
+
+[node name="ViewPanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -421.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 92.0
+grow_horizontal = 0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Root/ViewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="Views" type="HBoxContainer" parent="Root/ViewPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ViewLabel" type="Label" parent="Root/ViewPanel/Margin/Views"]
+custom_minimum_size = Vector2(58, 44)
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "시점"
+vertical_alignment = 1
+
+[node name="ObliqueButton" type="Button" parent="Root/ViewPanel/Margin/Views"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 44)
+layout_mode = 2
+theme_type_variation = &"HudModeButton"
+toggle_mode = true
+button_group = null
+text = "1  전체"
+
+[node name="SideButton" type="Button" parent="Root/ViewPanel/Margin/Views"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 44)
+layout_mode = 2
+theme_type_variation = &"HudModeButton"
+toggle_mode = true
+button_group = null
+text = "2  측면"
+
+[node name="FeedbackPanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -170.0
+offset_top = 24.0
+offset_right = 170.0
+offset_bottom = 92.0
+grow_horizontal = 2
+mouse_filter = 1
+
+[node name="Feedback" type="Label" parent="Root/FeedbackPanel"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 48)
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "각도와 파워를 조절한 뒤 발사하세요."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="SetupPanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -200.0
+offset_right = 626.0
+offset_bottom = -24.0
+grow_vertical = 0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Root/SetupPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Rows" type="VBoxContainer" parent="Root/SetupPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Root/SetupPanel/Margin/Rows"]
+layout_mode = 2
+theme_type_variation = &"HudSection"
+text = "발사 설정"
+
+[node name="ElevationRow" type="HBoxContainer" parent="Root/SetupPanel/Margin/Rows"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Root/SetupPanel/Margin/Rows/ElevationRow"]
+custom_minimum_size = Vector2(82, 44)
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "고도각"
+vertical_alignment = 1
+
+[node name="ElevationSlider" type="HSlider" parent="Root/SetupPanel/Margin/Rows/ElevationRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 68.0
+step = 1.0
+value = 42.0
+
+[node name="ElevationValue" type="Label" parent="Root/SetupPanel/Margin/Rows/ElevationRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(62, 44)
+layout_mode = 2
+theme_type_variation = &"HudControlValue"
+text = "42°"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PowerRow" type="HBoxContainer" parent="Root/SetupPanel/Margin/Rows"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Root/SetupPanel/Margin/Rows/PowerRow"]
+custom_minimum_size = Vector2(82, 44)
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "파워"
+vertical_alignment = 1
+
+[node name="PowerSlider" type="HSlider" parent="Root/SetupPanel/Margin/Rows/PowerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(360, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 100.0
+step = 1.0
+value = 55.0
+
+[node name="PowerValue" type="Label" parent="Root/SetupPanel/Margin/Rows/PowerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(62, 44)
+layout_mode = 2
+theme_type_variation = &"HudControlValue"
+text = "55%"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ActionPanel" type="PanelContainer" parent="Root"]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -338.0
+offset_top = -200.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_filter = 1
+
+[node name="Margin" type="MarginContainer" parent="Root/ActionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Rows" type="VBoxContainer" parent="Root/ActionPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="ResetButton" type="Button" parent="Root/ActionPanel/Margin/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "R  코스 초기화"
+
+[node name="FireButton" type="Button" parent="Root/ActionPanel/Margin/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "발사"
+
+[node name="Hint" type="Label" parent="Root/ActionPanel/Margin/Rows"]
+layout_mode = 2
+theme_type_variation = &"HudCaption"
+text = "W/S 각도 · A/D 파워 · 방향키 탐색 · 휠 확대"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ResultOverlay" type="Control" parent="Root"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="Dim" type="ColorRect" parent="Root/ResultOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.035, 0.062, 0.098, 0.52)
+
+[node name="Panel" type="PanelContainer" parent="Root/ResultOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -158.0
+offset_right = 230.0
+offset_bottom = 158.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="Root/ResultOverlay/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="Rows" type="VBoxContainer" parent="Root/ResultOverlay/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="ResultTitle" type="Label" parent="Root/ResultOverlay/Panel/Margin/Rows"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"ResultTitle"
+text = "안전 착지"
+horizontal_alignment = 1
+
+[node name="ResultBody" type="Label" parent="Root/ResultOverlay/Panel/Margin/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "공이 골 안에 안전하게 멈췄습니다."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ResultPrimary" type="Button" parent="Root/ResultOverlay/Panel/Margin/Rows"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 62)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "다음 코스"

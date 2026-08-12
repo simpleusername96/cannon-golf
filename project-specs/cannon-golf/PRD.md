@@ -4,7 +4,7 @@ status: active
 created: 2026-08-12
 last_reviewed: 2026-08-12
 canonical_for: Current product requirements for the provisional Cannon Golf project
-scope: Game concept and observable player experience; implementation has not started
+scope: Game concept and observable player experience; two-course direct-shot prototype implemented
 source: User direction recorded on 2026-08-12
 related:
   - DESIGN_RULES.md
@@ -20,8 +20,9 @@ related:
 
 Define the current product direction for a new Windows desktop 3D physics
 puzzle. The copied Paint Mountain runtime is reusable technical material only.
-This specification replaces surface coverage as the product goal, but it does
-not claim that the copied code already implements the new rules.
+This specification replaces surface coverage as the product goal. The isolated
+`cannon_golf` runtime now implements the two-course direct-shot slice; later
+multi-goal and device requirements remain specified but unimplemented.
 
 ## Summary
 
@@ -368,8 +369,10 @@ than the inherited frontal cannon composition.
 ## Constraints
 
 - Windows desktop and Godot 4.x remain the initial platform and engine.
-- The copied runtime is Paint Mountain commit `32c0b33`; no runtime code was
-  changed while establishing this specification.
+- The copied runtime baseline is Paint Mountain commit `32c0b33`. The playable
+  two-course prototype is isolated under `src/cannon_golf/`,
+  `scenes/cannon_golf/`, and `resources/cannon_golf/`; retained legacy owners
+  remain available as source history.
 - No new production dependency is approved.
 - Current product name, exact camera transition grammar, angle-control
   presentation, impact-mark retention rule, goal-order rule, bounce tuning, and

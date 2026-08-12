@@ -5,15 +5,9 @@ config_version=5
 
 [application]
 
-config/name="Paint Mountain"
-config/description="A gravity-driven 3D paintball puzzle game."
-run/main_scene="res://scenes/app/app.tscn"
-
-[autoload]
-
-SaveSystem="*res://src/autoload/save_system.gd"
-GameState="*res://src/autoload/game_state.gd"
-AudioDirector="*res://src/audio/audio_director.gd"
+config/name="Cannon Golf Prototype"
+config/description="A retry-driven 3D cannon golf physics puzzle."
+run/main_scene="res://scenes/cannon_golf/cannon_golf.tscn"
 
 [display]
 

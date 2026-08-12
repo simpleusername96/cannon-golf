@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1_course"]
+
+[resource]
+script = ExtResource("1_course")
+course_id = &"rising_bend"
+display_name = "오르는 굽이"
+short_brief = "더 멀고 높은 홀. 측면 시점에서 높이 차를 읽어보세요."
+block_centers = PackedVector3Array(-6, 0, 16, -3, -0.45, -2, 3, 0.3, -22, 9, 1.55, -43)
+block_sizes = PackedVector3Array(19, 3, 19, 18, 2.1, 23, 19, 3.4, 25, 21, 5.7, 21)
+block_yaw_degrees = PackedFloat32Array(0, -7, -11, 2)
+terrain_color = Color(0.42, 0.40, 0.35, 1)
+terrain_accent_color = Color(0.34, 0.33, 0.29, 1)
+cannon_position = Vector3(-6, 1.55, 19)
+shot_yaw_degrees = 13.4
+goal_position = Vector3(9, 4.54, -45)
+goal_radius = 6.2
+play_bounds = AABB(-42, -14, -82, 88, 66, 124)
+planning_focus = Vector3(1.5, 4, -15)
+oblique_offset = Vector3(48, 42, 55)
+side_offset = Vector3(56, 17, 3)
+default_elevation_degrees = 42.0
+default_power_percent = 63.0
+solution_elevation_degrees = 42.0
+solution_power_percent = 63.0

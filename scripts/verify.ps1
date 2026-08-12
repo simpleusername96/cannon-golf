@@ -64,4 +64,4 @@ Invoke-GodotCheck -Label 'Godot runtime smoke check' -Arguments @(
     '--headless', '--path', $projectRoot, '--quit-after', '3'
 )
 
-Write-Host 'Paint Mountain verification passed.'
+Write-Host 'Cannon Golf prototype verification passed.'

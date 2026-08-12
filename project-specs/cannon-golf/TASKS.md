@@ -13,21 +13,23 @@ related:
 
 ## Purpose
 
-Show the likely implementation sequence without authorizing code changes. This
-is a draft planning aid, not an active execution contract. Material questions
-in `OPEN_QUESTIONS.md` must be resolved before the affected task is promoted to
-an active plan.
+Show the remaining likely implementation sequence after the first playable
+slice. This is a draft planning aid, not an active execution contract. The
+completed two-course slice was executed from
+`.agents/execplans/2026-08-12-two-course-vertical-slice.md`; material questions
+in `OPEN_QUESTIONS.md` must still be resolved before later device work is
+promoted to an active plan.
 
 ## Tasks
 
 ### 1. Close the camera and aiming brief
 
-- [ ] Decide Q-01 through Q-04.
+- [x] Decide Q-01 through Q-04 for the first two-course slice.
 - [ ] Produce one graybox camera storyboard of the same stage from top,
   high-oblique, side, near-profile, temporary cannon, and shot-follow views.
 - [x] Save a non-runtime screen-direction storyboard covering high-oblique,
   side/profile, and Shot Follow composition in `DESIGN_RULES.md`.
-- [ ] Select the planning-camera grammar and record it in `DECISIONS.md` and
+- [x] Select the planning-camera grammar and record it in `DECISIONS.md` and
   `DESIGN_RULES.md`.
 
 ### 2. Define the new domain boundaries
@@ -42,35 +44,35 @@ an active plan.
 
 ### 3. Establish one direct-goal vertical slice
 
-- [ ] Replace coverage-based completion with one safe-settlement goal in a test
+- [x] Replace coverage-based completion with one safe-settlement goal in a test
   stage.
-- [ ] Confirm only after the ball remains within goal tolerances; preserve the
+- [x] Confirm only after the ball remains within goal tolerances; preserve the
   visible confirmed ball and prevent later displacement.
-- [ ] Provide unlimited unsuccessful launches without a timer, life, ball-stock,
+- [x] Provide unlimited unsuccessful launches without a timer, life, ball-stock,
   or shot-count game over.
-- [ ] Clear each unsuccessful ball before the next launch while preserving every
+- [x] Clear each unsuccessful ball before the next launch while preserving every
   confirmed settled ball.
-- [ ] Give the standard ball a predictable energy-losing rebound on ordinary
+- [x] Give the standard ball a predictable energy-losing rebound on ordinary
   hard terrain.
-- [ ] Replace continuous paint behavior with one first-contact history mark per
+- [x] Replace continuous paint behavior with one first-contact history mark per
   launch.
-- [ ] Remove exact landing guidance from normal play while preserving accessible
+- [x] Remove exact landing guidance from normal play while preserving accessible
   angle and power controls.
-- [ ] Validate rapid retry and repeated-shot determinism.
+- [x] Validate rapid retry and deterministic direct-solution replay.
 
 ### 4. Establish planning views
 
-- [ ] Implement the selected top/oblique and side/profile planning views.
-- [ ] Preserve launch setup, placed devices, confirmed goals, and selection
+- [x] Implement the selected top/oblique and side/profile planning views.
+- [x] Preserve launch setup and confirmed goals
   across map exploration, view changes, and Shot Follow.
-- [ ] Recompose inherited HUD elements around the selected views; remove
+- [x] Recompose the HUD around the selected views; remove
   coverage and paint-specific UI.
 
 ### 5. Build the initial course progression
 
 - [ ] Implement legal placement, orientation, invalid state, edit rules, and
   deterministic collision response for one pad family.
-- [ ] Build two direct one-goal stages that teach angle and power.
+- [x] Build two direct one-goal stages that teach angle and power.
 - [ ] Build two direct multi-goal stages that require several successful
   settlements without a device.
 - [ ] Build two stages with certified solutions that use one bounce pad.
@@ -96,7 +98,7 @@ an active plan.
 - [ ] Replace Paint Mountain coverage targets and fixed mechanism anchors with
   Cannon Golf goals, per-device stock, legal placement rules, and solution
   witnesses.
-- [ ] Author the first few course profiles manually from intended solutions;
+- [x] Author the first two course profiles manually from intended solutions;
   keep visible fresh-stage content limited to cannon, goals, and terrain.
 - [ ] Record a solution witness containing device transforms, launch parameters,
   goal order, and expected settlement results.
@@ -123,22 +125,23 @@ an active plan.
 - [x] Saved external research and local visual comparators.
 - [x] Saved the current screen-direction storyboard and linked it from the
   canonical visual specification.
-- [x] Confirmed that no gameplay, UI, scene, resource, test, script, project
-  setting, or export setting was modified while establishing this specification.
+- [x] Implemented an isolated playable runtime with two direct-shot courses,
+  safe settlement, unlimited retry, impact history, and two planning views.
+- [x] Replayed both authored direct-solution witnesses through real physics.
 
 ## Next Steps
 
-- Resolve the camera and aiming questions first.
-- Create a low-cost multi-view graybox storyboard before any gameplay rewrite.
-- Convert only the first closed task group into an active execution contract.
+- Resolve Q-07 through Q-10 and Q-14 before bounce-pad placement work.
+- Playtest the two direct courses before expanding to multi-goal stages.
+- Promote only the next closed content slice into an active execution contract.
 
 ## Verification
 
-- Confirm copied runtime files match Paint Mountain commit `32c0b33` before any
-  future implementation commit.
+- Preserve retained legacy owners as Paint Mountain source history; validate the
+  isolated `cannon_golf` main path with `scripts/test-cannon-golf.ps1`.
 - Validate Markdown lifecycle metadata, local links, and `git diff --check`.
-- Do not run or claim new gameplay validation while the runtime remains the
-  unchanged Paint Mountain baseline.
+- Do not treat the legacy Paint Mountain suite as acceptance for the isolated
+  Cannon Golf main path.
 
 ## Risks
 

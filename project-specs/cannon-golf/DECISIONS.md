@@ -209,8 +209,9 @@ in `OPEN_QUESTIONS.md`.
 
 ## Consequences
 
-- The current executable still behaves as Paint Mountain until future
-  implementation is authorized.
+- The current executable opens the isolated two-course Cannon Golf prototype.
+  Retained legacy scenes still behave as Paint Mountain when instantiated
+  directly and remain source-history material.
 - Paint, coverage, predicted-impact, terrain-generation, mechanism-placement,
   HUD, and stage-result owners must be classified as reuse, adaptation, or
   retirement before coding.
