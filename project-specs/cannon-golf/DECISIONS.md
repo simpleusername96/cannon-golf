@@ -148,6 +148,42 @@ in `OPEN_QUESTIONS.md`.
   regions, stock, goal tolerances, and certified solution witnesses remains
   necessary and is not considered a preinstalled course mechanism.
 
+### D-017 — The first slice fixes horizontal aim per course
+
+- Status: accepted for the two-course prototype under the owner's delegated
+  implementation authority on 2026-08-12.
+- Each introductory course points the stationary cannon down its authored shot
+  axis. The player adjusts elevation angle and power in one-degree and
+  one-percent steps; there is no horizontal aim control or exact trajectory
+  preview in this slice.
+- This keeps the first lesson to the two variables the owner named. Later
+  courses may reopen horizontal aiming only if their topology requires it.
+
+### D-018 — High-oblique is the default planning view
+
+- Status: accepted for the two-course prototype.
+- A whole-course high-oblique view is the default. A true side/profile view is
+  the alternate. Arrow keys pan, the mouse wheel changes planning distance, and
+  Shot Follow returns to the same stored view, pan, zoom, angle, and power.
+- The prototype does not include a separate behind-cannon planning mode.
+
+### D-019 — Retain five impact marks by launch order
+
+- Status: accepted for the two-course prototype.
+- Retain at most five first-contact marks. Their visual priority depends only on
+  launch order: the newest is darkest and each older retained mark is lighter.
+- Marks do not fade with wall-clock time and do not label or predict a landing.
+
+### D-020 — Begin with manually authored terraced shelf courses
+
+- Status: accepted for the two-course prototype.
+- The first two courses use connected, heightfield-like terraced shelves built
+  from editor-readable resource data. They may bend laterally and change height
+  but do not use caves, bridges, overhangs, disconnected islands, or devices.
+- Human-authored direct-solution witnesses are verified through the real rigid
+  body simulation. A custom level editor remains deferred until repeated manual
+  authoring work justifies it.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

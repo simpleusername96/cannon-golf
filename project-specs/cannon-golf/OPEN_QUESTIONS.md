@@ -31,15 +31,10 @@ affected code path is designed.
 
 | ID | Open question | Why it changes implementation | Current safe boundary |
 | --- | --- | --- | --- |
-| Q-01 | How does the player set the accepted angle-and-power variables: raw yaw/elevation controls, a target-assisted control, or a combination? | Determines input, solver, HUD, accessibility, and camera ownership | Angle and power remain player-controlled; do not reuse the target-click inverse solver as the product decision |
-| Q-02 | Which view is the default planning view, and how do top, side, oblique, cannon, and follow views transition? | Determines stage composition, occlusion rules, controls, and UI safe areas | Treat frontal-only planning as rejected; every transition and exploration mode must preserve planning state and return to valid framing |
-| Q-03 | Do impact marks fade by shot order, real time, stage time, or a fixed retained count? | Determines data model, shader/decal lifecycle, replay, and readability | Preserve only the rule that newest is darkest and older is lighter |
-| Q-04 | How many prior impact marks remain visible? | Too many create noise; too few weaken correction | Make the count a stage-independent tuning decision before content production |
 | Q-07 | Can player-placeable devices be edited only before the first shot, between shots, or while balls are moving? | Changes state machine, undo, simulation determinism, and camera needs | No placement during live simulation unless explicitly approved later |
 | Q-08 | Can a placed device be moved, rotated, removed, or reused after a shot? | Changes interaction model and whether trial history remains comparable | Require explicit placement and orientation state in replays |
 | Q-09 | What surface and empty-air constraints make pad and airflow placement legal? | Determines collision, UI feedback, trivial solutions, and level certification | Keep surface pads flush to valid terrain, restrict damping to fully flat surfaces, and require an explicit unobstructed airflow volume |
 | Q-10 | Are goals attempted in any order or assigned one at a time? | Changes planning, HUD, completion state, and stage solution space | PRD currently allows any order but does not lock it |
-| Q-12 | Which terrain family leads the first slice: quarry, crater chain, slot canyon, switchback, or another course? | Determines generator reuse, camera framing, art direction, and collision proof | Compare with a small graybox storyboard before selecting |
 | Q-13 | Is `Cannon Golf` only an internal slug or a candidate public title? | Changes visible copy, package identity, save paths, and export naming | Keep it internal and do not rename runtime identifiers yet |
 | Q-14 | Should a bounce pad use a fixed reflection, authored impulse, controllable strength, or only orientation? | Determines whether placement remains understandable and deterministic | Start comparison with fixed strength plus orientation, but treat it as unapproved |
 | Q-16 | When should damping, airflow, and gravity-zone stages enter after or around the core eleven-stage progression? | Changes teaching order, total content count, and when the device tray expands | Keep the accepted eleven-stage bounce progression intact until an expansion sequence is explicitly set |
@@ -58,14 +53,19 @@ affected code path is designed.
 | Q-11 | Confirmed goals persist and later shots cannot invalidate them, so multi-goal completion does not require several still-dynamic balls to remain settled simultaneously. | `DECISIONS.md` D-010 and D-011 |
 | Q-15 | The selected additional vocabulary is a flat-surface damping pad, a mid-air placeable airflow device, and a bounded gravity-drop zone. | `DECISIONS.md` D-015 |
 | Q-17 | Gravity zones, like every other route-changing mechanism, are placed by the player. | `DECISIONS.md` D-015 and D-016 |
+| Q-01 | The first two courses fix horizontal aim to their authored shot axis. The player directly adjusts elevation and power only. | `DECISIONS.md` D-017 |
+| Q-02 | High-oblique is the default, side/profile is the alternate, and temporary Shot Follow restores the stored planning pose and setup. | `DECISIONS.md` D-018 |
+| Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
+| Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
+| Q-12 | The first slice uses two manually authored, connected terraced shelf courses. | `DECISIONS.md` D-020 |
 
 ## Recommendations
 
-- Resolve Q-01 through Q-04 before final camera/input implementation.
 - Resolve Q-07 through Q-10 and Q-14 before bounce-pad placement and multi-goal
   state become an execution contract.
-- Use the saved screen-direction storyboard as the visual brief, then resolve
-  Q-12 with a runtime-feasible graybox of the same camera families.
+- Use the saved screen-direction storyboard as the visual brief for runtime
+  composition and compare the implemented high-oblique and side views against
+  it before expanding course production.
 - Resolve Q-16 and Q-18 through Q-22 before expansion-mechanic implementation or stage
   production becomes an execution contract.
 
