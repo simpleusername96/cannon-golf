@@ -7,7 +7,7 @@ config_version=5
 
 config/name="Cannon Golf Prototype"
 config/description="A retry-driven 3D cannon golf physics puzzle."
-run/main_scene="res://scenes/cannon_golf/cannon_golf.tscn"
+run/main_scene="res://scenes/cannon_golf/app/cannon_golf_app.tscn"
 
 [display]
 

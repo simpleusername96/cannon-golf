@@ -3,11 +3,16 @@
 `Cannon Golf` is a provisional working title for a playable Godot 4 3D physics
 puzzle prototype derived from the Paint Mountain runtime.
 
-The current main scene implements two introductory direct-shot courses. Adjust
-elevation and power, launch a rebound-capable ball, learn from first-contact
-marks, and settle the ball safely inside the goal. Retry is unlimited. High
-oblique and side planning views preserve the current launch setup and course
-state.
+The app now opens at a main menu and provides a live two-course selection,
+persistent settings, gameplay pause/return navigation, and two introductory
+direct-shot courses. Adjust elevation and power, launch a rebound-capable ball,
+learn from first-contact marks, and settle the ball safely inside the goal.
+Retry is unlimited. High-oblique and side planning views preserve the current
+launch setup and course state.
+
+Both courses are built as a single faceted terrain body with an elevated goal
+basin. The game and menu preview share the retained Paint Mountain panorama,
+open-ground material, daylight palette, and restrained low-poly nature props.
 
 Controls:
 
@@ -17,7 +22,15 @@ Controls:
 - `1` / `2`: high-oblique / side view
 - Arrow keys: explore the course
 - Mouse wheel: planning zoom
-- `R`: reset the current course
+- `R`: immediately relaunch with the current setup
+- `Shift` + `R`: reset the current course and impact history
+- `Esc`: pause or resume
+
+Screen flow:
+
+- Main menu -> Play or Course Select -> Gameplay
+- Gameplay pause -> Settings, Course Select, or Main Menu
+- Settings persist audio, reduced motion, display, quality, and language values
 
 Run from the repository root with Godot 4.7.1:
 

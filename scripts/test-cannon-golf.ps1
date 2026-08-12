@@ -20,10 +20,13 @@ $tests = @(
     'cannon_golf_ballistics_test.gd',
     'cannon_golf_goal_test.gd',
     'cannon_golf_course_build_test.gd',
+    'cannon_golf_terrain_test.gd',
     'cannon_golf_physics_test.gd',
     'cannon_golf_session_test.gd',
     'cannon_golf_solution_test.gd',
-    'cannon_golf_ui_contract_test.gd'
+    'cannon_golf_ui_contract_test.gd',
+    'cannon_golf_settings_test.gd',
+    'cannon_golf_app_flow_test.gd'
 )
 
 foreach ($test in $tests) {

@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/app/cannon_golf_app.gd" id="1_app"]
+[ext_resource type="PackedScene" path="res://scenes/cannon_golf/app/cannon_golf_preview_world.tscn" id="2_preview"]
+[ext_resource type="Theme" path="res://resources/ui/paint_mountain_theme.tres" id="3_theme"]
+
+[node name="CannonGolfApp" type="Node"]
+script = ExtResource("1_app")
+
+[node name="PreviewWorld" parent="." instance=ExtResource("2_preview")]
+unique_name_in_owner = true
+
+[node name="ScreenLayer" type="CanvasLayer" parent="."]
+unique_name_in_owner = true
+layer = 20
+process_mode = 3
+
+[node name="TransitionLayer" type="CanvasLayer" parent="."]
+layer = 100
+process_mode = 3
+
+[node name="Transition" type="ColorRect" parent="TransitionLayer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.035, 0.062, 0.098, 1)
+theme = ExtResource("3_theme")

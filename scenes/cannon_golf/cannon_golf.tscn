@@ -1,18 +1,16 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://src/cannon_golf/cannon_golf_game.gd" id="1_game"]
 [ext_resource type="Script" path="res://src/cannon_golf/course_builder.gd" id="2_builder"]
 [ext_resource type="PackedScene" path="res://scenes/cannon_golf/cannon_golf_hud.tscn" id="3_hud"]
 [ext_resource type="Script" path="res://src/cannon_golf/course_camera_rig.gd" id="4_camera_rig"]
 [ext_resource type="Script" path="res://src/cannon_golf/impact_history.gd" id="5_history"]
+[ext_resource type="Texture2D" path="res://assets/environment/kenney/skybox-day.png" id="6_sky_panorama"]
+[ext_resource type="Shader" path="res://src/terrain/open_ground.gdshader" id="7_ground_shader"]
+[ext_resource type="Texture2D" path="res://assets/environment/ambientcg/Ground003_1K-JPG_Color.jpg" id="8_ground_albedo"]
 
-[sub_resource type="ProceduralSkyMaterial" id="SkyMaterial"]
-sky_top_color = Color(0.50, 0.66, 0.78, 1)
-sky_horizon_color = Color(0.88, 0.88, 0.82, 1)
-ground_bottom_color = Color(0.32, 0.39, 0.41, 1)
-ground_horizon_color = Color(0.79, 0.79, 0.72, 1)
-sun_angle_max = 22.0
-sun_curve = 0.08
+[sub_resource type="PanoramaSkyMaterial" id="SkyMaterial"]
+panorama = ExtResource("6_sky_panorama")
 
 [sub_resource type="Sky" id="Sky"]
 sky_material = SubResource("SkyMaterial")
@@ -22,13 +20,17 @@ background_mode = 2
 sky = SubResource("Sky")
 ambient_light_source = 2
 ambient_light_color = Color(0.91, 0.93, 0.95, 1)
-ambient_light_energy = 0.46
-reflected_light_source = 2
+ambient_light_energy = 0.34
+reflected_light_source = 1
 tonemap_mode = 2
 
-[sub_resource type="StandardMaterial3D" id="BaseMaterial"]
-albedo_color = Color(0.22, 0.28, 0.29, 1)
-roughness = 0.94
+[sub_resource type="ShaderMaterial" id="BaseMaterial"]
+shader = ExtResource("7_ground_shader")
+shader_parameter/ground_albedo = ExtResource("8_ground_albedo")
+shader_parameter/base_color = Color(0.48, 0.51, 0.42, 1)
+shader_parameter/world_scale = 0.032
+shader_parameter/detail_strength = 0.18
+shader_parameter/source_saturation = 0.15
 
 [sub_resource type="CylinderMesh" id="BaseMesh"]
 material = SubResource("BaseMaterial")
@@ -44,11 +46,11 @@ script = ExtResource("1_game")
 environment = SubResource("Environment")
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-52, -38, 0)
-light_color = Color(1, 0.96, 0.87, 1)
-light_energy = 1.18
+rotation_degrees = Vector3(-48, -58, 0)
+light_color = Color(1, 0.95, 0.84, 1)
+light_energy = 1.05
 shadow_enabled = true
-directional_shadow_max_distance = 180.0
+directional_shadow_max_distance = 260.0
 
 [node name="Fill" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-30, 136, 0)

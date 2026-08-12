@@ -1,6 +1,7 @@
 extends SceneTree
 
 const GAME_SCENE := preload("res://scenes/cannon_golf/cannon_golf.tscn")
+const APP_SCENE := preload("res://scenes/cannon_golf/app/cannon_golf_app.tscn")
 
 
 func _initialize() -> void:
@@ -34,14 +35,28 @@ func _capture() -> void:
 		DisplayServer.window_set_position(Vector2i(-32000, -32000))
 	root.size = requested_size
 	DirAccess.make_dir_recursive_absolute(output_path.get_base_dir())
-	var game := GAME_SCENE.instantiate() as CannonGolfGame
-	root.add_child(game)
+	var game: CannonGolfGame
+	var app: CannonGolfApp
+	if requested_state in ["menu", "course_select", "settings"]:
+		app = APP_SCENE.instantiate() as CannonGolfApp
+		root.add_child(app)
+	else:
+		game = GAME_SCENE.instantiate() as CannonGolfGame
+		game.initial_course_index = requested_course
+		root.add_child(game)
 	await process_frame
 	await process_frame
-	if requested_course > 0:
-		game._load_course(requested_course)
-	if requested_state == "side":
+	if requested_state == "course_select":
+		app.show_course_select(false)
+		if requested_course > 0:
+			var course_select := app.get_node("ScreenLayer/CourseSelect") as CannonGolfCourseSelect
+			course_select.select_course(requested_course)
+	elif requested_state == "settings":
+		app.show_settings()
+	elif requested_state == "side":
 		game.set_planning_view(&"side")
+	elif requested_state == "pause":
+		game.toggle_pause()
 	elif requested_state == "clear":
 		game.fire()
 		game.current_ball.global_position = game._course_builder.goal.global_position \

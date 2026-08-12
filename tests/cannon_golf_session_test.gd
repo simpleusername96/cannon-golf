@@ -25,6 +25,19 @@ func _run() -> void:
 	_assert_true(game.planning_pan.is_equal_approx(stored_pan), "Launch must preserve planning pan.")
 	_assert_true(is_equal_approx(launcher.elevation_degrees, elevation), "Launch must preserve elevation.")
 	_assert_true(is_equal_approx(launcher.power_percent, power), "Launch must preserve power.")
+	var retry_ball := game.current_ball
+	game.retry_attempt()
+	_assert_true(game.launch_state == CannonGolfGame.LaunchState.FLYING, "Quick retry must immediately relaunch.")
+	_assert_true(game.current_ball != null and game.current_ball != retry_ball, "Quick retry must replace only the active ball.")
+	_assert_true(game.planning_view == &"side" and game.planning_pan.is_equal_approx(stored_pan), "Quick retry must preserve planning context.")
+	_assert_true(is_equal_approx(launcher.elevation_degrees, elevation), "Quick retry must preserve elevation.")
+	_assert_true(is_equal_approx(launcher.power_percent, power), "Quick retry must preserve power.")
+	game.toggle_pause()
+	_assert_true(paused, "Pause must stop the scene tree during flight.")
+	_assert_true(game.launch_state == CannonGolfGame.LaunchState.FLYING, "Pause must preserve the launch state.")
+	game.toggle_pause()
+	_assert_true(not paused, "Resume must release the scene-tree pause.")
+	_assert_true(game.launch_state == CannonGolfGame.LaunchState.FLYING, "Resume must restore the prior launch state.")
 	game._fail_launch(&"out_of_bounds")
 	await process_frame
 	await process_frame
@@ -38,6 +51,14 @@ func _run() -> void:
 	for index in range(8):
 		game._impact_history.stamp(Vector3(float(index), 6.0, -12.0), Vector3.UP)
 	_assert_true(game.impact_mark_count() == 5, "Impact history must retain five marks.")
+	game.reset_course()
+	_assert_true(game.impact_mark_count() == 0, "Full reset must clear impact history.")
+	_assert_true(game.launch_state == CannonGolfGame.LaunchState.PLANNING, "Full reset must return to planning.")
+	game.set_planning_view(&"side")
+	game.pan_planning(Vector2(1.0, -1.0))
+	stored_pan = game.planning_pan
+	for index in range(5):
+		game._impact_history.stamp(Vector3(float(index), 6.0, -12.0), Vector3.UP)
 	var oldest_color := game._impact_history.oldest_color()
 	var newest_color := game._impact_history.newest_color()
 	_assert_true(oldest_color.get_luminance() > newest_color.get_luminance(), "Older marks must be lighter than the newest.")

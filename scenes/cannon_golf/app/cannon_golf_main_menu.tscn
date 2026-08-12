@@ -1,0 +1,98 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/app/cannon_golf_main_menu.gd" id="1_menu"]
+[ext_resource type="Theme" path="res://resources/ui/paint_mountain_theme.tres" id="1_theme"]
+
+[node name="CannonGolfMainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_menu")
+theme = ExtResource("1_theme")
+
+[node name="Shade" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.98, 0.97, 0.94, 0.68)
+
+[node name="BrandPanel" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_left = 56.0
+offset_top = 110.0
+offset_right = 500.0
+offset_bottom = 610.0
+
+[node name="Margin" type="MarginContainer" parent="BrandPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 32
+
+[node name="Content" type="VBoxContainer" parent="BrandPanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Eyebrow" type="Label" parent="BrandPanel/Margin/Content"]
+layout_mode = 2
+theme_type_variation = &"MenuEyebrow"
+text = "각도와 파워 · 안전 착지"
+
+[node name="Title" type="Label" parent="BrandPanel/Margin/Content"]
+layout_mode = 2
+theme_type_variation = &"MenuTitle"
+text = "CANNON GOLF"
+
+[node name="Subtitle" type="Label" parent="BrandPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_type_variation = &"MenuSubtitle"
+text = "코스를 읽고, 한 번 쏘고, 다시 조정하세요."
+autowrap_mode = 2
+
+[node name="CourseHint" type="Label" parent="BrandPanel/Margin/Content"]
+layout_mode = 2
+theme_type_variation = &"HudBody"
+text = "두 코스 · 무제한 재시도"
+
+[node name="Spacer" type="Control" parent="BrandPanel/Margin/Content"]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Play" type="Button" parent="BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "플레이"
+
+[node name="CourseSelect" type="Button" parent="BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "코스 선택"
+
+[node name="Settings" type="Button" parent="BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "설정"
+
+[node name="Quit" type="Button" parent="BrandPanel/Margin/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_type_variation = &"QuietButton"
+text = "종료"

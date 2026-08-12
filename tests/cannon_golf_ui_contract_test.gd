@@ -18,7 +18,7 @@ func _initialize() -> void:
 			)
 	for retired_term in ["페인트", "커버리지", "% 도달", "남은 공", "남은 샷", "예측"]:
 		_assert_true(not visible_copy.contains(retired_term), "HUD must not expose retired term: %s" % retired_term)
-	for required_term in ["골", "고도각", "파워", "전체", "측면", "발사", "코스 초기화"]:
+	for required_term in ["골", "고도각", "파워", "전체", "측면", "발사", "재발사", "코스 초기화", "일시정지", "설정", "코스 선택", "메인 메뉴"]:
 		_assert_true(visible_copy.contains(required_term), "HUD must expose real action: %s" % required_term)
 	print("Cannon Golf HUD copy and target-size contract passed.")
 	quit(0)
