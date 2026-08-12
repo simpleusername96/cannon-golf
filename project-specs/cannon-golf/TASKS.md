@@ -75,8 +75,8 @@ an active plan.
 - [x] Copied the Paint Mountain runtime baseline without code edits.
 - [x] Separated current product design from Paint Mountain product briefs.
 - [x] Saved external research and local visual comparators.
-- [ ] No gameplay, UI, scene, resource, test, script, project setting, or export
-  setting has been modified for the new product.
+- [x] Confirmed that no gameplay, UI, scene, resource, test, script, project
+  setting, or export setting was modified while establishing this specification.
 
 ## Next Steps
 

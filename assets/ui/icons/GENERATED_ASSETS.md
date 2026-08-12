@@ -2,34 +2,40 @@
 type: record
 status: active
 created: 2026-08-10
-last_reviewed: 2026-08-10
-source: ../../../docs/reports/screen-audit-2026-08-10/assets/refined/08-settings-refined.png
+last_reviewed: 2026-08-12
+scope: Provenance for generated UI assets inherited from Paint Mountain; not Cannon Golf feature approval
+source: "Paint Mountain repository commit 32c0b33: assets/ui/icons/GENERATED_ASSETS.md"
 related:
-  - ../../../docs/reports/screen-audit-2026-08-10/assets/refined/02-stage-select-refined.png
-  - ../../../.agents/execplans/2026-08-10-approved-image-fidelity-correction.md
-  - ../../../.agents/execplans/2026-08-10-essential-ui-fidelity.md
+  - ../../../docs/asset-licenses.md
+  - ../../../project-specs/cannon-golf/DECISIONS.md
+  - ../../../project-specs/cannon-golf/DESIGN_RULES.md
 ---
 
 # Generated UI Asset Record
 
 ## Context
 
-The approved Stage Select, Settings, and Timeout Result images contain a
-selected-card badge, seven semantic setting icons, full-size switch states, a
-slider grabber, and a timeout clock that did not exist in the repository. Text
-symbols, emoji, handcrafted SVG, and code-drawn stand-ins were excluded by the
-fidelity contracts.
+This record was copied with the unchanged Paint Mountain runtime. The approvals
+below belong to the source project's visual-fidelity work; they do not approve a
+timeout result, trajectory preview, or any other feature for Cannon Golf.
+
+The source project's approved Stage Select, Settings, and Timeout Result images
+contain a selected-card badge, seven semantic setting icons, full-size switch
+states, a slider grabber, and a timeout clock that did not exist in that
+repository. Text symbols, emoji, handcrafted SVG, and code-drawn stand-ins were
+excluded by the source fidelity contracts.
 
 ## Decision
 
-The built-in ImageGen path generated each raster asset separately, using the
-matching approved refined screen as the sole visual reference. Each prompt
-requested a crisp flat Paint Mountain UI asset in the existing navy/blue/neutral
-palette on a solid green chroma background. The installed image-generation
-helper removed that background, and ImageMagick performed deterministic native
-size and padding normalization.
+Preserve the generated files and hashes as source provenance while they remain
+bundled. The built-in ImageGen path generated each raster asset separately,
+using the matching approved refined screen as the sole visual reference. Each
+prompt requested a crisp flat Paint Mountain UI asset in the existing
+navy/blue/neutral palette on a solid green chroma background. The installed
+image-generation helper removed that background, and ImageMagick performed
+deterministic native size and padding normalization.
 
-| Asset | Runtime role | SHA-256 |
+| Asset | Inherited runtime role | SHA-256 |
 | --- | --- | --- |
 | `stage_check.png` | selected-stage check badge | `CF6DA16BE61AEAFF059BE1CA970D9B0F4F45F7DFB9F1688D0C285E838E261919` |
 | `settings/volume_master.png` | master volume speaker | `DF0D4DCDED2A627979FE1449D469988A255ADE2BEDB65583DDB6CF2A3B92D25D` |
@@ -46,15 +52,19 @@ size and padding normalization.
 
 ## Rationale
 
-Separate generation kept each icon legible at its real slot and avoided a
-cropped sprite sheet. The approved images already fixed the desired family,
-palette, and density, so the prompts did not introduce another icon direction.
-The assets supplement visible text labels and do not replace accessible names.
+Separate generation kept each icon legible at its source-runtime slot and
+avoided a cropped sprite sheet. The approved Paint Mountain images already fixed
+the desired family, palette, and density, so the prompts did not introduce
+another icon direction. The assets supplemented visible text labels and did not
+replace accessible names.
 
 ## Consequences
 
-- Runtime scenes may use these project-generated files without a third-party
+- The inherited runtime may use these generated files without a third-party
   license or external package.
+- Cannon Golf may reuse an asset only when the current product and design
+  specifications accept its semantic role. Inherited timeout and trajectory
+  labels are not feature requirements.
 - The PNG source plus committed Godot import metadata is the editable runtime
   boundary; generated working files outside the repository are not required.
 - Any later replacement must preserve semantic meaning, native-size clarity,

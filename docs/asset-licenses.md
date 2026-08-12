@@ -2,10 +2,12 @@
 type: record
 status: active
 created: 2026-08-03
-last_reviewed: 2026-08-11
-scope: approved third-party runtime assets, provenance, hashes, licenses, and uses
+last_reviewed: 2026-08-12
+scope: Third-party provenance for files bundled in the inherited runtime; not Cannon Golf feature approval
+source: "Paint Mountain repository commit 32c0b33: docs/asset-licenses.md"
 related:
-  - ../.agents/Plan.md
+  - ../project-specs/cannon-golf/DECISIONS.md
+  - ../project-specs/cannon-golf/PRD.md
   - ../assets/licenses/Kenney-Nature-Kit-CC0.txt
   - ../assets/licenses/Kenney-Game-Icons-CC0.txt
   - ../assets/licenses/Kenney-Particle-Pack-CC0.txt
@@ -14,9 +16,21 @@ related:
   - ../assets/licenses/Pretendard-OFL-1.1.txt
 ---
 
-# Third-party asset ledger
+# Third-party Asset Provenance Record
 
-Only the files listed below are approved and bundled. Runtime loading is entirely local; the game does not download assets or contact these sources.
+## Context
+
+This record was copied with the unchanged Paint Mountain runtime baseline. It
+preserves the provenance, hashes, and licenses of files that remain bundled.
+Source-project approval means that an asset was reviewed for that baseline; it
+does not make the asset an accepted Cannon Golf feature or visual requirement.
+
+## Decision
+
+Keep the source metadata and exact file hashes while the inherited files remain
+bundled. Runtime loading is entirely local; the game does not download assets or
+contact these sources. Cannon Golf reuse or retirement is decided by its current
+specifications, not by presence in this ledger.
 
 ## Source archives
 
@@ -32,7 +46,7 @@ Only the files listed below are approved and bundled. Runtime loading is entirel
 
 ## Bundled files
 
-| Local file | SHA-256 | Runtime use |
+| Local file | SHA-256 | Inherited runtime use |
 | --- | --- | --- |
 | `assets/nature/kenney/tree_pineSmallA.glb` | `BE1A438BBB2E157266C1FB093B775BFF8CE3E29A4C8F04AAF9D44C7A4E1F1FF0` | small pine variant A |
 | `assets/nature/kenney/tree_pineSmallB.glb` | `59392AA6604ADB9DCCD4FB76DF5ED12AE8AC7D7391EB7E04BC84FFFE9F9B36C8` | small pine variant B |
@@ -61,9 +75,26 @@ tightly scoped imported subset. The UI Pack copy has whitespace-only
 normalization; its archive hash identifies the byte-exact source package. No
 unlisted member of the downloaded archives is committed.
 
-## Project-generated UI assets
+## Rationale
 
-The Stage Select, Settings, and Timeout Result fidelity assets under `assets/ui/icons/` are
-original project-generated raster files, not third-party package members. Their
-generation source, runtime role, and SHA-256 values are recorded in
-`assets/ui/icons/GENERATED_ASSETS.md`.
+- License and source provenance remain necessary while an inherited file is
+  bundled, even when the new product may later retire its current role.
+- Separating provenance from product approval prevents a legacy asset name such
+  as `paint_mist.png` from defining Cannon Golf behavior.
+
+## Consequences
+
+- Every listed file is an available inherited implementation input, not a
+  Cannon Golf requirement.
+- When an asset is removed, replaced, or assigned a new accepted product role,
+  update this record and the relevant license copy in the same change.
+- Product-facing use must remain consistent with
+  [`PRD.md`](../project-specs/cannon-golf/PRD.md) and
+  [`DESIGN_RULES.md`](../project-specs/cannon-golf/DESIGN_RULES.md).
+
+## Inherited Generated UI Assets
+
+The Stage Select, Settings, and Timeout Result fidelity assets under
+`assets/ui/icons/` were generated for the source runtime and are not third-party
+package members. Their historical generation context, inherited role, and
+SHA-256 values are recorded in `assets/ui/icons/GENERATED_ASSETS.md`.
