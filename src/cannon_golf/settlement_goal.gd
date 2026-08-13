@@ -6,11 +6,22 @@ const BASE_SETTLE_SECONDS := 1.15
 const BASE_MAXIMUM_LINEAR_SPEED := 0.72
 const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
 
+enum VisualState {
+	FUTURE,
+	ACTIVE,
+	CONFIRMED,
+}
+
 var inner_radius := 5.5
 var rim_height := 0.8
 var settle_seconds := BASE_SETTLE_SECONDS / CannonGolfBallistics.MOTION_TIME_SCALE
 var maximum_linear_speed := BASE_MAXIMUM_LINEAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
 var maximum_angular_speed := BASE_MAXIMUM_ANGULAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
+var visual_state := VisualState.ACTIVE
+
+var _rim_markers: Array[MeshInstance3D] = []
+var _flag_pole: MeshInstance3D
+var _flag: MeshInstance3D
 
 
 func configure(world_position: Vector3, radius: float, world_rim_y: float = INF) -> void:
@@ -22,6 +33,12 @@ func configure(world_position: Vector3, radius: float, world_rim_y: float = INF)
 func _ready() -> void:
 	_build_rim()
 	_build_flag()
+	_apply_visual_state()
+
+
+func set_visual_state(next_state: VisualState) -> void:
+	visual_state = next_state
+	_apply_visual_state()
 
 
 func contains_ball(ball_position: Vector3, ball_radius: float) -> bool:
@@ -66,6 +83,7 @@ func _build_rim() -> void:
 		mesh_data.material = rim_material
 		marker.mesh = mesh_data
 		add_child(marker)
+		_rim_markers.append(marker)
 
 
 func _build_flag() -> void:
@@ -79,6 +97,7 @@ func _build_flag() -> void:
 	pole.mesh = pole_mesh
 	pole.position = Vector3(inner_radius * 0.72, rim_height + 5.0, 0.0)
 	add_child(pole)
+	_flag_pole = pole
 	var flag := MeshInstance3D.new()
 	var flag_mesh := BoxMesh.new()
 	flag_mesh.size = Vector3(4.0, 1.7, 0.10)
@@ -86,6 +105,40 @@ func _build_flag() -> void:
 	flag.mesh = flag_mesh
 	flag.position = Vector3(inner_radius * 0.72 - 1.9, rim_height + 9.0, 0.0)
 	add_child(flag)
+	_flag = flag
+
+
+func _apply_visual_state() -> void:
+	if _flag_pole == null or _flag == null:
+		return
+	var pole_height := 10.0
+	var flag_height := 9.0
+	var flag_scale := Vector3.ONE
+	match visual_state:
+		VisualState.FUTURE:
+			pole_height = 4.8
+			flag_height = 4.2
+			flag_scale = Vector3(0.62, 0.62, 1.0)
+		VisualState.CONFIRMED:
+			pole_height = 2.6
+			flag_height = 2.1
+			flag_scale = Vector3(0.42, 0.42, 1.0)
+	_flag_pole.scale = Vector3(1.0, pole_height / 10.0, 1.0)
+	_flag_pole.position.y = rim_height + pole_height * 0.5
+	_flag.scale = flag_scale
+	_flag.position = Vector3(
+		inner_radius * 0.72 - 1.9 * flag_scale.x,
+		rim_height + flag_height,
+		0.0
+	)
+	for index in range(_rim_markers.size()):
+		var marker := _rim_markers[index]
+		if visual_state == VisualState.FUTURE:
+			marker.visible = index % 2 == 0
+		elif visual_state == VisualState.CONFIRMED:
+			marker.visible = index % 4 == 0
+		else:
+			marker.visible = true
 
 
 func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:

@@ -148,6 +148,10 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_assert_hud_edge_fit(hud, Vector2(1600.0, 900.0), "1600x900")
+	root.size = Vector2i(1920, 1080)
+	await process_frame
+	await process_frame
+	_assert_hud_edge_fit(hud, Vector2(1920.0, 1080.0), "1920x1080")
 
 	var main_menu := MAIN_MENU_SCENE.instantiate() as CannonGolfMainMenu
 	root.add_child(main_menu)
@@ -160,8 +164,23 @@ func _run() -> void:
 		_assert(_find_named(course_select, removed) == null, "Course-select filler must be absent: %s." % removed)
 	for required in ["Play", "CourseSelect", "Settings", "Quit"]:
 		_assert(_find_named(main_menu, required) is Button, "Main menu must retain %s." % required)
-	for required in ["Back", "CourseOne", "CourseTwo", "Start"]:
+	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
+	_assert(
+		course_select.course_buttons().size() == CannonGolfCourseCatalog.all_courses().size(),
+		"Course select must create one reusable button per catalog course."
+	)
+	for index in range(course_select.course_buttons().size()):
+		var course_button := course_select.course_buttons()[index]
+		_assert(course_button.custom_minimum_size.y >= 44.0, "Course buttons need a stable keyboard target.")
+		_assert(not String(course_button.get("accessibility_name")).is_empty(), "Course buttons need accessible names.")
+		var expected_next: Control = course_select.get_node("%Start") \
+				if index == course_select.course_buttons().size() - 1 \
+				else course_select.course_buttons()[index + 1]
+		_assert(
+			course_button.focus_next == expected_next.get_path(),
+			"Catalog buttons must retain explicit forward focus order."
+		)
 	quit(1 if _failed else 0)
 
 

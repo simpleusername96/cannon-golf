@@ -27,6 +27,7 @@ $tests = @(
     'cannon_golf_physics_test.gd',
     'cannon_golf_input_test.gd',
     'cannon_golf_session_test.gd',
+    'cannon_golf_relay_test.gd',
     'cannon_golf_solution_test.gd',
     'cannon_golf_ui_contract_test.gd',
     'cannon_golf_settings_test.gd',

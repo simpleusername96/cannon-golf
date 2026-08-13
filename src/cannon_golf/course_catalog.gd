@@ -3,10 +3,11 @@ extends RefCounted
 
 const COURSE_ONE := preload("res://resources/cannon_golf/courses/first_ridge.tres")
 const COURSE_TWO := preload("res://resources/cannon_golf/courses/rising_bend.tres")
+const COURSE_THREE := preload("res://resources/cannon_golf/courses/deep_relay.tres")
 
 
 static func all_courses() -> Array[CannonGolfCourseData]:
-	return [COURSE_ONE, COURSE_TWO]
+	return [COURSE_ONE, COURSE_TWO, COURSE_THREE]
 
 
 static func course_at(index: int) -> CannonGolfCourseData:

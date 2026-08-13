@@ -51,6 +51,15 @@ func _initialize() -> void:
 	launcher.set_setup(63.0, 41.0, 78.0)
 	_assert_true(launcher.launch_speed() > velocity_a.length(), "Higher power must increase launch speed.")
 	_assert_true(launcher.launch_direction().is_normalized(), "Launch direction must be normalized.")
+	for distance in [30.0, 75.0, 120.0, 180.0, 240.0]:
+		var exact_interval := CannonGolfBallistics.reachable_height_interval(distance)
+		var sampled_interval := CannonGolfBallistics.sampled_reachable_height_interval(distance)
+		_assert_true(
+			exact_interval.is_finite() and sampled_interval.is_finite() \
+					and sampled_interval.x >= exact_interval.x - 0.0001 \
+					and sampled_interval.y <= exact_interval.y + 0.0001,
+			"Sampled admission interval must remain a fail-closed subset at %.0fm." % distance
+		)
 	print("Cannon Golf ballistics contract passed.")
 	quit(0)
 

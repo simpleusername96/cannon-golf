@@ -3,7 +3,19 @@ extends SceneTree
 
 func _initialize() -> void:
 	for course in CannonGolfCourseCatalog.all_courses():
-		var generated := CannonGolfCourseTerrainFactory.build(course)
+		var generated: Variant = CannonGolfCourseTerrainFactory.build(course)
+		if course.has_explicit_legs():
+			var relay := generated as CannonGolfGeneratedCourse
+			_assert_true(relay != null and relay.union_range_metrics.size() > 0, "Relay must provide union admission metrics.")
+			for point in relay.admission_points:
+				if CannonGolfCourseTerrainFactory._is_relay_launch_exclusion(point, relay.legs):
+					continue
+				var admitted := false
+				for leg in relay.legs:
+					var admission := CannonGolfBallistics.admit_world_point(point, leg.launcher_position, leg.shot_axis_yaw_degrees)
+					admitted = admitted or bool(admission.passed)
+				_assert_true(admitted, "Every relay terrain point must be admitted by at least one leg.")
+			continue
 		var layout := generated.layout as GeneratedStageLayout
 		_assert_true(
 			layout.local_bounds.size.is_equal_approx(Vector2(210.0, 120.0)),
@@ -30,7 +42,7 @@ func _initialize() -> void:
 				point, cannon_position, float(generated.shot_axis_yaw_degrees)
 			)
 			_assert_true(bool(admission.passed), "%s terrain point escaped the admitted launch envelope." % course.course_id)
-	print("Cannon Golf whole-terrain launch-envelope contract passed for both courses.")
+	print("Cannon Golf whole-terrain launch-envelope contract passed for all courses.")
 	quit(0)
 
 

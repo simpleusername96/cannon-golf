@@ -32,15 +32,19 @@ func _run() -> void:
 	await process_frame
 	_assert(app.selected_course_index == 1, "course selection must remain zero-based")
 	_assert(app.get_node("PreviewWorld").course_index == 1, "selection must update the live preview")
+	_assert(course_select.select_course(2), "the relay course must be selectable")
+	await process_frame
+	_assert(app.selected_course_index == 2, "the relay course must retain catalog index 2")
+	_assert(app.get_node("PreviewWorld").course_index == 2, "relay selection must update the live preview")
 
-	var game := app.start_selected_course(1)
+	var game := app.start_selected_course(2)
 	await process_frame
 	await process_frame
 	await process_frame
 	_assert(game != null and app.active_game == game, "starting a course must create the real Cannon Golf scene")
 	_assert(app.current_screen == CannonGolfApp.SCREEN_GAMEPLAY, "starting a course must expose gameplay state")
-	_assert(game.get_meta("initial_course_index") == 1, "initial course index must be recorded before the game is added")
-	_assert(int(game.get("course_index")) == 1, "the selected course must be synchronized into the current game")
+	_assert(game.get_meta("initial_course_index") == 2, "initial course index must be recorded before the game is added")
+	_assert(int(game.get("course_index")) == 2, "the selected course must be synchronized into the current game")
 
 	app.handle_game_navigation(&"settings")
 	await process_frame

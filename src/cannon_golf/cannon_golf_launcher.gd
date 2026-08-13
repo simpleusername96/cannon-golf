@@ -28,6 +28,21 @@ func configure(course: CannonGolfCourseData) -> void:
 	_apply_visuals()
 
 
+func configure_leg(
+		authored_leg: CannonGolfCourseLegData,
+		generated_leg: CannonGolfGeneratedCourseLeg
+) -> void:
+	assert(authored_leg != null and authored_leg.is_valid(), "Launcher requires valid leg data.")
+	assert(generated_leg != null and generated_leg.is_valid(), "Launcher requires generated leg data.")
+	position = generated_leg.launcher_position
+	shot_axis_yaw_degrees = generated_leg.shot_axis_yaw_degrees
+	horizontal_aim = authored_leg.default_horizontal_aim
+	elevation_degrees = authored_leg.default_elevation_degrees
+	power_percent = authored_leg.default_power_percent
+	yaw_degrees = CannonGolfBallistics.world_yaw_degrees(shot_axis_yaw_degrees, horizontal_aim)
+	_apply_visuals()
+
+
 func set_setup(horizontal: float, elevation: float, power: float) -> void:
 	horizontal_aim = CannonGolfBallistics.canonical_horizontal_aim(horizontal)
 	elevation_degrees = CannonGolfBallistics.canonical_elevation(elevation)

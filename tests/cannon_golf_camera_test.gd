@@ -117,6 +117,21 @@ func _run() -> void:
 			"Camera reset must restore the authored high-oblique planning view."
 		)
 		_assert_fits(camera, builder.course, rig, "%s reset" % source_course.course_id)
+		if builder.generated_course != null:
+			_assert_true(
+				rig.set_planning_context(builder.frame_bounds_for_leg(0), builder.course.planning_focus),
+				"Relay planning must accept its active-leg frame."
+			)
+			_assert_bounds_fit(
+				camera, builder.frame_bounds_for_leg(0), rig.planning_focus(),
+				"%s active leg" % source_course.course_id
+			)
+			_assert_true(rig.zoom_by_steps(-100.0), "Relay overview must zoom to the course limit.")
+			rig.snap_to_planning()
+			_assert_bounds_fit(
+				camera, builder.course.content_bounds, rig.planning_focus(),
+				"%s full-course overview" % source_course.course_id
+			)
 	if not _failed:
 		print("Cannon Golf generated-content planning and Shot Follow camera contract passed.")
 	quit(1 if _failed else 0)
@@ -139,6 +154,25 @@ func _assert_fits(
 			1.0
 		),
 		"Camera must fit generated content: %s." % label
+	)
+
+
+func _assert_bounds_fit(
+		camera: Camera3D,
+		bounds: AABB,
+		focus: Vector3,
+		label: String
+) -> void:
+	_assert_true(
+		TerrainCameraFramer.pose_fits_bounds(
+			bounds,
+			camera.global_position,
+			focus,
+			camera.fov,
+			1280.0 / 720.0,
+			1.0
+		),
+		"Camera must fit requested bounds: %s." % label
 	)
 
 

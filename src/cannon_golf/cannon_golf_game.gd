@@ -16,9 +16,11 @@ const NEARLY_STILL_LINEAR_SPEED := 0.34 * CannonGolfBallistics.MOTION_TIME_SCALE
 const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
 const MAXIMUM_LIVE_BALLS := 2
 
-@export_range(0, 1, 1) var initial_course_index := 0
+@export var initial_course_index := 0
 
 @onready var _camera: Camera3D = %Camera
+@onready var _sun: DirectionalLight3D = $Sun
+@onready var _ground: MeshInstance3D = $DioramaBase
 @onready var _course_builder: CannonGolfCourseBuilder = %CourseBuilder
 @onready var _ball_root: Node3D = %Balls
 @onready var _impact_history: CannonGolfImpactHistory = %ImpactHistory
@@ -38,6 +40,8 @@ var planning_zoom: float:
 		return _camera_rig.zoom
 var current_ball: CannonGolfBall
 var confirmed_ball: CannonGolfBall
+var confirmed_balls: Array[CannonGolfBall] = []
+var active_leg_index := 0
 var last_launch_outcome: StringName = &""
 var _active_balls: Array[CannonGolfBall] = []
 var _live_shots: Dictionary = {}
@@ -208,7 +212,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func fire() -> bool:
-	if confirmed_ball != null or _active_balls.size() >= MAXIMUM_LIVE_BALLS:
+	if launch_state == LaunchState.CLEARED or _active_balls.size() >= MAXIMUM_LIVE_BALLS:
 		return false
 	var ball := CannonGolfBall.new()
 	ball.name = "ActiveGolfBall%02d" % (_active_balls.size() + 1)
@@ -238,7 +242,7 @@ func reset_course() -> void:
 
 
 func retry_attempt() -> bool:
-	if launch_state == LaunchState.CLEARED or confirmed_ball != null \
+	if launch_state == LaunchState.CLEARED \
 			or current_ball == null or not is_instance_valid(current_ball):
 		return false
 	var retry_ball := current_ball
@@ -359,8 +363,17 @@ func _load_course(index: int) -> void:
 	course_index = clampi(index, 0, courses.size() - 1)
 	_clear_balls()
 	_clear_marks()
-	_course_builder.build(courses[course_index])
+	if not _course_builder.build(courses[course_index]):
+		push_error("Cannon Golf could not build the selected course.")
+		return
+	active_leg_index = 0
+	_apply_world_envelope()
 	_camera_rig.configure(_camera, _course_builder.course)
+	if _course_builder.generated_course != null:
+		_camera_rig.set_planning_context(
+			_course_builder.frame_bounds_for_leg(active_leg_index),
+			_course_builder.course.planning_focus
+		)
 	launch_state = LaunchState.PLANNING
 	last_launch_outcome = &""
 	_hud.set_setup(
@@ -381,12 +394,24 @@ func _clear_balls() -> void:
 		child.free()
 	current_ball = null
 	confirmed_ball = null
+	confirmed_balls.clear()
 	_active_balls.clear()
 	_live_shots.clear()
 
 
 func _clear_marks() -> void:
 	_impact_history.clear()
+
+
+func _apply_world_envelope() -> void:
+	var envelope := CannonGolfCourseWorldEnvelope.resolve(_course_builder.course.content_bounds)
+	var center: Vector3 = envelope.ground_center
+	var scale_factor := float(envelope.ground_scale)
+	_ground.position.x = center.x
+	_ground.position.z = center.z
+	_ground.scale = Vector3(scale_factor, 1.0, scale_factor)
+	_camera.far = float(envelope.far_distance)
+	_sun.directional_shadow_max_distance = float(envelope.far_distance)
 
 
 func _on_setup_changed(horizontal: float, elevation: float, power: float) -> void:
@@ -478,12 +503,32 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 	winning_ball.lock_as_confirmed()
 	last_launch_outcome = &"confirmed"
 	confirmed_ball = winning_ball
+	confirmed_balls.append(winning_ball)
 	for live_ball in _active_balls.duplicate():
 		if live_ball != winning_ball and is_instance_valid(live_ball):
 			live_ball.queue_free()
 	_active_balls.clear()
 	_live_shots.clear()
 	current_ball = null
+	if active_leg_index + 1 < _course_builder.leg_count():
+		active_leg_index += 1
+		assert(_course_builder.activate_leg(active_leg_index), "Relay leg transition must be valid.")
+		launch_state = LaunchState.PLANNING
+		_camera_rig.set_planning_context(
+			_course_builder.frame_bounds_for_leg(active_leg_index),
+			_course_builder.course.planning_focus
+		)
+		_hud.set_setup(
+			_course_builder.launcher.horizontal_aim,
+			_course_builder.launcher.elevation_degrees,
+			_course_builder.launcher.power_percent
+		)
+		_hud.set_view(_camera_rig.view_mode)
+		_hud.set_camera_mode(&"planning")
+		_hud.hide_clear()
+		_refresh_hud_availability()
+		_hud.focus_fire()
+		return
 	launch_state = LaunchState.CLEARED
 	# Success owns its result presentation: keep the confirmed ball in view
 	# while the side-anchored result action leaves the screen center unobstructed.
@@ -509,7 +554,7 @@ func active_balls() -> Array[CannonGolfBall]:
 
 
 func can_fire() -> bool:
-	return confirmed_ball == null and _active_balls.size() < MAXIMUM_LIVE_BALLS
+	return launch_state != LaunchState.CLEARED and _active_balls.size() < MAXIMUM_LIVE_BALLS
 
 
 func _shot_state(ball: CannonGolfBall) -> CannonGolfLiveShotState:
@@ -551,8 +596,7 @@ func _remove_live_ball(
 
 
 func _refresh_launch_state() -> void:
-	if confirmed_ball != null:
-		launch_state = LaunchState.CLEARED
+	if launch_state == LaunchState.CLEARED:
 		return
 	if current_ball == null or not is_instance_valid(current_ball):
 		launch_state = LaunchState.PLANNING
@@ -567,7 +611,7 @@ func _refresh_hud_availability() -> void:
 	_hud.set_launch_availability(
 		_active_balls.size(),
 		MAXIMUM_LIVE_BALLS,
-		confirmed_ball != null
+		launch_state == LaunchState.CLEARED
 	)
 
 
@@ -577,3 +621,7 @@ func impact_mark_count() -> int:
 
 func active_course() -> CannonGolfCourseData:
 	return _course_builder.course
+
+
+func confirmed_ball_count() -> int:
+	return confirmed_balls.size()

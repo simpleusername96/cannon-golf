@@ -29,6 +29,9 @@ var _planning_focus := Vector3.ZERO
 var _planning_pose_dirty := true
 var _planning_pose_builds := 0
 var _planning_viewport_size := Vector2.ZERO
+var _frame_bounds := AABB()
+var _exploration_bounds := AABB()
+var _base_planning_focus := Vector3.ZERO
 
 
 func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
@@ -36,6 +39,9 @@ func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
 	_camera = camera
 	_camera.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	_course = course
+	_frame_bounds = course.content_bounds
+	_exploration_bounds = course.content_bounds
+	_base_planning_focus = course.planning_focus
 	view_mode = &"oblique"
 	camera_mode = MODE_PLANNING
 	pan_offset = Vector3.ZERO
@@ -119,8 +125,22 @@ func reset_planning_view() -> void:
 	return_to_planning()
 
 
+func set_planning_context(frame_bounds: AABB, focus: Vector3) -> bool:
+	if not frame_bounds.has_volume() or not focus.is_finite():
+		return false
+	_frame_bounds = frame_bounds
+	_base_planning_focus = focus
+	view_mode = &"oblique"
+	pan_offset = Vector3.ZERO
+	zoom = DEFAULT_ZOOM
+	orbit_degrees = Vector2.ZERO
+	_planning_pose_dirty = true
+	return_to_planning(true)
+	return true
+
+
 func planning_focus() -> Vector3:
-	return _course.planning_focus + pan_offset if _course != null else Vector3.ZERO
+	return _base_planning_focus + pan_offset if _course != null else Vector3.ZERO
 
 
 func follow(target: Node3D) -> bool:
@@ -219,7 +239,7 @@ func _apply_planning(delta: float) -> void:
 
 
 func _resolve_planning_pose(viewport_size: Vector2) -> void:
-	var focus := _course.planning_focus + pan_offset
+	var focus := _base_planning_focus + pan_offset
 	var base_offset := _course.side_offset if view_mode == &"side" else _course.oblique_offset
 	var base_direction := base_offset.normalized()
 	var yaw := atan2(base_direction.x, base_direction.z) + deg_to_rad(orbit_degrees.x)
@@ -235,8 +255,9 @@ func _resolve_planning_pose(viewport_size: Vector2) -> void:
 		cos(yaw) * cos_pitch
 	)
 	var aspect := viewport_size.x / maxf(viewport_size.y, 1.0)
+	var framing_bounds := _zoom_adjusted_frame_bounds()
 	var framed_pose := TerrainCameraFramer.framed_pose_around(
-		_course.content_bounds,
+		framing_bounds,
 		focus,
 		focus + orbit_direction * base_offset.length(),
 		focus,
@@ -245,8 +266,32 @@ func _resolve_planning_pose(viewport_size: Vector2) -> void:
 		FRAME_MARGIN
 	)
 	var framed_position: Vector3 = framed_pose[0]
-	_planning_position = focus + (framed_position - focus) * zoom
+	var distance_scale := zoom
+	if view_mode == &"oblique" and _frame_bounds != _exploration_bounds:
+		distance_scale = lerpf(zoom, 1.0, _exploration_blend())
+	_planning_position = focus + (framed_position - focus) * distance_scale
 	_planning_focus = focus
 	_planning_viewport_size = viewport_size
 	_planning_pose_dirty = false
 	_planning_pose_builds += 1
+
+
+func _zoom_adjusted_frame_bounds() -> AABB:
+	# Side view stays local to the active leg. The high-oblique view expands
+	# continuously toward the complete course so maximum zoom-out is a reliable
+	# map-inspection state instead of only a more distant leg view.
+	if view_mode == &"side" or _frame_bounds == _exploration_bounds:
+		return _frame_bounds
+	var blend := _exploration_blend()
+	return AABB(
+		_frame_bounds.position.lerp(_exploration_bounds.position, blend),
+		_frame_bounds.size.lerp(_exploration_bounds.size, blend)
+	)
+
+
+func _exploration_blend() -> float:
+	return clampf(
+		(zoom - DEFAULT_ZOOM) / (MAXIMUM_ZOOM - DEFAULT_ZOOM),
+		0.0,
+		1.0
+	)

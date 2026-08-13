@@ -8,6 +8,7 @@ var _camera: Camera3D
 var _camera_rig: CannonGolfCourseCameraRig
 var _environment: WorldEnvironment
 var _ground: MeshInstance3D
+var _sun: DirectionalLight3D
 
 
 func _ready() -> void:
@@ -39,7 +40,9 @@ func show_course(index: int) -> bool:
 		_camera.current = visible
 		return true
 	course_index = index
-	_builder.build(course)
+	if not _builder.build(course):
+		return false
+	_apply_world_envelope()
 	_camera_rig.configure(_camera, _builder.course)
 	_camera.current = visible
 	return true
@@ -79,6 +82,7 @@ func _build_environment() -> void:
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 520.0
 	add_child(sun)
+	_sun = sun
 	_ground = MeshInstance3D.new()
 	_ground.name = "GroundApron"
 	_ground.position = Vector3(0.0, -5.0, -13.0)
@@ -100,3 +104,14 @@ func _build_environment() -> void:
 	ground_mesh.material = material
 	_ground.mesh = ground_mesh
 	add_child(_ground)
+
+
+func _apply_world_envelope() -> void:
+	var envelope := CannonGolfCourseWorldEnvelope.resolve(_builder.course.content_bounds)
+	var center: Vector3 = envelope.ground_center
+	var scale_factor := float(envelope.ground_scale)
+	_ground.position.x = center.x
+	_ground.position.z = center.z
+	_ground.scale = Vector3(scale_factor, 1.0, scale_factor)
+	_camera.far = float(envelope.far_distance)
+	_sun.directional_shadow_max_distance = float(envelope.far_distance)

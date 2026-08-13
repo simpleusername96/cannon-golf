@@ -39,6 +39,33 @@ func _run() -> void:
 		CannonGolfCourseTerrainFactory.generation_build_count() == generated_after_first,
 		"A second builder must consume the terrain cache without generation work."
 	)
+	var relay_builder := CannonGolfCourseBuilder.new()
+	root.add_child(relay_builder)
+	relay_builder.build(CannonGolfCourseCatalog.course_at(2))
+	# Warm both owners, then compare medians so asset import, first-use shader
+	# setup, and scheduler jitter do not decide the performance contract.
+	CannonGolfCourseTerrainFactory._build_uncached(CannonGolfCourseCatalog.course_at(0))
+	CannonGolfCourseTerrainFactory._build_explicit_uncached(CannonGolfCourseCatalog.course_at(2))
+	var legacy_uncached_usec := _median_usec(_measure_uncached(false, 3))
+	var relay_uncached_usec := _median_usec(_measure_uncached(true, 3))
+	_assert_true(
+		float(relay_uncached_usec) <= float(legacy_uncached_usec) * 3.0,
+		"Longitudinal uncached build must remain within 3x legacy cost: %dus vs %dus." % [
+			relay_uncached_usec, legacy_uncached_usec,
+		]
+	)
+	var legacy_cached_usec := _median_usec(
+		_measure_cached_factory(CannonGolfCourseCatalog.course_at(0), 300, 5)
+	)
+	var relay_cached_usec := _median_usec(
+		_measure_cached_factory(CannonGolfCourseCatalog.course_at(2), 300, 5)
+	)
+	_assert_true(
+		float(relay_cached_usec) <= float(legacy_cached_usec) * 1.25,
+		"Longitudinal cached lookup must remain within 25%% of legacy: %dus vs %dus." % [
+			relay_cached_usec, legacy_cached_usec,
+		]
+	)
 
 	var camera := Camera3D.new()
 	camera.fov = 48.0
@@ -81,3 +108,34 @@ func _assert_true(condition: bool, message: String) -> void:
 		return
 	_failed = true
 	push_error(message)
+
+
+func _measure_uncached(explicit: bool, repetitions: int) -> Array[int]:
+	var samples: Array[int] = []
+	var course := CannonGolfCourseCatalog.course_at(2 if explicit else 0)
+	for _repetition in range(repetitions):
+		var started := Time.get_ticks_usec()
+		if explicit:
+			CannonGolfCourseTerrainFactory._build_explicit_uncached(course)
+		else:
+			CannonGolfCourseTerrainFactory._build_uncached(course)
+		samples.append(Time.get_ticks_usec() - started)
+	return samples
+
+
+func _measure_cached_factory(
+		course: CannonGolfCourseData, iterations: int, repetitions: int
+) -> Array[int]:
+	var samples: Array[int] = []
+	CannonGolfCourseTerrainFactory.build(course)
+	for _repetition in range(repetitions):
+		var started := Time.get_ticks_usec()
+		for _index in range(iterations):
+			CannonGolfCourseTerrainFactory.build(course)
+		samples.append(Time.get_ticks_usec() - started)
+	return samples
+
+
+func _median_usec(samples: Array[int]) -> int:
+	samples.sort()
+	return samples[samples.size() / 2]

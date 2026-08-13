@@ -117,10 +117,21 @@ func _capture() -> void:
 		game.current_ball.global_position = game._course_builder.goal.global_position \
 				+ Vector3.UP * CannonGolfBall.RADIUS
 		game._confirm_goal()
+	elif requested_state == "relay_confirmed":
+		if not game.fire():
+			push_error("Relay capture could not launch its checkpoint ball.")
+			quit(1)
+			return
+		game.current_ball.global_position = game._course_builder.goal.global_position \
+				+ Vector3.UP * CannonGolfBall.RADIUS
+		game._confirm_goal()
+	elif requested_state == "relay_overview":
+		game.zoom_planning(-100.0)
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
 		"planning", "side", "explored", "zoom_close", "zoom_far", "shortcuts",
+		"relay_initial", "relay_overview",
 	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
 			push_error("Planning capture received live input and left the planning state.")
@@ -183,6 +194,36 @@ func _capture() -> void:
 				or not viewport_rect.has_point(ball_screen_position) \
 				or result_panel.get_global_rect().has_point(ball_screen_position):
 			push_error("Clear capture did not retain an unobstructed visible confirmed ball.")
+			quit(1)
+			return
+	if game != null and requested_state == "relay_initial":
+		if game.active_course().course_id != &"deep_relay" \
+				or game.active_leg_index != 0 \
+				or game._course_builder.goals.size() != 2:
+			push_error("Initial relay capture did not show the ordered two-goal course at leg one.")
+			quit(1)
+			return
+	if game != null and requested_state == "relay_confirmed":
+		if game.active_course().course_id != &"deep_relay" \
+				or game.active_leg_index != 1 \
+				or game.confirmed_ball_count() != 1 \
+				or game.launch_state != CannonGolfGame.LaunchState.PLANNING \
+				or game._camera_rig.camera_mode != &"planning":
+			push_error("Confirmed relay capture did not retain checkpoint one in the leg-two planning frame.")
+			quit(1)
+			return
+	if game != null and requested_state == "relay_overview":
+		if game.active_course().course_id != &"deep_relay" \
+				or not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.MAXIMUM_ZOOM) \
+				or not TerrainCameraFramer.pose_fits_bounds(
+					game.active_course().content_bounds,
+					game._camera.global_position,
+					game._camera_rig.planning_focus(),
+					game._camera.fov,
+					float(root.size.x) / float(root.size.y),
+					1.0
+				):
+			push_error("Relay overview capture did not frame the complete generated course.")
 			quit(1)
 			return
 	# Compatibility rendering can publish the terrain frame before every font

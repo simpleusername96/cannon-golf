@@ -16,6 +16,12 @@ func _run() -> void:
 	_assert_true(goal.motion_is_safe(Vector3(1.2, 0.0, 0.0), Vector3.ZERO), "Equivalent time-scaled safe motion must settle.")
 	_assert_true(not goal.motion_is_safe(Vector3(2.5, 0.0, 0.0), Vector3.ZERO), "Fast translation must not settle.")
 	_assert_true(not goal.motion_is_safe(Vector3.ZERO, Vector3(0.0, 5.0, 0.0)), "Fast rotation must not settle.")
+	_assert_true(_visible_rim_marker_count(goal) == 16, "The active goal must show a continuous rim rhythm.")
+	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.FUTURE)
+	_assert_true(_visible_rim_marker_count(goal) == 8, "A future goal must use an alternating rim rhythm.")
+	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.CONFIRMED)
+	_assert_true(_visible_rim_marker_count(goal) == 4, "A confirmed goal must defer to its retained ball.")
+	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.ACTIVE)
 	goal.queue_free()
 	await process_frame
 	for course in CannonGolfCourseCatalog.all_courses():
@@ -78,3 +84,12 @@ func _assert_true(condition: bool, message: String) -> void:
 		return
 	push_error(message)
 	quit(1)
+
+
+func _visible_rim_marker_count(goal: CannonGolfSettlementGoal) -> int:
+	var count := 0
+	for child in goal.get_children():
+		if child is MeshInstance3D and String(child.name).begins_with("GoalRimMarker") \
+				and child.visible:
+			count += 1
+	return count

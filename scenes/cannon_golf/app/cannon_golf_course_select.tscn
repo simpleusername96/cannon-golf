@@ -38,7 +38,7 @@ layout_mode = 0
 offset_left = 42.0
 offset_top = 98.0
 offset_right = 420.0
-offset_bottom = 338.0
+offset_bottom = 370.0
 self_modulate = Color(1, 1, 1, 0.9)
 
 [node name="Margin" type="MarginContainer" parent="CardsPanel"]
@@ -51,22 +51,6 @@ theme_override_constants/margin_bottom = 22
 [node name="Cards" type="VBoxContainer" parent="CardsPanel/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 12
-
-[node name="CourseOne" type="Button" parent="CardsPanel/Margin/Cards"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 88)
-layout_mode = 2
-theme_type_variation = &"QuietButton"
-toggle_mode = true
-text = "첫 능선"
-
-[node name="CourseTwo" type="Button" parent="CardsPanel/Margin/Cards"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 88)
-layout_mode = 2
-theme_type_variation = &"QuietButton"
-toggle_mode = true
-text = "오르는 굽이"
 
 [node name="Back" type="Button" parent="."]
 unique_name_in_owner = true

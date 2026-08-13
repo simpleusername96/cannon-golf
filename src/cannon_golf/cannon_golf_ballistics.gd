@@ -31,6 +31,8 @@ const MAXIMUM_STEPS := 600
 const REQUIRED_RANGE_MARGIN := 8.0
 const REQUIRED_YAW_MARGIN_DEGREES := 8.0
 const REQUIRED_HEIGHT_MARGIN := 8.0
+const ADMISSION_SAMPLE_ELEVATIONS := [10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 68.0]
+const ADMISSION_SAMPLE_POWERS := [10.0, 100.0]
 
 static var _motion_cache: Dictionary = {}
 static var _maximum_range := -1.0
@@ -142,6 +144,25 @@ static func reachable_height_interval(horizontal_distance: float) -> Vector2:
 	return Vector2(lowest, highest)
 
 
+## Returns a conservative inner interval made only from legal sampled shots.
+## A point inside this interval by the required margin is therefore admitted
+## without evaluating the full outer envelope; uncertain points still use the
+## exact interval above.
+static func sampled_reachable_height_interval(horizontal_distance: float) -> Vector2:
+	if horizontal_distance <= 0.0 or horizontal_distance > maximum_horizontal_range():
+		return Vector2(INF, -INF)
+	var lowest := INF
+	var highest := -INF
+	for elevation in ADMISSION_SAMPLE_ELEVATIONS:
+		for power in ADMISSION_SAMPLE_POWERS:
+			var height := _height_for_setup_at_distance(horizontal_distance, elevation, power)
+			if not is_finite(height):
+				continue
+			lowest = minf(lowest, height)
+			highest = maxf(highest, height)
+	return Vector2(lowest, highest)
+
+
 static func maximum_horizontal_range() -> float:
 	if _maximum_range >= 0.0:
 		return _maximum_range
@@ -205,6 +226,29 @@ static func _minimum_legal_power_for_speed(required_speed: float) -> float:
 	var raw_percent := (required_speed - MINIMUM_SPEED) \
 			/ (MAXIMUM_SPEED - MINIMUM_SPEED) * 100.0
 	return clampf(ceilf(raw_percent - 0.00001), MINIMUM_POWER_PERCENT, MAXIMUM_POWER_PERCENT)
+
+
+static func _height_for_setup_at_distance(
+		horizontal_distance: float, elevation_degrees: float, power_percent: float
+) -> float:
+	var elevation := deg_to_rad(elevation_degrees)
+	var horizontal_scale := cos(elevation)
+	var muzzle_forward := horizontal_scale * (BARREL_LENGTH + BALL_RADIUS * MUZZLE_CLEARANCE_FACTOR)
+	var projected_range := horizontal_distance - muzzle_forward
+	if projected_range <= 0.0:
+		return INF
+	var speed := launch_speed(power_percent)
+	var displacement := CannonBallistics.damped_position_at_horizontal_range(
+		speed * horizontal_scale,
+		speed * sin(elevation),
+		projected_range,
+		_damped_motion_cache()
+	)
+	if not displacement.is_finite():
+		return INF
+	return YAW_PIVOT_HEIGHT \
+			+ sin(elevation) * (BARREL_LENGTH + BALL_RADIUS * MUZZLE_CLEARANCE_FACTOR) \
+			+ displacement.y
 
 
 static func _damped_motion_cache() -> Dictionary:

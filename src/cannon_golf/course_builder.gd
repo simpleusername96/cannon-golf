@@ -7,20 +7,47 @@ var course: CannonGolfCourseData
 var terrain_body: StaticBody3D
 var launcher: CannonGolfLauncher
 var goal: CannonGolfSettlementGoal
+var goals: Array[CannonGolfSettlementGoal] = []
 var terrain_layout: GeneratedStageLayout
 var terrain_geometry: TerrainGeometry
+var generated_course: CannonGolfGeneratedCourse
 
 
-func build(selected_course: CannonGolfCourseData) -> void:
-	assert(selected_course != null and selected_course.is_valid(), "Course builder requires valid data.")
+func build(selected_course: CannonGolfCourseData) -> bool:
+	if selected_course == null or not selected_course.is_valid():
+		push_error("Course builder requires valid data.")
+		return false
 	clear_course()
 	# Generated positions are runtime data. Keep catalog resources immutable so
 	# preview and gameplay builds cannot overwrite each other's course metadata.
 	course = selected_course.duplicate(true) as CannonGolfCourseData
-	var terrain: Dictionary = TERRAIN_FACTORY.build(course)
-	terrain_layout = terrain.layout as GeneratedStageLayout
-	terrain_geometry = terrain.geometry as TerrainGeometry
-	_apply_generated_play_data(terrain)
+	var terrain: Variant = TERRAIN_FACTORY.build(course)
+	var legacy_goal_rim_y := INF
+	if terrain is CannonGolfGeneratedCourse:
+		generated_course = terrain as CannonGolfGeneratedCourse
+		if not generated_course.is_valid() or not generated_course.is_sealed() \
+				or generated_course.leg_count() != course.leg_count():
+			push_error("Terrain factory returned an incomplete explicit generated course.")
+			clear_course()
+			return false
+		terrain_layout = generated_course.layout
+		terrain_geometry = generated_course.geometry
+		if terrain_layout == null or not terrain_layout.is_valid() \
+				or terrain_geometry == null or not terrain_geometry.is_valid():
+			push_error("Explicit generated course has invalid terrain data.")
+			clear_course()
+			return false
+		_apply_generated_course_data(generated_course)
+	else:
+		if not terrain is Dictionary:
+			push_error("Terrain factory did not return usable generated data.")
+			clear_course()
+			return false
+		var legacy_terrain: Dictionary = terrain
+		terrain_layout = legacy_terrain.layout as GeneratedStageLayout
+		terrain_geometry = legacy_terrain.geometry as TerrainGeometry
+		legacy_goal_rim_y = float(legacy_terrain.goal_rim_y)
+		_apply_generated_play_data(legacy_terrain)
 	terrain_body = StaticBody3D.new()
 	terrain_body.name = "Terrain"
 	terrain_body.collision_layer = 1
@@ -46,13 +73,22 @@ func build(selected_course: CannonGolfCourseData) -> void:
 	terrain_body.add_child(terrain_mesh)
 	launcher = CannonGolfLauncher.new()
 	launcher.name = "Launcher"
-	launcher.configure(course)
 	add_child(launcher)
-	goal = CannonGolfSettlementGoal.new()
-	goal.name = "SettlementGoal"
-	goal.configure(course.goal_position, course.goal_radius, float(terrain.goal_rim_y))
-	add_child(goal)
+	if generated_course != null:
+		_build_explicit_goals()
+		if not activate_leg(0):
+			push_error("Explicit generated course could not activate its first leg.")
+			clear_course()
+			return false
+	else:
+		launcher.configure(course)
+		goal = CannonGolfSettlementGoal.new()
+		goal.name = "SettlementGoal"
+		goal.configure(course.goal_position, course.goal_radius, legacy_goal_rim_y)
+		add_child(goal)
+		goals.append(goal)
 	_add_dressing()
+	return true
 
 
 func clear_course() -> void:
@@ -62,8 +98,10 @@ func clear_course() -> void:
 	terrain_body = null
 	launcher = null
 	goal = null
+	goals.clear()
 	terrain_layout = null
 	terrain_geometry = null
+	generated_course = null
 	course = null
 
 
@@ -82,6 +120,69 @@ func _apply_generated_play_data(terrain: Dictionary) -> void:
 	course.play_bounds = terrain.play_bounds
 	course.content_bounds = terrain.content_bounds
 	course.planning_focus = course.cannon_position.lerp(course.goal_position, 0.5) + Vector3.UP * 2.0
+
+
+func _apply_generated_course_data(generated: CannonGolfGeneratedCourse) -> void:
+	var first_leg := generated.leg_at(0)
+	course.cannon_position = first_leg.launcher_position
+	course.goal_position = first_leg.goal_position
+	course.goal_radius = course.leg_at(0).goal_radius
+	course.shot_axis_yaw_degrees = first_leg.shot_axis_yaw_degrees
+	course.play_bounds = generated.play_bounds
+	course.content_bounds = generated.content_bounds
+	course.planning_focus = first_leg.frame_bounds.get_center()
+
+
+func _build_explicit_goals() -> void:
+	for index in range(generated_course.leg_count()):
+		var authored := course.leg_at(index)
+		var generated := generated_course.leg_at(index)
+		var settlement_goal := CannonGolfSettlementGoal.new()
+		settlement_goal.name = "SettlementGoal%02d" % (index + 1)
+		settlement_goal.configure(generated.goal_position, authored.goal_radius, generated.goal_lip_y)
+		settlement_goal.visual_state = CannonGolfSettlementGoal.VisualState.ACTIVE \
+				if index == 0 else CannonGolfSettlementGoal.VisualState.FUTURE
+		add_child(settlement_goal)
+		goals.append(settlement_goal)
+
+
+func activate_leg(index: int) -> bool:
+	if generated_course == null or index < 0 or index >= generated_course.leg_count():
+		return false
+	var authored := course.leg_at(index)
+	var generated := generated_course.leg_at(index)
+	launcher.configure_leg(authored, generated)
+	goal = goals[index]
+	course.cannon_position = generated.launcher_position
+	course.goal_position = generated.goal_position
+	course.goal_radius = authored.goal_radius
+	course.shot_axis_yaw_degrees = generated.shot_axis_yaw_degrees
+	course.planning_focus = generated.frame_bounds.get_center()
+	for goal_index in range(goals.size()):
+		if goal_index < index:
+			goals[goal_index].set_visual_state(CannonGolfSettlementGoal.VisualState.CONFIRMED)
+		elif goal_index == index:
+			goals[goal_index].set_visual_state(CannonGolfSettlementGoal.VisualState.ACTIVE)
+		else:
+			goals[goal_index].set_visual_state(CannonGolfSettlementGoal.VisualState.FUTURE)
+	return true
+
+
+func leg_count() -> int:
+	return course.leg_count() if course != null else 0
+
+
+func goal_at(index: int) -> CannonGolfSettlementGoal:
+	if index < 0 or index >= goals.size():
+		return null
+	return goals[index]
+
+
+func frame_bounds_for_leg(index: int) -> AABB:
+	if generated_course != null:
+		var generated := generated_course.leg_at(index)
+		return generated.frame_bounds if generated != null else AABB()
+	return course.content_bounds if course != null else AABB()
 
 
 func _add_dressing() -> void:
