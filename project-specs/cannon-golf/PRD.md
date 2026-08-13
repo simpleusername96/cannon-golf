@@ -141,7 +141,10 @@ than the inherited frontal cannon composition.
   angle `10..68` degrees, and power `10..100`. Horizontal aim `50` follows the
   generated course shot axis; the endpoints map linearly to `-80..+80` degrees
   from that axis. All three visible values start at `50` on every course. The
-  player cannot steer the ball in flight.
+  prototype maps legal power to `28..120 m/s`. Ball-local gravity, damping,
+  motion thresholds, and dwell thresholds are time-scaled so established course
+  paths resolve at roughly twice their former pace instead of doubling spatial
+  range. The player cannot steer the ball in flight.
 - Reason: the game is about planning and result-based correction.
 
 ### FR-2: First-impact history
@@ -207,7 +210,9 @@ than the inherited frontal cannon composition.
   direct course exploration also restore planning while balls remain live.
   Direct planning interaction uses left-drag to orbit around
   the current fixed course focus, the mouse wheel or compact zoom actions to
-  change distance, arrow keys to pan, and `Home` or the compact reset action to
+  change distance. One wheel notch or compact zoom press must change the
+  planning distance by at least `20%`; zoom remains bounded in both directions.
+  Arrow keys pan, and `Home` or the compact reset action must
   restore the authored high-oblique pose. A click without drag must not refocus
   the camera. Starting any direct course exploration during Shot Follow first
   returns to planning. Launch controls remain editable in either camera mode.
@@ -259,7 +264,10 @@ than the inherited frontal cannon composition.
 
 - Requirement: the standard ball must have a visible, predictable baseline
   rebound on ordinary hard terrain, with energy loss sufficient for eventual
-  rest. It must neither stick dead on ordinary impact nor gain unstable energy.
+  rest. The two-course prototype uses one shared `0.75 m` radius for its visible
+  sphere, collision sphere, muzzle clearance, goal containment, and range
+  admission. It must neither stick dead on ordinary impact nor gain unstable
+  energy.
 - Reason: bounce is part of the aiming challenge and makes safe settlement a
   meaningful success condition.
 

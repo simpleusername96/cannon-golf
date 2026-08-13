@@ -231,8 +231,8 @@ in `OPEN_QUESTIONS.md`.
 - Status: accepted for the two-course prototype on 2026-08-13.
 - Retain the generated mountain's original `210 x 120` metre horizontal extent,
   use `0.45` vertical scale, and place the cannon `75` metres behind the route
-  start. Launch speed spans `14..60` metres/second under the retained damping,
-  gravity, rebound, and flight horizon.
+  start. Per D-028, launch speed now spans `28..120` metres/second with
+  ball-local temporal scaling that preserves the intended spatial envelope.
 - Every playable terrain-top vertex and visible support-shell boundary point
   must be in front of the cannon and pass legal yaw, horizontal range, and
   reachable-height admission with at least `8` metres range, `8` degrees yaw,
@@ -281,6 +281,20 @@ in `OPEN_QUESTIONS.md`.
 - `Tab` is a one-way immediate return from Shot Follow to the stored planning
   pose. It does nothing to camera mode while already planning, so it never
   re-enters follow. The explicit follow icon remains the entry/exit control.
+
+### D-028 — Ball motion is twice-paced without doubling course range
+
+- Status: accepted for the two-course prototype on 2026-08-13.
+- The live and ballistic ball share a `0.75 m` radius. Legal launch speed doubles
+  from `14..60` to `28..120 m/s`.
+- To make play resolve faster without invalidating the original-scale mountain,
+  the ball uses `4x` local gravity, `2x` linear/angular damping, doubled
+  velocity thresholds, halved dwell thresholds, and a bounded `10 s` flight
+  horizon. This is ball-local temporal scaling, not global engine time scale.
+- First Ridge retains its certified solution at `50 / 46° / 72%`. Rising Bend
+  retains `50 / 42°` and recertifies the adjacent power `71%`.
+- Planning zoom changes distance by `22%` per wheel notch or compact action and
+  remains bounded to `0.38..2.0` around the authored framed distance.
 
 ## Rationale
 

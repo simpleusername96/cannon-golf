@@ -65,6 +65,10 @@ func _capture() -> void:
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
 		game.pan_planning(Vector2(1.0, 0.0))
+	elif requested_state == "zoom_close":
+		game.zoom_planning(3.0)
+	elif requested_state == "zoom_far":
+		game.zoom_planning(-3.0)
 	elif requested_state == "shortcuts":
 		game._hud.set_shortcut_panel_visible(true)
 	elif requested_state == "follow":
@@ -92,7 +96,9 @@ func _capture() -> void:
 		game._confirm_goal()
 	for _frame in range(36):
 		await process_frame
-	if game != null and requested_state in ["planning", "side", "explored", "shortcuts"]:
+	if game != null and requested_state in [
+		"planning", "side", "explored", "zoom_close", "zoom_far", "shortcuts",
+	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
 			push_error("Planning capture received live input and left the planning state.")
 			quit(1)
@@ -103,6 +109,16 @@ func _capture() -> void:
 			push_error("Explored capture did not retain an orbit and zoom change.")
 			quit(1)
 			return
+	if game != null and requested_state == "zoom_close" \
+			and game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.55:
+		push_error("Close-zoom capture did not move materially toward the course.")
+		quit(1)
+		return
+	if game != null and requested_state == "zoom_far" \
+			and game.planning_zoom < CannonGolfCourseCameraRig.MAXIMUM_ZOOM:
+		push_error("Far-zoom capture did not reach its bounded course view.")
+		quit(1)
+		return
 	if game != null and requested_state == "shortcuts" \
 			and not game._hud.is_shortcut_panel_visible():
 		push_error("Shortcut capture did not retain its open help panel.")

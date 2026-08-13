@@ -75,6 +75,8 @@ coefficients, stage data formats, or code ownership.
   Follow returns to the stored planning context before applying the input.
 - Keep zoom bounded but materially useful in both directions. A compact reset
   action restores the authored high-oblique view, zero pan, and default distance.
+  One wheel notch or compact zoom action must visibly change planning distance;
+  do not require several repeated inputs before the course scale changes.
 - A behind-cannon view may be a temporary launch or local-aim view. It must not
   hide the course structure or become the only way to plan.
 - Shot Follow should reveal cause and effect without taking control away. Firing
@@ -123,6 +125,9 @@ coefficients, stage data formats, or code ownership.
   remain visibly unsuccessful.
 - A confirmed goal must show the settled ball clearly from every planning view,
   and the ball must not move when later shots occur.
+- The two-course prototype ball uses one `0.75 m` physical and visual radius so
+  it remains readable over the original-scale mountain without becoming a
+  non-physical screen-space marker.
 - A completed state must not rely on color alone.
 
 ### Impact-history marks

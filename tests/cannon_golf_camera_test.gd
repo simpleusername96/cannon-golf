@@ -43,6 +43,22 @@ func _run() -> void:
 			rig.snap_to_planning()
 			_assert_fits(camera, builder.course, rig, "%s %s panned" % [source_course.course_id, view])
 			var default_distance := camera.global_position.distance_to(rig.planning_focus())
+			_assert_true(rig.zoom_by_steps(1.0), "One planning zoom step must move toward the course.")
+			rig.snap_to_planning()
+			var one_step_distance := camera.global_position.distance_to(rig.planning_focus())
+			_assert_true(
+				one_step_distance <= default_distance * 0.80,
+				"One zoom-in step must reduce planning distance by at least 20 percent."
+			)
+			_assert_true(rig.zoom_by_steps(-1.0), "The inverse step must restore planning distance.")
+			rig.snap_to_planning()
+			_assert_true(
+				is_equal_approx(
+					camera.global_position.distance_to(rig.planning_focus()),
+					default_distance
+				),
+				"One zoom-out step must reverse one zoom-in step."
+			)
 			_assert_true(rig.zoom_by_steps(100.0), "Planning zoom must move toward the course.")
 			rig.snap_to_planning()
 			var close_distance := camera.global_position.distance_to(rig.planning_focus())

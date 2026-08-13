@@ -5,6 +5,7 @@ var _contacts := 0
 var _incoming_down_speed := 0.0
 var _maximum_rebound_speed := 0.0
 var _frames := 0
+var _geometry_checked := false
 
 
 func _initialize() -> void:
@@ -35,6 +36,23 @@ func _on_contact(_contact_ball: CannonGolfBall, _position: Vector3, normal: Vect
 
 func _on_frame() -> void:
 	_frames += 1
+	if not _geometry_checked:
+		_geometry_checked = true
+		var ball_shape := (_ball.get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D
+		var ball_mesh := (_ball.get_node("GolfBallMesh") as MeshInstance3D).mesh as SphereMesh
+		_assert_true(
+			is_equal_approx(CannonGolfBall.RADIUS, 0.75) \
+					and is_equal_approx(ball_shape.radius, CannonGolfBall.RADIUS) \
+					and is_equal_approx(ball_mesh.radius, CannonGolfBall.RADIUS),
+			"The live collider and rendered ball must share the accepted 0.75 m radius."
+		)
+		_assert_true(
+			is_equal_approx(_ball.linear_damp, 0.20) \
+					and is_equal_approx(_ball.angular_damp, 0.84) \
+					and is_equal_approx(_ball.gravity_scale, 4.0) \
+					and is_equal_approx(CannonGolfBall.MAXIMUM_FLIGHT_SECONDS, 10.0),
+			"The live ball must apply the accepted two-times temporal physics scaling."
+		)
 	if _contacts > 0 and is_instance_valid(_ball):
 		_maximum_rebound_speed = maxf(_maximum_rebound_speed, _ball.linear_velocity.y)
 	if _frames < 360:

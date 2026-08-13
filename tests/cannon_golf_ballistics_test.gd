@@ -18,6 +18,21 @@ func _initialize() -> void:
 				and CannonGolfBallistics.canonical_power(101.0) == 100.0,
 		"Vertical angle and power clamping must be stable."
 	)
+	_assert_true(
+		is_equal_approx(CannonGolfBallistics.MINIMUM_SPEED, 28.0) \
+				and is_equal_approx(CannonGolfBallistics.MAXIMUM_SPEED, 120.0),
+		"Canonical launch-speed endpoints must be the accepted doubled 28..120 m/s range."
+	)
+	_assert_true(
+		is_equal_approx(CannonGolfBallistics.BALL_RADIUS, 0.75) \
+				and is_equal_approx(CannonGolfBallistics.BALL_RADIUS, CannonGolfBall.RADIUS),
+		"Ballistics and the live rigid body must share the accepted 0.75 m radius."
+	)
+	_assert_true(
+		is_equal_approx(CannonGolfBallistics.launch_speed(100.0), 120.0) \
+				and is_equal_approx(CannonGolfBallistics.launch_speed(10.0), 37.2),
+		"Legal power endpoint speed mapping must stay exact and canonical."
+	)
 	var launcher := CannonGolfLauncher.new()
 	root.add_child(launcher)
 	launcher.position = Vector3(2.0, 1.0, 5.0)
@@ -29,6 +44,10 @@ func _initialize() -> void:
 	var velocity_b := launcher.launch_velocity()
 	_assert_true(origin_a.distance_to(origin_b) <= 0.000001, "Identical setup must keep the same origin.")
 	_assert_true(velocity_a.distance_to(velocity_b) <= 0.000001, "Identical setup must keep the same velocity.")
+	_assert_true(
+		is_equal_approx(velocity_a.length(), CannonGolfBallistics.launch_speed(62.0)),
+		"The launcher must apply the doubled canonical speed exactly once."
+	)
 	launcher.set_setup(63.0, 41.0, 78.0)
 	_assert_true(launcher.launch_speed() > velocity_a.length(), "Higher power must increase launch speed.")
 	_assert_true(launcher.launch_direction().is_normalized(), "Launch direction must be normalized.")

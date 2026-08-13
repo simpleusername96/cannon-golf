@@ -2,12 +2,15 @@ class_name CannonGolfSettlementGoal
 extends Node3D
 
 const RIM_SEGMENTS := 16
+const BASE_SETTLE_SECONDS := 1.15
+const BASE_MAXIMUM_LINEAR_SPEED := 0.72
+const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
 
 var inner_radius := 5.5
 var rim_height := 0.8
-var settle_seconds := 1.15
-var maximum_linear_speed := 0.72
-var maximum_angular_speed := 2.2
+var settle_seconds := BASE_SETTLE_SECONDS / CannonGolfBallistics.MOTION_TIME_SCALE
+var maximum_linear_speed := BASE_MAXIMUM_LINEAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
+var maximum_angular_speed := BASE_MAXIMUM_ANGULAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
 
 
 func configure(world_position: Vector3, radius: float, world_rim_y: float = INF) -> void:

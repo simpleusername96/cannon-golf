@@ -125,8 +125,9 @@ func _run() -> void:
 	_assert_true(game._camera_rig.camera_mode == &"follow", "The newest Space launch must enter Shot Follow.")
 	await _push_mouse_button(MOUSE_BUTTON_WHEEL_UP, true)
 	_assert_true(
-		game._camera_rig.camera_mode == &"planning" and game.planning_zoom < zoom_before_wheel,
-		"Wheel input during follow must return to planning and zoom toward the terrain."
+		game._camera_rig.camera_mode == &"planning" \
+				and game.planning_zoom <= zoom_before_wheel * 0.80,
+		"Wheel input during follow must return to planning and visibly zoom toward the terrain."
 	)
 
 	_assert_true(game.toggle_shot_camera(), "A live ball must remain available for drag-from-follow coverage.")
@@ -167,8 +168,8 @@ func _run() -> void:
 	(game._hud.get_node("%ZoomInButton") as Button).pressed.emit()
 	await process_frame
 	_assert_true(
-		game.planning_zoom < CannonGolfCourseCameraRig.DEFAULT_ZOOM,
-		"The compact zoom-in action must use the planning camera owner."
+		game.planning_zoom <= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.80,
+		"The compact zoom-in action must visibly use the planning camera owner."
 	)
 	(game._hud.get_node("%CameraResetButton") as Button).pressed.emit()
 	await process_frame
@@ -179,8 +180,8 @@ func _run() -> void:
 	(game._hud.get_node("%ZoomOutButton") as Button).pressed.emit()
 	await process_frame
 	_assert_true(
-		game.planning_zoom > CannonGolfCourseCameraRig.DEFAULT_ZOOM,
-		"The compact zoom-out action must use the planning camera owner."
+		game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM / 0.80,
+		"The compact zoom-out action must visibly use the planning camera owner."
 	)
 	(game._hud.get_node("%CameraResetButton") as Button).pressed.emit()
 	await process_frame

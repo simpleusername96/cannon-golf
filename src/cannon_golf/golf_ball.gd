@@ -4,8 +4,8 @@ extends RigidBody3D
 signal first_surface_contact(ball: CannonGolfBall, world_position: Vector3, world_normal: Vector3)
 signal launch_ended(ball: CannonGolfBall, reason: StringName)
 
-const RADIUS := 0.55
-const MAXIMUM_FLIGHT_SECONDS := 13.0
+const RADIUS := CannonGolfBallistics.BALL_RADIUS
+const MAXIMUM_FLIGHT_SECONDS := CannonGolfBallistics.MAXIMUM_FLIGHT_SECONDS
 
 var play_bounds := AABB(Vector3(-50.0, -15.0, -90.0), Vector3(100.0, 70.0, 130.0))
 var _elapsed := 0.0
@@ -16,9 +16,9 @@ var _ended := false
 func _ready() -> void:
 	mass = 1.2
 	linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
-	linear_damp = 0.10
-	angular_damp = 0.42
-	gravity_scale = 1.0
+	linear_damp = CannonGolfBallistics.LINEAR_DAMP
+	angular_damp = 0.42 * CannonGolfBallistics.MOTION_TIME_SCALE
+	gravity_scale = pow(CannonGolfBallistics.MOTION_TIME_SCALE, 2.0)
 	continuous_cd = true
 	contact_monitor = true
 	max_contacts_reported = 12

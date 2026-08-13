@@ -21,7 +21,10 @@ func _initialize() -> void:
 		_assert_true(float(metrics.farthest_distance) >= 175.0, "%s far terrain must be at least 175 metres away." % course.course_id)
 		_assert_true(float(metrics.minimum_range_margin) >= 8.0, "%s range margin failed." % course.course_id)
 		_assert_true(float(metrics.minimum_yaw_margin_degrees) >= 8.0, "%s yaw margin failed." % course.course_id)
-		_assert_true(float(metrics.minimum_height_margin) >= 8.0, "%s height margin failed." % course.course_id)
+		_assert_true(
+			float(metrics.minimum_height_margin) >= CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN,
+			"%s height margin failed." % course.course_id
+		)
 		for point in generated.admission_points as PackedVector3Array:
 			var admission := CannonGolfBallistics.admit_world_point(
 				point, cannon_position, float(generated.shot_axis_yaw_degrees)

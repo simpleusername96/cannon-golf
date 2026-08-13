@@ -11,7 +11,9 @@ enum LaunchState {
 	CLEARED,
 }
 
-const LOW_SPEED_FAILURE_SECONDS := 1.25
+const LOW_SPEED_FAILURE_SECONDS := 1.25 / CannonGolfBallistics.MOTION_TIME_SCALE
+const NEARLY_STILL_LINEAR_SPEED := 0.34 * CannonGolfBallistics.MOTION_TIME_SCALE
+const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
 const MAXIMUM_LIVE_BALLS := 2
 
 @export_range(0, 1, 1) var initial_course_index := 0
@@ -109,8 +111,8 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 	else:
 		shot.reset_settlement()
 		var nearly_still := ball.has_reported_first_contact() \
-				and ball.linear_velocity.length() < 0.34 \
-				and ball.angular_velocity.length() < 1.1
+				and ball.linear_velocity.length() < NEARLY_STILL_LINEAR_SPEED \
+				and ball.angular_velocity.length() < NEARLY_STILL_ANGULAR_SPEED
 		if ball.sleeping or nearly_still:
 			shot.low_speed_elapsed += delta
 			if shot.low_speed_elapsed >= LOW_SPEED_FAILURE_SECONDS:
