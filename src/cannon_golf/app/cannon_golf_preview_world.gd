@@ -24,7 +24,6 @@ func _ready() -> void:
 	_camera_rig = CannonGolfCourseCameraRig.new()
 	_camera_rig.name = "PreviewCameraRig"
 	add_child(_camera_rig)
-	show_course(0)
 
 
 func _process(delta: float) -> void:
@@ -36,6 +35,9 @@ func show_course(index: int) -> bool:
 	var course := CannonGolfCourseCatalog.course_at(index)
 	if course == null:
 		return false
+	if course_index == index and _builder.course != null:
+		_camera.current = visible
+		return true
 	course_index = index
 	_builder.build(course)
 	_camera_rig.configure(_camera, _builder.course)

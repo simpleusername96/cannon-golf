@@ -22,6 +22,7 @@ $tests = @(
     'cannon_golf_goal_test.gd',
     'cannon_golf_course_build_test.gd',
     'cannon_golf_camera_test.gd',
+    'cannon_golf_performance_test.gd',
     'cannon_golf_terrain_test.gd',
     'cannon_golf_physics_test.gd',
     'cannon_golf_session_test.gd',

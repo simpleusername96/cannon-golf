@@ -31,6 +31,7 @@ func _run() -> void:
 		hud.get_node("%PowerSlider"),
 		hud.get_node("%ObliqueButton"),
 		hud.get_node("%SideButton"),
+		hud.get_node("%FollowButton"),
 		hud.get_node("%RetryButton"),
 		hud.get_node("%PauseButton"),
 		hud.get_node("%FireButton"),
@@ -43,7 +44,7 @@ func _run() -> void:
 			normal_controls[index].focus_next == normal_controls[(index + 1) % normal_controls.size()].get_path(),
 			"Normal controls must expose an explicit task-order focus chain: %s." % normal_controls[index].name
 		)
-	for button_name in ["ObliqueButton", "SideButton", "RetryButton", "PauseButton"]:
+	for button_name in ["ObliqueButton", "SideButton", "FollowButton", "RetryButton", "PauseButton"]:
 		var button := hud.get_node("%%%s" % button_name) as Button
 		_assert(not button.tooltip_text.is_empty(), "Icon action needs a tooltip: %s." % button_name)
 		_assert(not String(button.get("accessibility_name")).is_empty(), "Icon action needs an accessible name: %s." % button_name)
@@ -64,6 +65,7 @@ func _run() -> void:
 			normal_primary_count += 1
 	_assert(normal_primary_count == 1, "Fire must be the only normal-play primary action.")
 	hud.set_view(&"side")
+	hud.set_launch_availability(1, 2, false)
 	await process_frame
 	var fire_button := hud.get_node("%FireButton") as Button
 	var action_dock := hud.get_node("Root/ActionDock") as Control
@@ -73,7 +75,19 @@ func _run() -> void:
 			fire_button.get_global_rect(), action_dock.get_global_rect(),
 		]
 	)
-	_assert(not String(fire_button.get("accessibility_name")).is_empty(), "Fire needs an accessible name when its visible copy is a child label.")
+	_assert(not String(fire_button.get("accessibility_name")).is_empty(), "Fire needs an accessible name.")
+	_assert(not fire_button.disabled, "Shot two must remain available while one ball is live.")
+	_assert(not (hud.get_node("%FollowButton") as Button).disabled, "A live ball must enable the follow action.")
+	for slider_name in ["HorizontalSlider", "ElevationSlider", "PowerSlider"]:
+		_assert((hud.get_node("%%%s" % slider_name) as Slider).editable, "Live flight must keep %s editable." % slider_name)
+	hud.set_camera_mode(&"follow")
+	_assert((hud.get_node("%FollowButton") as Button).button_pressed, "Follow mode needs a selected state beyond color.")
+	_assert(
+		(hud.get_node("%FollowButton") as Button).tooltip_text.contains("돌아가기"),
+		"Follow mode must describe the action that returns to planning."
+	)
+	hud.set_launch_availability(2, 2, false)
+	_assert(fire_button.disabled, "Two live balls must visibly disable Fire at capacity.")
 
 	var korean_copy := _visible_copy(hud)
 	for required in ["좌우", "상하", "파워", "발사"]:

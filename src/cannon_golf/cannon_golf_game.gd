@@ -12,6 +12,7 @@ enum LaunchState {
 }
 
 const LOW_SPEED_FAILURE_SECONDS := 1.25
+const MAXIMUM_LIVE_BALLS := 2
 
 @export_range(0, 1, 1) var initial_course_index := 0
 
@@ -36,14 +37,15 @@ var planning_zoom: float:
 var current_ball: CannonGolfBall
 var confirmed_ball: CannonGolfBall
 var last_launch_outcome: StringName = &""
-var _settle_elapsed := 0.0
-var _low_speed_elapsed := 0.0
-var _entered_goal := false
-var _failure_pending := false
+var _active_balls: Array[CannonGolfBall] = []
+var _live_shots: Dictionary = {}
+
+
 func _ready() -> void:
 	_hud.fire_requested.connect(fire)
 	_hud.setup_changed.connect(_on_setup_changed)
 	_hud.view_requested.connect(set_planning_view)
+	_hud.follow_requested.connect(toggle_shot_camera)
 	_hud.retry_requested.connect(retry_attempt)
 	_hud.reset_requested.connect(reset_course)
 	_hud.pause_requested.connect(toggle_pause)
@@ -63,42 +65,52 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if current_ball == null or not is_instance_valid(current_ball) \
-			or launch_state == LaunchState.RECOVERING \
-			or launch_state == LaunchState.CLEARED:
+	if launch_state == LaunchState.CLEARED:
+		return
+	for ball in _active_balls.duplicate():
+		if ball == null or not is_instance_valid(ball):
+			_remove_live_ball(ball, false)
+			continue
+		_update_live_ball(ball, delta)
+		if launch_state == LaunchState.CLEARED:
+			return
+	_refresh_launch_state()
+
+
+func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
+	var shot := _shot_state(ball)
+	if shot == null or shot.ending:
 		return
 	var goal := _course_builder.goal
 	var inside := goal.contains_rebound_column(
-		current_ball.global_position,
+		ball.global_position,
 		CannonGolfBall.RADIUS
-	) if _entered_goal else goal.contains_ball(
-		current_ball.global_position,
+	) if shot.entered_goal else goal.contains_ball(
+		ball.global_position,
 		CannonGolfBall.RADIUS
 	)
 	if inside:
-		_entered_goal = true
-		_low_speed_elapsed = 0.0
-		if goal.motion_is_safe(current_ball.linear_velocity, current_ball.angular_velocity):
-			launch_state = LaunchState.SETTLING
-			_settle_elapsed += delta
-			if _settle_elapsed >= goal.settle_seconds:
-				_confirm_goal()
+		shot.entered_goal = true
+		shot.reset_low_speed()
+		if goal.motion_is_safe(ball.linear_velocity, ball.angular_velocity):
+			shot.settle_elapsed += delta
+			if shot.settle_elapsed >= goal.settle_seconds:
+				_confirm_goal(ball)
 		else:
-			launch_state = LaunchState.FLYING
-			_settle_elapsed = 0.0
-	elif _entered_goal:
-		_fail_launch(&"bounced_out")
+			shot.reset_settlement()
+	elif shot.entered_goal:
+		_fail_ball(ball, &"bounced_out")
 	else:
-		_settle_elapsed = 0.0
-		var nearly_still := current_ball.has_reported_first_contact() \
-				and current_ball.linear_velocity.length() < 0.34 \
-				and current_ball.angular_velocity.length() < 1.1
-		if current_ball.sleeping or nearly_still:
-			_low_speed_elapsed += delta
-			if _low_speed_elapsed >= LOW_SPEED_FAILURE_SECONDS:
-				_fail_launch(&"stopped_outside")
+		shot.reset_settlement()
+		var nearly_still := ball.has_reported_first_contact() \
+				and ball.linear_velocity.length() < 0.34 \
+				and ball.angular_velocity.length() < 1.1
+		if ball.sleeping or nearly_still:
+			shot.low_speed_elapsed += delta
+			if shot.low_speed_elapsed >= LOW_SPEED_FAILURE_SECONDS:
+				_fail_ball(ball, &"stopped_outside")
 		else:
-			_low_speed_elapsed = 0.0
+			shot.reset_low_speed()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -112,6 +124,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	match event.keycode:
+		KEY_TAB:
+			if toggle_shot_camera():
+				get_viewport().set_input_as_handled()
 		KEY_SPACE:
 			fire()
 		KEY_1:
@@ -145,27 +160,30 @@ func _unhandled_input(event: InputEvent) -> void:
 			pan_planning(Vector2(0.0, -1.0))
 
 
-func fire() -> bool:
-	if launch_state != LaunchState.PLANNING or current_ball != null \
-			or confirmed_ball != null:
+func fire(follow_new_shot: bool = true) -> bool:
+	if confirmed_ball != null or _active_balls.size() >= MAXIMUM_LIVE_BALLS:
 		return false
-	current_ball = CannonGolfBall.new()
-	current_ball.name = "ActiveGolfBall"
-	current_ball.configure(
+	var ball := CannonGolfBall.new()
+	ball.name = "ActiveGolfBall%02d" % (_active_balls.size() + 1)
+	ball.configure(
 		_course_builder.course.play_bounds,
 		_course_builder.launcher.launch_origin(),
 		_course_builder.launcher.launch_velocity()
 	)
-	current_ball.first_surface_contact.connect(_on_first_surface_contact)
-	current_ball.launch_ended.connect(_on_ball_launch_ended)
-	_ball_root.add_child(current_ball)
+	ball.first_surface_contact.connect(_on_first_surface_contact)
+	ball.launch_ended.connect(_on_ball_launch_ended)
+	_ball_root.add_child(ball)
+	_active_balls.append(ball)
+	_live_shots[ball.get_instance_id()] = CannonGolfLiveShotState.new(ball)
+	current_ball = ball
 	launch_state = LaunchState.FLYING
-	_settle_elapsed = 0.0
-	_low_speed_elapsed = 0.0
-	_entered_goal = false
-	_failure_pending = false
 	last_launch_outcome = &""
-	_hud.set_busy(true)
+	if follow_new_shot:
+		_camera_rig.follow(ball)
+		_hud.set_camera_mode(&"follow")
+	else:
+		_hud.set_camera_mode(&"planning")
+	_refresh_hud_availability()
 	_hud.hide_clear()
 	return true
 
@@ -180,18 +198,13 @@ func retry_attempt() -> bool:
 	if launch_state == LaunchState.CLEARED or confirmed_ball != null \
 			or current_ball == null or not is_instance_valid(current_ball):
 		return false
-	current_ball.queue_free()
-	current_ball = null
-	launch_state = LaunchState.PLANNING
-	_failure_pending = false
-	_settle_elapsed = 0.0
-	_low_speed_elapsed = 0.0
-	_entered_goal = false
+	var retry_ball := current_ball
+	var keep_follow := _camera_rig.is_following(retry_ball)
+	_remove_live_ball(retry_ball, true, false)
 	last_launch_outcome = &""
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
-	_hud.set_busy(false)
-	return fire()
+	return fire(keep_follow)
 
 
 func toggle_pause() -> void:
@@ -226,8 +239,27 @@ func set_planning_view(view_mode: StringName) -> void:
 	if not _camera_rig.set_view(view_mode):
 		return
 	_hud.set_view(_camera_rig.view_mode)
-	if launch_state == LaunchState.PLANNING or launch_state == LaunchState.CLEARED:
-		_camera_rig.snap_to_planning()
+	_hud.set_camera_mode(&"planning")
+
+
+func toggle_shot_camera() -> bool:
+	if _camera_rig.camera_mode == &"follow":
+		_camera_rig.return_to_planning()
+		_hud.set_camera_mode(&"planning")
+		return true
+	if current_ball == null or not is_instance_valid(current_ball):
+		return false
+	_camera_rig.follow(current_ball)
+	_hud.set_camera_mode(&"follow")
+	return true
+
+
+func return_to_planning_view() -> bool:
+	if _camera_rig.camera_mode != &"follow":
+		return false
+	_camera_rig.return_to_planning()
+	_hud.set_camera_mode(&"planning")
+	return true
 
 
 func pan_planning(screen_direction: Vector2) -> void:
@@ -242,10 +274,6 @@ func _load_course(index: int) -> void:
 	_course_builder.build(courses[course_index])
 	_camera_rig.configure(_camera, _course_builder.course)
 	launch_state = LaunchState.PLANNING
-	_settle_elapsed = 0.0
-	_low_speed_elapsed = 0.0
-	_entered_goal = false
-	_failure_pending = false
 	last_launch_outcome = &""
 	_hud.set_setup(
 		_course_builder.launcher.horizontal_aim,
@@ -253,7 +281,8 @@ func _load_course(index: int) -> void:
 		_course_builder.launcher.power_percent
 	)
 	_hud.set_view(_camera_rig.view_mode)
-	_hud.set_busy(false)
+	_hud.set_camera_mode(&"planning")
+	_refresh_hud_availability()
 	_hud.hide_clear()
 	_hud.focus_fire()
 
@@ -264,6 +293,8 @@ func _clear_balls() -> void:
 		child.free()
 	current_ball = null
 	confirmed_ball = null
+	_active_balls.clear()
+	_live_shots.clear()
 
 
 func _clear_marks() -> void:
@@ -271,7 +302,7 @@ func _clear_marks() -> void:
 
 
 func _on_setup_changed(horizontal: float, elevation: float, power: float) -> void:
-	if launch_state != LaunchState.PLANNING:
+	if launch_state == LaunchState.CLEARED:
 		return
 	_course_builder.launcher.set_setup(horizontal, elevation, power)
 	_hud.set_setup(
@@ -282,7 +313,7 @@ func _on_setup_changed(horizontal: float, elevation: float, power: float) -> voi
 
 
 func _adjust_setup(horizontal_delta: float, elevation_delta: float, power_delta: float) -> void:
-	if launch_state != LaunchState.PLANNING:
+	if launch_state == LaunchState.CLEARED:
 		return
 	var launcher := _course_builder.launcher
 	launcher.set_setup(
@@ -322,38 +353,53 @@ func _on_first_surface_contact(
 
 
 func _on_ball_launch_ended(ball: CannonGolfBall, reason: StringName) -> void:
-	if ball == current_ball and launch_state != LaunchState.CLEARED:
-		_fail_launch(reason)
+	if launch_state != LaunchState.CLEARED:
+		_fail_ball(ball, reason)
 
 
 func _fail_launch(reason: StringName) -> void:
-	if _failure_pending or launch_state == LaunchState.CLEARED:
+	if current_ball == null or not is_instance_valid(current_ball):
 		return
-	_failure_pending = true
-	launch_state = LaunchState.RECOVERING
-	call_deferred("_finish_failed_launch", reason)
+	_fail_ball(current_ball, reason)
 
 
-func _finish_failed_launch(reason: StringName) -> void:
+func _fail_ball(ball: CannonGolfBall, reason: StringName) -> void:
+	var shot := _shot_state(ball)
+	if shot == null or shot.ending or launch_state == LaunchState.CLEARED:
+		return
+	shot.ending = true
+	if ball == current_ball:
+		launch_state = LaunchState.RECOVERING
+	call_deferred("_finish_failed_ball", ball, reason)
+
+
+func _finish_failed_ball(ball: CannonGolfBall, reason: StringName) -> void:
+	if _shot_state(ball) == null:
+		return
 	last_launch_outcome = reason
-	if current_ball != null and is_instance_valid(current_ball):
-		current_ball.queue_free()
-	current_ball = null
-	launch_state = LaunchState.PLANNING
-	_failure_pending = false
-	_hud.set_busy(false)
-	_hud.focus_fire()
+	_remove_live_ball(ball)
+	if can_fire():
+		_hud.focus_fire()
 
 
-func _confirm_goal() -> void:
-	if current_ball == null or launch_state == LaunchState.CLEARED:
+func _confirm_goal(ball: CannonGolfBall = null) -> void:
+	var winning_ball := current_ball if ball == null else ball
+	if winning_ball == null or _shot_state(winning_ball) == null \
+			or launch_state == LaunchState.CLEARED:
 		return
-	current_ball.lock_as_confirmed()
+	winning_ball.lock_as_confirmed()
 	last_launch_outcome = &"confirmed"
-	confirmed_ball = current_ball
+	confirmed_ball = winning_ball
+	for live_ball in _active_balls.duplicate():
+		if live_ball != winning_ball and is_instance_valid(live_ball):
+			live_ball.queue_free()
+	_active_balls.clear()
+	_live_shots.clear()
 	current_ball = null
 	launch_state = LaunchState.CLEARED
-	_hud.set_busy(true)
+	_camera_rig.return_to_planning()
+	_hud.set_camera_mode(&"planning")
+	_refresh_hud_availability()
 	_hud.show_clear(
 		_course_builder.course,
 		course_index + 1 < CannonGolfCourseCatalog.all_courses().size()
@@ -361,11 +407,78 @@ func _confirm_goal() -> void:
 
 
 func _update_camera(delta: float) -> void:
-	if current_ball != null and is_instance_valid(current_ball) \
-			and (launch_state == LaunchState.FLYING or launch_state == LaunchState.SETTLING):
-		_camera_rig.update(delta, current_ball)
-	else:
-		_camera_rig.update(delta)
+	_camera_rig.update(delta)
+
+
+func active_ball_count() -> int:
+	return _active_balls.size()
+
+
+func active_balls() -> Array[CannonGolfBall]:
+	return _active_balls.duplicate()
+
+
+func can_fire() -> bool:
+	return confirmed_ball == null and _active_balls.size() < MAXIMUM_LIVE_BALLS
+
+
+func _shot_state(ball: CannonGolfBall) -> CannonGolfLiveShotState:
+	if ball == null or not is_instance_valid(ball):
+		return null
+	return _live_shots.get(ball.get_instance_id()) as CannonGolfLiveShotState
+
+
+func _remove_live_ball(
+		ball: Variant,
+		queue_ball: bool = true,
+		update_camera: bool = true
+) -> void:
+	var ball_is_valid: bool = ball != null and is_instance_valid(ball)
+	var followed_target: Node3D = _camera_rig.follow_target()
+	var was_followed: bool = _camera_rig.camera_mode == &"follow" \
+			and (followed_target == ball if followed_target != null else not ball_is_valid)
+	if ball_is_valid:
+		_live_shots.erase(ball.get_instance_id())
+	for index in range(_active_balls.size() - 1, -1, -1):
+		var active_ball := _active_balls[index]
+		if active_ball == null or not is_instance_valid(active_ball) \
+				or (ball_is_valid and active_ball == ball):
+			_active_balls.remove_at(index)
+	for shot_id in _live_shots.keys():
+		var shot := _live_shots[shot_id] as CannonGolfLiveShotState
+		if shot == null or shot.ball == null or not is_instance_valid(shot.ball):
+			_live_shots.erase(shot_id)
+	if queue_ball and ball_is_valid:
+		ball.queue_free()
+	if current_ball == null or not is_instance_valid(current_ball) \
+			or not _active_balls.has(current_ball):
+		current_ball = _active_balls.back() if not _active_balls.is_empty() else null
+	if update_camera and was_followed:
+		_camera_rig.return_to_planning()
+		_hud.set_camera_mode(&"planning")
+	_refresh_launch_state()
+	_refresh_hud_availability()
+
+
+func _refresh_launch_state() -> void:
+	if confirmed_ball != null:
+		launch_state = LaunchState.CLEARED
+		return
+	if current_ball == null or not is_instance_valid(current_ball):
+		launch_state = LaunchState.PLANNING
+		return
+	var shot := _shot_state(current_ball)
+	launch_state = LaunchState.SETTLING \
+			if shot != null and shot.settle_elapsed > 0.0 \
+			else LaunchState.FLYING
+
+
+func _refresh_hud_availability() -> void:
+	_hud.set_launch_availability(
+		_active_balls.size(),
+		MAXIMUM_LIVE_BALLS,
+		confirmed_ball != null
+	)
 
 
 func impact_mark_count() -> int:

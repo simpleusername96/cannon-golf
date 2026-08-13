@@ -1,5 +1,7 @@
 extends SceneTree
 
+var _failed := false
+
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -30,8 +32,39 @@ func _run() -> void:
 			rig.adjust_zoom(999.0)
 			rig.snap_to_planning()
 			_assert_fits(camera, builder.course, rig, "%s %s zoomed" % [source_course.course_id, view])
-	print("Cannon Golf generated-content camera framing passed for both courses and planning views.")
-	quit(0)
+		var stored_view := rig.view_mode
+		var stored_pan := rig.pan_offset
+		var stored_zoom := rig.zoom
+		rig.snap_to_planning()
+		var stored_position := camera.global_position
+		var pose_builds := rig.planning_pose_build_count()
+		for _frame in range(30):
+			rig.update(1.0 / 60.0)
+		_assert_true(
+			rig.planning_pose_build_count() == pose_builds,
+			"Unchanged planning frames must reuse the resolved pose."
+		)
+
+		var target := Node3D.new()
+		target.position = builder.course.cannon_position + Vector3(0.0, 18.0, -35.0)
+		root.add_child(target)
+		_assert_true(rig.follow(target), "A valid live ball must enter Shot Follow.")
+		rig.update(1.0 / 60.0)
+		_assert_true(rig.is_following(target), "Shot Follow must retain its explicit target.")
+		rig.return_to_planning(true)
+		_assert_true(rig.camera_mode == &"planning", "Camera return must restore planning mode.")
+		_assert_true(rig.view_mode == stored_view, "Camera return must retain overview/side choice.")
+		_assert_true(rig.pan_offset.is_equal_approx(stored_pan), "Camera return must retain planning pan.")
+		_assert_true(is_equal_approx(rig.zoom, stored_zoom), "Camera return must retain planning zoom.")
+		_assert_true(camera.global_position.is_equal_approx(stored_position), "Immediate camera return must restore the stored pose.")
+		_assert_true(rig.follow(target), "The same live target may be followed again.")
+		target.queue_free()
+		await process_frame
+		rig.update(1.0 / 60.0)
+		_assert_true(rig.camera_mode == &"planning", "An ended follow target must fall back to planning.")
+	if not _failed:
+		print("Cannon Golf generated-content planning and Shot Follow camera contract passed.")
+	quit(1 if _failed else 0)
 
 
 func _assert_fits(
@@ -57,5 +90,5 @@ func _assert_fits(
 func _assert_true(condition: bool, message: String) -> void:
 	if condition:
 		return
+	_failed = true
 	push_error(message)
-	quit(1)

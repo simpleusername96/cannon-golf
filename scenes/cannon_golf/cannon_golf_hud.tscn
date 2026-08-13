@@ -202,6 +202,17 @@ text = "▥"
 tooltip_text = "측면 보기 (2)"
 accessibility_name = "측면 보기 (2)"
 
+[node name="FollowButton" type="Button" parent="Root/ActionDock/Margin/Actions"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+theme_type_variation = &"HudModeButton"
+toggle_mode = true
+disabled = true
+text = "◎"
+tooltip_text = "공 따라가기 (Tab)"
+accessibility_name = "공 따라가기 (Tab)"
+
 [node name="RetryButton" type="Button" parent="Root/ActionDock/Margin/Actions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(44, 44)
@@ -231,24 +242,12 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
 theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(1, 1, 1, 0.45)
 theme_override_styles/normal = SubResource("FireNormal")
 theme_override_styles/hover = SubResource("FireHover")
 theme_override_styles/pressed = SubResource("FireHover")
 theme_override_styles/disabled = SubResource("FireDisabled")
-
-[node name="FireLabel" type="Label" parent="Root/ActionDock/Margin/Actions/FireButton"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "발사"
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [node name="ResultOverlay" type="Control" parent="Root"]
 unique_name_in_owner = true

@@ -106,8 +106,8 @@ than the inherited frontal cannon composition.
 - Trigger: the player starts an introductory stage with one nearby, unobstructed
   goal and no required device.
 - Main steps: inspect the course, set horizontal aim, vertical angle, and power,
-  fire, observe the ball and its first-impact mark, then correct the next launch
-  if needed.
+  fire, observe the ball and its first-impact mark, then immediately return to
+  the stored planning view, correct the setup, and launch again if needed.
 - Expected outcome: one ball settles safely in the goal and the stage clears.
 
 ### Flow 2: Solve a multi-goal course
@@ -201,6 +201,9 @@ than the inherited frontal cannon composition.
 - Requirement: planning must support terrain-reading compositions such as
   top/oblique and side/profile views. A behind-cannon view may support launch
   drama or local aim, but must not be the only or automatically dominant view.
+  Firing temporarily follows the newest ball. `Tab`, the compact follow action,
+  overview, or side view must immediately restore the stored planning pose while
+  balls remain live. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
 - Reason: height, depth, goal position, and pad orientation are difficult to
@@ -212,9 +215,9 @@ than the inherited frontal cannon composition.
   a full post-launch trajectory, or a separate UI label for the prior impact.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power controls, Fire, overview,
-  side view, quick retry, and pause. Course prose, progress cards, shortcut
-  legends, feedback panels, and in-game course navigation do not persist over
-  the world.
+  side view, ball follow, quick retry, and pause. Course prose, progress cards,
+  shortcut legends, feedback panels, and in-game course navigation do not
+  persist over the world.
 - Reason: estimation and learning are the intended challenge.
 
 ### FR-10: Overlay HUD continuity
@@ -229,10 +232,13 @@ than the inherited frontal cannon composition.
 
 - Requirement: the player must be able to retry a shot or stage without a long
   transition or consumable limit. A miss never creates a timer, life, ball-stock,
-  or shot-count game over. Before the next launch, the unsuccessful ball leaves
-  the active simulation; only confirmed settled balls persist. Identical
-  launch/device state must produce materially similar first impacts. During a
-  live launch, quick retry removes only the active unconfirmed ball and
+  or shot-count game over. Aim controls become available immediately after a
+  launch, and the prototype permits up to two unconfirmed balls in active
+  simulation so an obviously failed attempt does not block the next launch.
+  Each ball resolves settlement and failure independently; the first confirmed
+  settlement wins and removes other unconfirmed balls. Identical launch/device
+  state must produce materially similar first impacts. During a live launch,
+  quick retry removes only the newest active unconfirmed ball and
   immediately relaunches with the exact horizontal aim, vertical angle, and
   power. It preserves impact history, camera view, exploration state, placed
   devices, and confirmed goals. Course reset remains a separate pause-menu
@@ -339,7 +345,9 @@ than the inherited frontal cannon composition.
   side/profile view in which goals, settled balls, retained marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
-  planning state and does not strand the player in an invalid framing.
+  planning state and does not strand the player in an invalid framing. After
+  firing, `Tab` or the follow icon restores that framing without waiting for the
+  ball to resolve, and the launch controls remain usable.
 
 ### AC-6: Repeatability
 
@@ -360,11 +368,12 @@ than the inherited frontal cannon composition.
 
 - Applies to: FR-11.
 - Conditions for done: repeated misses never exhaust time, lives, balls, or
-  shots; each unsuccessful launch returns to a stable planning state with prior
-  confirmed goals intact and without leaving a failed ball that can affect the
-  next launch. Quick retry during flight immediately starts a replacement ball
-  with identical launch origin and velocity while retaining all prior impact
-  marks and planning context; course reset clears that attempt history.
+  shots. The player can adjust and fire a second shot while the first remains
+  unresolved; a third simultaneous shot is blocked. Each ball resolves without
+  corrupting the others, and the first confirmed settlement clears the stage.
+  Quick retry during flight replaces only the newest active ball with identical
+  launch origin and velocity while retaining all prior impact marks and planning
+  context; course reset clears that attempt history.
 
 ### AC-9: Predictable baseline rebound
 

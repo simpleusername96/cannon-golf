@@ -99,8 +99,9 @@ in `OPEN_QUESTIONS.md`.
 - Status: accepted.
 - The game has no timer, lives, finite ball stock, or shot limit that ends a
   stage. A miss ends only the current launch and returns the player to planning.
-- An unsuccessful ball leaves the active simulation before the next launch;
-  only confirmed settled balls persist between launches.
+- An unsuccessful ball leaves active simulation when that launch resolves. A
+  later launch may begin before then under the bounded concurrency in D-026;
+  only confirmed settled balls persist after active launches resolve.
 - Stage success occurs after every required goal is confirmed.
 
 ### D-012 — The standard ball has baseline rebound
@@ -164,6 +165,8 @@ in `OPEN_QUESTIONS.md`.
 - A whole-course high-oblique view is the default. A true side/profile view is
   the alternate. Arrow keys pan, the mouse wheel changes planning distance, and
   Shot Follow returns to the same stored view, pan, zoom, angle, and power.
+  `Tab` and the compact follow action toggle between the newest live ball and
+  that stored planning pose without waiting for the shot to resolve.
 - The prototype does not include a separate behind-cannon planning mode.
 
 ### D-019 — Retain five impact marks by launch order
@@ -239,14 +242,24 @@ in `OPEN_QUESTIONS.md`.
 - Each goal is a terrain-owned concave basin: its center is lowest, height rises
   toward the rim, and the goal node adds no physical cup. Safe settlement still
   determines success; a ball that rebounds out fails.
-- Quick retry during a live shot removes only the active unconfirmed ball and
-  immediately launches a replacement with the exact three-parameter setup. It
-  preserves impact history and planning context. Course reset remains a
+- Quick retry during a live shot removes only the newest active unconfirmed ball
+  and immediately launches a replacement with the exact three-parameter setup.
+  It preserves impact history and planning context. Course reset remains a
   separate pause-menu action and clears course-local attempt state.
 - Normal play shows only the compact three-control aim panel, Fire, overview,
-  side view, quick retry, and pause. Course prose, progress/status cards,
-  shortcut legends, feedback panels, in-game course navigation, and visible
-  reset do not persist over the course.
+  side view, ball follow, quick retry, and pause. Course prose, progress/status
+  cards, shortcut legends, feedback panels, in-game course navigation, and
+  visible reset do not persist over the course.
+
+### D-026 — Shot Follow does not lock the next launch
+
+- Status: accepted for the two-course prototype on 2026-08-13.
+- Firing starts temporary Shot Follow on the newest ball, but horizontal aim,
+  vertical angle, power, camera switching, and Fire remain available.
+- The prototype permits at most two simultaneous unconfirmed balls. Each owns
+  its settlement and failure state; quick retry replaces only the newest one.
+- The first ball to confirm safe goal settlement clears the course. All other
+  unconfirmed balls are then removed so they cannot invalidate the result.
 
 ## Rationale
 

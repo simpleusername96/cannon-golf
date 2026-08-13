@@ -47,6 +47,11 @@ func _capture() -> void:
 		root.add_child(game)
 	await process_frame
 	await process_frame
+	# Warm the HUD font atlas before applying an immediate scripted gameplay state.
+	# A real player sees these frames before Fire can be pressed.
+	for _warmup_frame in range(2):
+		await RenderingServer.frame_post_draw
+		await process_frame
 	if requested_state == "course_select":
 		app.show_course_select(false)
 		if requested_course > 0:
@@ -56,6 +61,22 @@ func _capture() -> void:
 		app.show_settings()
 	elif requested_state == "side":
 		game.set_planning_view(&"side")
+	elif requested_state == "follow":
+		if not game.fire():
+			push_error("Follow capture could not launch its ball.")
+			quit(1)
+			return
+	elif requested_state == "two_live":
+		if not game.fire():
+			push_error("Two-live capture could not launch its first ball.")
+			quit(1)
+			return
+		game.return_to_planning_view()
+		game._on_setup_changed(56.0, 50.0, 50.0)
+		if not game.fire(false):
+			push_error("Two-live capture could not launch its second ball.")
+			quit(1)
+			return
 	elif requested_state == "pause":
 		game.toggle_pause()
 	elif requested_state == "clear":
@@ -70,10 +91,20 @@ func _capture() -> void:
 			push_error("Planning capture received live input and left the planning state.")
 			quit(1)
 			return
+	if game != null and requested_state == "follow":
+		if game.active_ball_count() != 1 or game._camera_rig.camera_mode != &"follow":
+			push_error("Follow capture did not retain one followed live ball.")
+			quit(1)
+			return
+	if game != null and requested_state == "two_live":
+		if game.active_ball_count() != 2 or game._camera_rig.camera_mode != &"planning":
+			push_error("Two-live capture did not retain two balls in planning view.")
+			quit(1)
+			return
 	# Compatibility rendering can publish the terrain frame before every font
 	# atlas and Control batch has reached the viewport texture. Wait for several
 	# completed draws so delivery evidence records a stable composed frame.
-	for _render_frame in range(4):
+	for _render_frame in range(12):
 		await RenderingServer.frame_post_draw
 		await process_frame
 	var image := root.get_texture().get_image()

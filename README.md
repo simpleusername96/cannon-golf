@@ -8,7 +8,10 @@ persistent settings, gameplay pause/return navigation, and two introductory
 direct-shot courses. Adjust horizontal aim, vertical angle, and power, launch a
 rebound-capable ball, learn from first-contact marks, and settle it safely
 inside the goal. Retry is unlimited. High-oblique and side planning views
-preserve the complete launch setup, exploration state, and impact history.
+preserve the complete launch setup, exploration state, and impact history. A
+shot briefly enters ball follow, but the controls remain available and the
+player can return to planning immediately and launch a second ball. At most two
+unconfirmed balls can be active at once.
 
 Both courses call Paint Mountain's retained route-graph mountain synthesizer,
 then use its topology and geometry builders for the rendered and colliding
@@ -35,9 +38,10 @@ Controls:
 - `A` / `D`: power
 - `Space`: fire
 - `1` / `2`: high-oblique / side view
+- `Tab`: toggle between the newest live ball and the stored planning view
 - Arrow keys: explore the course
 - Mouse wheel: planning zoom
-- `R`: while a shot is active, replace only that ball and immediately relaunch
+- `R`: while a shot is active, replace only the newest ball and immediately relaunch
   with the same setup; camera state and impact marks remain
 - `Shift` + `R`: reset the current course and impact history
 - `Esc`: pause or resume

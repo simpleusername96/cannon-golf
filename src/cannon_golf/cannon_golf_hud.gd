@@ -5,6 +5,7 @@ signal fire_requested
 signal retry_requested
 signal setup_changed(horizontal_aim: float, elevation_degrees: float, power_percent: float)
 signal view_requested(view_mode: StringName)
+signal follow_requested
 signal reset_requested
 signal pause_requested
 signal settings_requested
@@ -20,9 +21,9 @@ signal result_primary_requested
 @onready var _power_slider: HSlider = %PowerSlider
 @onready var _oblique_button: Button = %ObliqueButton
 @onready var _side_button: Button = %SideButton
+@onready var _follow_button: Button = %FollowButton
 @onready var _retry_button: Button = %RetryButton
 @onready var _fire_button: Button = %FireButton
-@onready var _fire_label: Label = %FireLabel
 @onready var _pause_retry: Button = %PauseRetry
 @onready var _pause_overlay: Control = %PauseOverlay
 @onready var _result_overlay: Control = %ResultOverlay
@@ -31,7 +32,11 @@ signal result_primary_requested
 
 var _syncing := false
 var _pause_suspended := false
-var _busy := false
+var _active_shot_count := 0
+var _maximum_live_shots := 2
+var _cleared := false
+var _planning_view: StringName = &"oblique"
+var _camera_mode: StringName = &"planning"
 var _language := "ko"
 
 
@@ -41,6 +46,7 @@ func _ready() -> void:
 	_power_slider.value_changed.connect(_on_setup_control_changed)
 	_oblique_button.pressed.connect(func() -> void: view_requested.emit(&"oblique"))
 	_side_button.pressed.connect(func() -> void: view_requested.emit(&"side"))
+	_follow_button.pressed.connect(func() -> void: follow_requested.emit())
 	_retry_button.pressed.connect(func() -> void: retry_requested.emit())
 	_fire_button.pressed.connect(func() -> void: fire_requested.emit())
 	%PauseButton.pressed.connect(func() -> void: pause_requested.emit())
@@ -66,20 +72,27 @@ func set_setup(horizontal_aim: float, elevation_degrees: float, power_percent: f
 	_update_setup_labels()
 
 
-func set_busy(busy: bool) -> void:
-	_busy = busy
-	_horizontal_slider.editable = not busy
-	_elevation_slider.editable = not busy
-	_power_slider.editable = not busy
-	_fire_button.disabled = busy
-	_fire_label.modulate = Color(1.0, 1.0, 1.0, 0.45 if busy else 1.0)
-	_retry_button.disabled = not busy
-	_pause_retry.disabled = not busy
+func set_launch_availability(active_shots: int, maximum_live_shots: int, cleared: bool) -> void:
+	_active_shot_count = maxi(active_shots, 0)
+	_maximum_live_shots = maxi(maximum_live_shots, 1)
+	_cleared = cleared
+	_horizontal_slider.editable = not cleared
+	_elevation_slider.editable = not cleared
+	_power_slider.editable = not cleared
+	_fire_button.disabled = _cleared or _active_shot_count >= _maximum_live_shots
+	_retry_button.disabled = _cleared or _active_shot_count <= 0
+	_pause_retry.disabled = _cleared or _active_shot_count <= 0
+	_follow_button.disabled = _cleared or _active_shot_count <= 0
 
 
 func set_view(view_mode: StringName) -> void:
-	_oblique_button.button_pressed = view_mode == &"oblique"
-	_side_button.button_pressed = view_mode == &"side"
+	_planning_view = view_mode
+	_refresh_camera_buttons()
+
+
+func set_camera_mode(mode: StringName) -> void:
+	_camera_mode = mode
+	_refresh_camera_buttons()
 
 
 func show_clear(_course: CannonGolfCourseData, has_next: bool) -> void:
@@ -121,7 +134,7 @@ func apply_language(language: String) -> void:
 	%HorizontalLabel.text = "H" if english else "좌우"
 	%ElevationLabel.text = "V" if english else "상하"
 	%PowerLabel.text = "PWR" if english else "파워"
-	_fire_label.text = "FIRE" if english else "발사"
+	_fire_button.text = "FIRE" if english else "발사"
 	_set_icon_copy(_fire_button, "Fire (Space)" if english else "발사 (Space)")
 	_set_icon_copy(_oblique_button, "Overview (1)" if english else "전체 보기 (1)")
 	_set_icon_copy(_side_button, "Side view (2)" if english else "측면 보기 (2)")
@@ -134,7 +147,8 @@ func apply_language(language: String) -> void:
 	%PauseSettings.text = "SETTINGS" if english else "설정"
 	%PauseStages.text = "COURSE SELECT" if english else "코스 선택"
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
-	set_busy(_busy)
+	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
+	_refresh_camera_buttons()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -161,6 +175,19 @@ func _update_setup_labels() -> void:
 	_power_value.text = "%d%%" % int(roundf(_power_slider.value))
 
 
+func _refresh_camera_buttons() -> void:
+	var following := _camera_mode == &"follow"
+	_follow_button.button_pressed = following
+	var english := _language == "en"
+	_set_icon_copy(
+		_follow_button,
+		("Return to planning (Tab)" if english else "조준 시점으로 돌아가기 (Tab)")
+				if following else ("Follow ball (Tab)" if english else "공 따라가기 (Tab)")
+	)
+	_oblique_button.button_pressed = not following and _planning_view == &"oblique"
+	_side_button.button_pressed = not following and _planning_view == &"side"
+
+
 func _set_icon_copy(button: Button, accessible_copy: String) -> void:
 	button.tooltip_text = accessible_copy
 	button.set("accessibility_name", accessible_copy)
@@ -173,6 +200,7 @@ func _install_focus_order() -> void:
 		_power_slider,
 		_oblique_button,
 		_side_button,
+		_follow_button,
 		_retry_button,
 		%PauseButton,
 		_fire_button,

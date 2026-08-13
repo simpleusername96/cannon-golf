@@ -15,9 +15,30 @@ const TERRAIN_BASE_Y := -14.0
 const PLAY_BOUNDS_HORIZONTAL_MARGIN := 20.0
 const PLAY_BOUNDS_MAXIMUM_HEIGHT := 190.0
 
+static var _terrain_cache: Dictionary = {}
+static var _generation_build_count := 0
+
 
 static func build(course: CannonGolfCourseData) -> Dictionary:
 	assert(course != null and course.is_valid(), "Terrain factory requires valid course data.")
+	var cache_key := _cache_key(course)
+	if _terrain_cache.has(cache_key):
+		return (_terrain_cache[cache_key] as Dictionary).duplicate(false)
+	var terrain := _build_uncached(course)
+	_terrain_cache[cache_key] = terrain
+	_generation_build_count += 1
+	return terrain.duplicate(false)
+
+
+static func generation_build_count() -> int:
+	return _generation_build_count
+
+
+static func cache_entry_count() -> int:
+	return _terrain_cache.size()
+
+
+static func _build_uncached(course: CannonGolfCourseData) -> Dictionary:
 	var profile := course.generation_profile
 	var source_graph := RouteGraphResolver.resolve(course.course_id, profile, course.terrain_seed)
 	assert(source_graph != null and source_graph.is_valid(), "Paint Mountain route generation failed.")
@@ -111,6 +132,78 @@ static func build(course: CannonGolfCourseData) -> Dictionary:
 		"content_bounds": content_bounds,
 		"play_bounds": AABB(play_minimum, play_maximum - play_minimum),
 	}
+
+
+static func _cache_key(course: CannonGolfCourseData) -> String:
+	var profile := course.generation_profile
+	var contract := profile.generation_contract
+	var signature: Array[Variant] = [
+		course.course_id,
+		course.terrain_seed,
+		course.terrain_horizontal_scale,
+		course.terrain_vertical_scale,
+		course.terrain_origin,
+		course.goal_route_t,
+		course.cannon_route_t,
+		course.goal_recess_depth,
+		course.goal_radius,
+		course.terrain_color,
+		course.terrain_accent_color,
+		profile.profile_id,
+		profile.profile_version,
+		profile.base_seed,
+		profile.nominal_peak,
+		profile.accepted_height_range,
+		profile.ridge_count,
+		profile.basin_count,
+		profile.pass_count,
+		profile.undulation_amplitude,
+		profile.route_width,
+		profile.target_ratio_range,
+		profile.target_mean_slope_range,
+		profile.target_p95_slope_max,
+		profile.target_maximum_slope,
+		profile.route_core_p95_slope_max,
+		profile.corridor_lip_maximum_slope,
+		contract.generation_version,
+		contract.profile_version,
+		contract.layout_version,
+		contract.cell_count,
+		contract.local_bounds,
+		contract.maximum_top_triangle_count,
+		contract.cell_diagonal,
+		contract.mask_size,
+		contract.route_station_z,
+		contract.maximum_station_x_delta,
+		contract.outer_band_width,
+		contract.terrace_step,
+		contract.terrace_blend,
+		contract.bank_blend_distance,
+		contract.target_shoulder_distance,
+		contract.support_distance,
+		contract.noise_frequency,
+		contract.noise_octaves,
+		contract.noise_lacunarity,
+		contract.noise_gain,
+		contract.noise_amplitude,
+	]
+	for route in profile.routes:
+		signature.append([
+			route.role,
+			route.endpoint_x,
+			route.width,
+			route.grade_signs,
+			route.drop_range,
+			route.rise_range,
+			route.lateral_bend_range,
+			route.mechanism_kind,
+			route.mechanism_pad_t,
+			route.mechanism_pad_radius,
+			route.mechanism_kinds,
+			route.mechanism_pad_ts,
+			route.mechanism_pad_radii,
+		])
+	return var_to_str(signature)
 
 
 static func _scaled_heights(source: PackedFloat32Array, course: CannonGolfCourseData) -> PackedFloat32Array:

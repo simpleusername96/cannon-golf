@@ -53,8 +53,8 @@ coefficients, stage data formats, or code ownership.
   gravity drop. The lower-right panel demonstrates temporary ball follow.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
   balls, and remaining shots with a compact horizontal aim, vertical angle, and
-  power edge panel plus one primary Fire action. Overview, side view, quick
-  retry, and pause remain small icon actions with accessible names.
+  power edge panel plus one primary Fire action. Overview, side view, ball
+  follow, quick retry, and pause remain small icon actions with accessible names.
 - The combined board deliberately shows player-placed bounce, damping, airflow,
   and gravity in one frame so their visual roles can be compared. It does not
   set content order or inventory limits.
@@ -69,8 +69,10 @@ coefficients, stage data formats, or code ownership.
 - Use an oblique three-quarter view when both axes must remain readable.
 - A behind-cannon view may be a temporary launch or local-aim view. It must not
   hide the course structure or become the only way to plan.
-- Shot Follow should reveal cause and effect, then return to the prior planning
-  context without changing the stored setup.
+- Shot Follow should reveal cause and effect without taking control away. Firing
+  follows the newest live ball, while `Tab`, the compact follow action, overview,
+  or side view returns immediately to the exact stored planning pose. Aim and
+  Fire remain usable while an earlier ball is still live.
 - Camera changes must preserve stage identity, selected goal, selected device,
   and launch parameters.
 - Whatever exploration controls are selected must not move gameplay objects,
@@ -158,9 +160,9 @@ coefficients, stage data formats, or code ownership.
   navy type, saturated blue for the sole primary action, Pretendard, Korean-first
   copy, edge alignment, generous padding, and minimal containment.
 - Keep the course center open. Normal play may persist only one compact
-  three-control aim panel, Fire, and overview, side-view, quick-retry, and pause
-  icon actions at safe edges. Put full reset, settings, course selection, and
-  main-menu navigation in the pause overlay.
+  three-control aim panel, Fire, and overview, side-view, ball-follow,
+  quick-retry, and pause icon actions at safe edges. Put full reset, settings,
+  course selection, and main-menu navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
 - Horizontal aim, vertical angle, power, device stock, and menu are valid only
   when they support a current decision. Do not persist course prose, progress,
@@ -190,7 +192,8 @@ coefficients, stage data formats, or code ownership.
 - Switching views, exploring the course, quick retry, and returning from Shot
   Follow retain horizontal aim, vertical angle, power, impact history,
   placements, selection, and confirmed goals without clipping or invalid
-  framing.
+  framing. The planning controls and next launch remain available while a prior
+  ball is live, up to the prototype's simultaneous-ball limit.
 - Three retained impact marks can be ordered newest to oldest from appearance
   alone.
 - No normal gameplay capture shows surface coverage, continuous paint, an exact
