@@ -260,8 +260,9 @@ in `OPEN_QUESTIONS.md`.
 ### D-026 — Shot Follow does not lock the next launch
 
 - Status: accepted for the two-course prototype on 2026-08-13.
-- Firing starts temporary Shot Follow on the newest ball, but horizontal aim,
-  vertical angle, power, camera switching, and Fire remain available.
+- This decision originally made Fire start temporary Shot Follow on the newest
+  ball. D-029 supersedes that automatic camera transition; the remaining
+  multi-ball and non-locking rules below stay accepted.
 - The prototype permits at most two simultaneous unconfirmed balls. Each owns
   its settlement and failure state; quick retry replaces only the newest one.
 - The first ball to confirm safe goal settlement clears the course. All other
@@ -295,6 +296,18 @@ in `OPEN_QUESTIONS.md`.
   retains `50 / 42°` and recertifies the adjacent power `71%`.
 - Planning zoom changes distance by `22%` per wheel notch or compact action and
   remains bounded to `0.38..2.0` around the authored framed distance.
+
+### D-029 — Fire and camera control are independent
+
+- Status: accepted for the two-course prototype on 2026-08-13; supersedes only
+  D-026's automatic Shot Follow transition.
+- Fire creates the admitted ball without changing camera mode, the stored
+  planning view, pan, orbit, zoom, the resulting camera transform, or an
+  existing Shot Follow target.
+- The compact follow action is the sole ordinary entry to Shot Follow and
+  selects the newest live ball. `Tab` remains return-only. Quick retry may
+  retarget its replacement only when the removed ball was already the explicit
+  follow target.
 
 ## Rationale
 

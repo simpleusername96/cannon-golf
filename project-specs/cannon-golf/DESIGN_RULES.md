@@ -79,10 +79,11 @@ coefficients, stage data formats, or code ownership.
   do not require several repeated inputs before the course scale changes.
 - A behind-cannon view may be a temporary launch or local-aim view. It must not
   hide the course structure or become the only way to plan.
-- Shot Follow should reveal cause and effect without taking control away. Firing
-  follows the newest live ball, while `Tab`, the compact follow action, overview,
-  or side view returns immediately to the exact stored planning pose. Aim and
-  Fire remain usable while an earlier ball is still live.
+- Shot Follow should reveal cause and effect without taking control away. Fire
+  must not change camera mode, planning pose, or an existing follow target. The
+  compact follow action explicitly follows the newest live ball; `Tab`, that
+  action, overview, or side view returns immediately to the exact stored
+  planning pose. Aim and Fire remain usable while an earlier ball is still live.
 - Camera changes must preserve stage identity, selected goal, selected device,
   and launch parameters.
 - Whatever exploration controls are selected must not move gameplay objects,
@@ -204,8 +205,8 @@ coefficients, stage data formats, or code ownership.
 - A still from a planning state reads as 3D golf without explanatory copy.
 - At least one top/high-oblique and one side/near-profile view show every
   required goal and the selected pad without persistent HUD obstruction.
-- Switching views, exploring the course, quick retry, and returning from Shot
-  Follow retain horizontal aim, vertical angle, power, impact history,
+- Firing, switching views, exploring the course, quick retry, and returning from
+  Shot Follow retain horizontal aim, vertical angle, power, impact history,
   placements, selection, and confirmed goals without clipping or invalid
   framing. The planning controls and next launch remain available while a prior
   ball is live, up to the prototype's simultaneous-ball limit.

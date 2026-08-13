@@ -30,11 +30,13 @@ func _run() -> void:
 	_assert_true(game.fire(), "The first live shot must launch.")
 	var first_ball := game.current_ball
 	_assert_true(first_ball != null and game.active_ball_count() == 1, "Shot one must remain live.")
-	_assert_true(game._camera_rig.is_following(first_ball), "Fire must enter Shot Follow for the newest ball.")
+	_assert_true(game._camera_rig.camera_mode == &"planning", "Fire must preserve the planning camera.")
 	_assert_true(game._hud.get_node("%HorizontalSlider").editable, "Live flight must not lock horizontal aim.")
 	_assert_true(game._hud.get_node("%ElevationSlider").editable, "Live flight must not lock vertical aim.")
 	_assert_true(game._hud.get_node("%PowerSlider").editable, "Live flight must not lock power.")
 	_assert_true(not game._hud.get_node("%FireButton").disabled, "Shot two must remain immediately available.")
+	_assert_true(game.toggle_shot_camera(), "The explicit follow action must follow the newest live ball.")
+	_assert_true(game._camera_rig.is_following(first_ball), "Explicit follow must select shot one.")
 	var tab := InputEventKey.new()
 	tab.keycode = KEY_TAB
 	tab.pressed = true
@@ -52,6 +54,7 @@ func _run() -> void:
 	var second_origin := launcher.launch_origin()
 	var second_velocity := launcher.launch_velocity()
 	_assert_true(not second_velocity.is_equal_approx(first_velocity), "Edited setup must change the next launch.")
+	_assert_true(game.toggle_shot_camera(), "Shot one must be explicitly followed before camera-neutral Fire coverage.")
 	_assert_true(game.fire(), "Shot two must launch while shot one is still live.")
 	var second_ball := game.current_ball
 	_assert_true(
@@ -59,6 +62,10 @@ func _run() -> void:
 		"Two distinct unconfirmed balls must coexist."
 	)
 	_assert_true(is_instance_valid(first_ball), "Launching shot two must not remove shot one.")
+	_assert_true(
+		game._camera_rig.is_following(first_ball) and not game._camera_rig.is_following(second_ball),
+		"Fire during Shot Follow must preserve the existing follow target."
+	)
 	_assert_true(second_ball.global_position.is_equal_approx(second_origin), "Shot two must use the edited origin.")
 	_assert_true(second_ball.linear_velocity.is_equal_approx(second_velocity), "Shot two must use the edited velocity.")
 	_assert_true(not game.fire(), "A third simultaneous live ball must be bounded.")
@@ -81,6 +88,14 @@ func _run() -> void:
 	_assert_true(game.current_ball.linear_velocity.is_equal_approx(retry_velocity), "Quick retry must reuse the exact launch velocity.")
 	_assert_true(game.planning_view == &"side" and game.planning_pan.is_equal_approx(stored_pan), "Quick retry must preserve planning context.")
 	_assert_true(game._impact_history.mark_instance_ids() == mark_identities, "Quick retry must preserve all five mark identities.")
+	var followed_retry_ball := game.current_ball
+	_assert_true(game.toggle_shot_camera(), "Retry follow preservation requires an explicit followed target.")
+	_assert_true(game.retry_attempt(), "Quick retry must replace an explicitly followed current ball.")
+	_assert_true(
+		game.current_ball != followed_retry_ball and game._camera_rig.is_following(game.current_ball),
+		"Quick retry must preserve an existing follow context on its replacement ball."
+	)
+	_assert_true(game.return_to_planning_view(), "Retry follow coverage must return explicitly to planning.")
 
 	game.toggle_pause()
 	_assert_true(paused, "Pause must stop the scene tree during flight.")
@@ -95,11 +110,12 @@ func _run() -> void:
 	_assert_true(game.current_ball == null and game.active_ball_count() == 0, "The last failed ball must leave simulation.")
 	_assert_true(not game.retry_attempt(), "Quick retry must reject a state without a live ball.")
 	for retry in range(7):
-		_assert_true(game.fire(false), "Unlimited sequential retry must admit launch %d." % (retry + 1))
+		_assert_true(game.fire(), "Unlimited sequential retry must admit launch %d." % (retry + 1))
 		game._fail_launch(&"stopped_outside")
 		await process_frame
 		await process_frame
-	_assert_true(game.fire(), "A followed ball must launch before external cleanup coverage.")
+	_assert_true(game.fire(), "A ball must launch before external cleanup coverage.")
+	_assert_true(game.toggle_shot_camera(), "External cleanup coverage requires explicit follow.")
 	game.current_ball.free()
 	game._physics_process(1.0 / 60.0)
 	_assert_true(
@@ -133,10 +149,10 @@ func _run() -> void:
 	var oldest_color := game._impact_history.oldest_color()
 	var newest_color := game._impact_history.newest_color()
 	_assert_true(oldest_color.get_luminance() > newest_color.get_luminance(), "Older marks must be lighter than the newest.")
-	_assert_true(game.fire(false), "Shot one must be available before confirmation.")
+	_assert_true(game.fire(), "Shot one must be available before confirmation.")
 	first_ball = game.current_ball
 	game._on_setup_changed(57.0, 45.0, 70.0)
-	_assert_true(game.fire(false), "Shot two must coexist before either confirms.")
+	_assert_true(game.fire(), "Shot two must coexist before either confirms.")
 	second_ball = game.current_ball
 	first_ball.global_position = game._course_builder.goal.global_position + Vector3.UP * 0.6
 	game._confirm_goal(first_ball)

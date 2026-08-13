@@ -13,6 +13,11 @@ func _capture() -> void:
 	var requested_course := 0
 	var requested_size := Vector2i(1280, 720)
 	var background_capture := false
+	var fired_view: StringName
+	var fired_pan := Vector3.ZERO
+	var fired_zoom := 0.0
+	var fired_orbit := Vector2.ZERO
+	var fired_transform := Transform3D.IDENTITY
 	var output_path := ProjectSettings.globalize_path(
 		"res://.godot/capture-temp/cannon-golf.png"
 	)
@@ -76,15 +81,33 @@ func _capture() -> void:
 			push_error("Follow capture could not launch its ball.")
 			quit(1)
 			return
+		if not game.toggle_shot_camera():
+			push_error("Follow capture could not enter explicit Shot Follow.")
+			quit(1)
+			return
 	elif requested_state == "two_live":
 		if not game.fire():
 			push_error("Two-live capture could not launch its first ball.")
 			quit(1)
 			return
-		game.return_to_planning_view()
 		game._on_setup_changed(56.0, 50.0, 50.0)
-		if not game.fire(false):
+		if not game.fire():
 			push_error("Two-live capture could not launch its second ball.")
+			quit(1)
+			return
+	elif requested_state == "fired_explored":
+		game.set_planning_view(&"side")
+		game.orbit_planning(Vector2(190.0, -62.0))
+		game.zoom_planning(2.0)
+		game.pan_planning(Vector2(1.0, 0.0))
+		game._camera_rig.update(1.0)
+		fired_view = game.planning_view
+		fired_pan = game.planning_pan
+		fired_zoom = game.planning_zoom
+		fired_orbit = game._camera_rig.orbit_degrees
+		fired_transform = game._camera.global_transform
+		if not game.fire():
+			push_error("Explored-fire capture could not launch its ball.")
 			quit(1)
 			return
 	elif requested_state == "pause":
@@ -132,6 +155,16 @@ func _capture() -> void:
 	if game != null and requested_state == "two_live":
 		if game.active_ball_count() != 2 or game._camera_rig.camera_mode != &"planning":
 			push_error("Two-live capture did not retain two balls in planning view.")
+			quit(1)
+			return
+	if game != null and requested_state == "fired_explored":
+		if game._camera_rig.camera_mode != &"planning" \
+				or game.planning_view != fired_view \
+				or not game.planning_pan.is_equal_approx(fired_pan) \
+				or not is_equal_approx(game.planning_zoom, fired_zoom) \
+				or not game._camera_rig.orbit_degrees.is_equal_approx(fired_orbit) \
+				or not game._camera.global_transform.is_equal_approx(fired_transform):
+			push_error("Fire changed the explored planning camera.")
 			quit(1)
 			return
 	# Compatibility rendering can publish the terrain frame before every font

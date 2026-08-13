@@ -204,9 +204,10 @@ than the inherited frontal cannon composition.
 - Requirement: planning must support terrain-reading compositions such as
   top/oblique and side/profile views. A behind-cannon view may support launch
   drama or local aim, but must not be the only or automatically dominant view.
-  Firing temporarily follows the newest ball. `Tab` is a one-way immediate
-  return to the stored planning pose; it never enters Shot Follow. The compact
-  follow action explicitly enters or leaves follow. Overview, side view, or
+  Firing never changes the current camera mode, planning pose, or existing
+  follow target. The compact follow action explicitly enters or leaves Shot
+  Follow for the newest live ball. `Tab` is a one-way immediate return to the
+  stored planning pose; it never enters Shot Follow. Overview, side view, or
   direct course exploration also restore planning while balls remain live.
   Direct planning interaction uses left-drag to orbit around
   the current fixed course focus, the mouse wheel or compact zoom actions to
@@ -362,12 +363,12 @@ than the inherited frontal cannon composition.
   side/profile view in which goals, settled balls, retained marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
-  planning state and does not strand the player in an invalid framing. After
-  firing, `Tab` restores that framing without waiting for the ball to resolve;
-  the follow icon explicitly controls follow; direct drag/wheel exploration also
-  restores planning; and the launch controls remain usable. Orbit keeps a fixed
-  course focus, click-only
-  input does not move it, and camera reset returns to a valid authored frame.
+  planning state and does not strand the player in an invalid framing. Firing
+  preserves that exact framing without waiting for the ball to resolve;
+  the follow icon alone enters follow; `Tab` and direct drag/wheel exploration
+  restore planning; and the launch controls remain usable. Orbit keeps a fixed
+  course focus, click-only input does not move it, and camera reset returns to a
+  valid authored frame.
 
 ### AC-6: Repeatability
 

@@ -207,7 +207,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			pan_planning(Vector2(0.0, -1.0))
 
 
-func fire(follow_new_shot: bool = true) -> bool:
+func fire() -> bool:
 	if confirmed_ball != null or _active_balls.size() >= MAXIMUM_LIVE_BALLS:
 		return false
 	var ball := CannonGolfBall.new()
@@ -225,11 +225,6 @@ func fire(follow_new_shot: bool = true) -> bool:
 	current_ball = ball
 	launch_state = LaunchState.FLYING
 	last_launch_outcome = &""
-	if follow_new_shot:
-		_camera_rig.follow(ball)
-		_hud.set_camera_mode(&"follow")
-	else:
-		_hud.set_camera_mode(&"planning")
 	_refresh_hud_availability()
 	_hud.hide_clear()
 	return true
@@ -252,7 +247,13 @@ func retry_attempt() -> bool:
 	last_launch_outcome = &""
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
-	return fire(keep_follow)
+	var relaunched := fire()
+	if relaunched and keep_follow:
+		# Retry replaces the target the player explicitly chose to follow. Keep
+		# that existing context without giving ordinary Fire camera ownership.
+		_camera_rig.follow(current_ball)
+		_hud.set_camera_mode(&"follow")
+	return relaunched
 
 
 func toggle_pause() -> void:

@@ -54,7 +54,7 @@ affected code path is designed.
 | Q-15 | The selected additional vocabulary is a flat-surface damping pad, a mid-air placeable airflow device, and a bounded gravity-drop zone. | `DECISIONS.md` D-015 |
 | Q-17 | Gravity zones, like every other route-changing mechanism, are placed by the player. | `DECISIONS.md` D-015 and D-016 |
 | Q-01 | The first two courses expose horizontal aim `0..100`; `50` follows the hidden generated shot axis and the endpoints map to `-80..+80` degrees. Vertical angle and power remain independent controls. | `DECISIONS.md` D-023 |
-| Q-02 | High-oblique is the default, side/profile is the alternate, and temporary Shot Follow restores the stored planning pose and setup. | `DECISIONS.md` D-018 |
+| Q-02 | High-oblique is the default, side/profile is the alternate, Fire preserves the current camera, and explicit Shot Follow restores the stored planning pose and setup. | `DECISIONS.md` D-018 and D-029 |
 | Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
 | Q-12 | The first slice uses two deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |

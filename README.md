@@ -8,9 +8,10 @@ persistent settings, gameplay pause/return navigation, and two introductory
 direct-shot courses. Adjust horizontal aim, vertical angle, and power, launch a
 rebound-capable ball, learn from first-contact marks, and settle it safely
 inside the goal. Retry is unlimited. High-oblique and side planning views
-preserve the complete launch setup, exploration state, and impact history. A
-shot briefly enters ball follow, but the controls remain available and the
-player can return to planning immediately and launch a second ball. At most two
+preserve the complete launch setup, exploration state, and impact history.
+Firing leaves the current camera exactly where the player put it; the follow
+icon explicitly enters ball follow when wanted. The controls remain available
+and the player can launch a second ball immediately. At most two
 unconfirmed balls can be active at once. In planning, left-drag orbits around a
 fixed course focus, the wheel zooms, and clicks without dragging do not jump the
 camera pivot.
@@ -40,7 +41,7 @@ Controls:
 - `W` / `S`: elevation angle
 - `A` / `D`: power
 - Each launch axis also has hold-repeat `−` / `+` buttons and a direct slider
-- `Space`: fire
+- `Space`: fire without changing the current camera
 - `1` / `2`: high-oblique / side view
 - `Tab`: return immediately from ball follow to the stored planning view
 - Follow icon: enter or leave follow for the newest live ball
