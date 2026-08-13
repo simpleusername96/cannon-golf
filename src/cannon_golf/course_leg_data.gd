@@ -4,6 +4,7 @@ extends Resource
 ## Authored input for one ordered launcher-to-goal segment.
 
 @export_range(0.01, 0.99, 0.01) var goal_route_t := 0.20
+## Used by the first leg. Later relay launchers derive from the previous goal center.
 @export_range(0.01, 1.0, 0.01) var launcher_route_t := 1.0
 @export_range(3.5, 14.0, 0.1) var goal_radius := 10.0
 @export_range(0.3, 8.0, 0.1) var goal_recess_depth := 4.5

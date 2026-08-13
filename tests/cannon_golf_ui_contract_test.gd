@@ -20,6 +20,7 @@ func _run() -> void:
 	_assert(hud.get_node_or_null("Root/AimPanel") is PanelContainer, "Normal play needs one compact aim panel.")
 	_assert(hud.get_node_or_null("Root/ActionDock") is PanelContainer, "Normal play needs one compact action dock.")
 	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
+	_assert(hud.get_node_or_null("Root/GoalProgress") is PanelContainer, "Normal play needs one compact goal tally.")
 	_assert(hud.get_node_or_null("Root/ShortcutPanel") is PanelContainer, "Normal play needs on-demand shortcut help.")
 	_assert(not hud.is_shortcut_panel_visible(), "Shortcut help must be collapsed by default.")
 	for retired_node in [
@@ -118,8 +119,9 @@ func _run() -> void:
 	hud.set_launch_availability(2, 2, false)
 	_assert(fire_button.disabled, "Two live balls must visibly disable Fire at capacity.")
 
+	hud.set_goal_progress(1, 2)
 	var korean_copy := _visible_copy(hud)
-	for required in ["좌우", "상하", "파워", "발사"]:
+	for required in ["좌우", "상하", "파워", "발사", "골 1 / 2"]:
 		_assert(korean_copy.contains(required), "Normal Korean HUD must expose %s." % required)
 	hud.set_shortcut_panel_visible(true)
 	await process_frame
@@ -130,7 +132,7 @@ func _run() -> void:
 	hud.apply_language("en")
 	await process_frame
 	var english_copy := _visible_copy(hud)
-	for required in ["H", "V", "PWR", "FIRE"]:
+	for required in ["H", "V", "PWR", "FIRE", "GOALS 1 / 2"]:
 		_assert(english_copy.contains(required), "Normal English HUD must expose %s." % required)
 	for label_name in ["HorizontalLabel", "ElevationLabel", "PowerLabel", "HorizontalValue", "ElevationValue", "PowerValue"]:
 		var label := hud.get_node("%%%s" % label_name) as Label
@@ -209,7 +211,7 @@ func _all_descendants(parent: Node) -> Array[Node]:
 
 func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: String) -> void:
 	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
-	var paths := ["Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]
+	var paths := ["Root/GoalProgress", "Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]
 	if hud.is_shortcut_panel_visible():
 		paths.append("Root/ShortcutPanel")
 	for path in paths:

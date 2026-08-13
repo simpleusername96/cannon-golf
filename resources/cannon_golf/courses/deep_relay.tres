@@ -18,7 +18,6 @@ solution_power_percent = 84.0
 [sub_resource type="Resource" id="LegTwo"]
 script = ExtResource("3_leg")
 goal_route_t = 0.30
-launcher_route_t = 0.70
 goal_radius = 10.0
 goal_recess_depth = 4.5
 goal_lip_height = 1.5

@@ -411,6 +411,7 @@ func _load_course(index: int) -> void:
 	)
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
+	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
 	_refresh_hud_availability()
 	_hud.hide_clear()
 	_hud.focus_fire()
@@ -542,6 +543,7 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 	last_launch_outcome = &"confirmed"
 	confirmed_ball = winning_ball
 	confirmed_balls.append(winning_ball)
+	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
 	for live_ball in _active_balls.duplicate():
 		if live_ball != winning_ball and is_instance_valid(live_ball):
 			live_ball.queue_free()

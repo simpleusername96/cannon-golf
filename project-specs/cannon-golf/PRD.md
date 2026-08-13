@@ -4,7 +4,7 @@ status: active
 created: 2026-08-12
 last_reviewed: 2026-08-13
 canonical_for: Current product requirements for the provisional Cannon Golf project
-scope: Game concept and observable player experience; two-course direct-shot prototype implemented and third ordered relay course specified
+scope: Game concept and observable player experience; three-course prototype implemented and later device progression specified
 source: User direction recorded on 2026-08-12
 related:
   - DESIGN_RULES.md
@@ -21,9 +21,8 @@ related:
 Define the current product direction for a new Windows desktop 3D physics
 puzzle. The copied Paint Mountain runtime is reusable technical material only.
 This specification replaces surface coverage as the product goal. The isolated
-`cannon_golf` runtime now implements the two-course direct-shot slice. The next
-specified course is a two-leg ordered relay; later device requirements remain
-specified but unimplemented.
+`cannon_golf` runtime now implements two direct-shot courses and one two-leg
+ordered relay. Later device requirements remain specified but unimplemented.
 
 ## Summary
 
@@ -119,8 +118,8 @@ than the inherited frontal cannon composition.
   compare prior impact marks, place and orient a limited bounce pad when the
   natural route is insufficient, then fire and observe. An authored relay course
   activates its goals in order; confirming an intermediate goal preserves its
-  ball, moves the reusable launcher to that goal's relay anchor, and begins the
-  next leg.
+  ball, moves the reusable launcher to the exact horizontal center of that
+  goal, and begins the next leg.
 - Expected outcome: each required goal contains a confirmed settled ball. A
   confirmed ball remains visible and cannot be displaced from its completed
   goal by later shots. Only confirmation of the final required goal clears an
@@ -184,11 +183,11 @@ than the inherited frontal cannon composition.
   contact cannot advance the course. Once a goal confirms a settled ball, that
   ball remains visibly present and protected from later displacement. On an
   intermediate relay confirmation, the course preserves that ball, removes other
-  unconfirmed balls, relocates the single reusable launcher to the authored
-  terrain-adjacent relay anchor beside the completed goal, resets only the three
-  visible launch controls to `50 / 50 / 50`, and activates the next goal. Stage
-  completion depends on confirming every required goal; only final-goal
-  confirmation clears an ordered relay course.
+  unconfirmed balls, relocates the single reusable launcher to the completed
+  goal's exact horizontal center and aligns it to that goal's terrain surface,
+  resets only the three visible launch controls to `50 / 50 / 50`, and activates
+  the next goal. Stage completion depends on confirming every required goal;
+  only final-goal confirmation clears an ordered relay course.
 - Reason: persistent goal occupancy makes progress legible and prevents later
   shots from invalidating an already completed route.
 
@@ -244,10 +243,11 @@ than the inherited frontal cannon composition.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power modules with direct
   decrement, slider, and increment input; Fire; overview; side view; ball
-  follow; quick retry; pause; and one restrained camera/help dock. A single
-  shortcut panel may open on demand from that dock and must be collapsed by
-  default. Course prose, progress cards, permanently expanded shortcut legends,
-  feedback panels, and in-game course navigation do not persist over the world.
+  follow; quick retry; pause; one compact completed-goals/total-goals tally; and
+  one restrained camera/help dock. A single shortcut panel may open on demand
+  from that dock and must be collapsed by default. Course prose, progress cards,
+  permanently expanded shortcut legends, feedback panels, and in-game course
+  navigation do not persist over the world.
 - Reason: estimation and learning are the intended challenge.
 
 ### FR-10: Overlay HUD continuity
@@ -387,7 +387,8 @@ than the inherited frontal cannon composition.
   authored ordered goals on one connected `210 x 320` metre terrain body with at
   least `80` metres of playable-top relief and at least `25` metres of upward
   rise on each leg. Goal 1 confirmation preserves its ball and relocates the
-  single launcher to its relay anchor; only goal 2 confirmation clears. The
+  single launcher to goal 1's exact horizontal center; only goal 2 confirmation
+  clears. The compact HUD reads `1 / 2` after that transition. The
   later eleven-stage device progression remains a content target, and every
   pad-dependent goal has no certified direct solution from permitted cannon
   states.
@@ -421,7 +422,9 @@ than the inherited frontal cannon composition.
   does. On `deep_relay`, only the active goal can confirm, future-goal contact
   does not advance the course, and the first confirmation activates the next
   leg without clearing. After confirmation, the ball stays visible in that goal
-  and cannot be knocked out by later shots.
+  and cannot be knocked out by later shots. The launcher moves to that goal's
+  exact horizontal center, and the compact goal tally advances from `0 / 2` to
+  `1 / 2`.
 
 ### AC-8: Unlimited recovery from misses
 

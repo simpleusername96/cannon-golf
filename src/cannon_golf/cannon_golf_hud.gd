@@ -46,6 +46,7 @@ signal result_primary_requested
 @onready var _result_overlay: Control = %ResultOverlay
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_primary: Button = %ResultPrimary
+@onready var _goal_progress_label: Label = %GoalProgressLabel
 
 var _syncing := false
 var _pause_suspended := false
@@ -55,6 +56,8 @@ var _cleared := false
 var _planning_view: StringName = &"oblique"
 var _camera_mode: StringName = &"planning"
 var _language := "ko"
+var _completed_goal_count := 0
+var _total_goal_count := 1
 var _held_slider: HSlider
 var _held_direction := 0.0
 var _hold_elapsed := 0.0
@@ -132,6 +135,12 @@ func set_launch_availability(active_shots: int, maximum_live_shots: int, cleared
 	_pause_retry.disabled = _cleared or _active_shot_count <= 0
 	_follow_button.disabled = _cleared or _active_shot_count <= 0
 	_refresh_setup_button_states()
+
+
+func set_goal_progress(completed_goal_count: int, total_goal_count: int) -> void:
+	_total_goal_count = maxi(total_goal_count, 1)
+	_completed_goal_count = clampi(completed_goal_count, 0, _total_goal_count)
+	_update_goal_progress_copy()
 
 
 func set_view(view_mode: StringName) -> void:
@@ -234,6 +243,7 @@ func apply_language(language: String) -> void:
 	%PauseSettings.text = "SETTINGS" if english else "설정"
 	%PauseStages.text = "COURSE SELECT" if english else "코스 선택"
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
+	_update_goal_progress_copy()
 	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
 	_refresh_camera_buttons()
 
@@ -264,6 +274,13 @@ func _update_setup_labels() -> void:
 	_horizontal_value.text = "%d" % int(roundf(_horizontal_slider.value))
 	_elevation_value.text = "%d°" % int(roundf(_elevation_slider.value))
 	_power_value.text = "%d%%" % int(roundf(_power_slider.value))
+
+
+func _update_goal_progress_copy() -> void:
+	_goal_progress_label.text = ("GOALS %d / %d" if _language == "en" else "골 %d / %d") % [
+		_completed_goal_count,
+		_total_goal_count,
+	]
 
 
 func _connect_step_button(button: Button, slider: HSlider, direction: float) -> void:

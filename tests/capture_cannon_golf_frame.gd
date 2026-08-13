@@ -231,6 +231,7 @@ func _capture() -> void:
 		) if checkpoint_ball != null else Vector2.ZERO
 		var relay_viewport := Rect2(Vector2.ZERO, Vector2(root.size))
 		var relay_fire_button := game._hud.get_node("%FireButton") as Button
+		var relay_progress := game._hud.get_node("%GoalProgressLabel") as Label
 		if game.active_course().course_id != &"deep_relay" \
 				or game.active_leg_index != 1 \
 				or game.confirmed_ball_count() != 1 \
@@ -247,9 +248,13 @@ func _capture() -> void:
 				or not relay_launcher.global_position.is_equal_approx(
 					game._course_builder.generated_course.leg_at(1).launcher_position
 				) \
-				or relay_launcher.global_position.distance_to(
-					game.confirmed_ball.global_position
-				) <= 2.0:
+				or not Vector2(relay_launcher.global_position.x, relay_launcher.global_position.z).is_equal_approx(
+					Vector2(
+						game._course_builder.goals[0].global_position.x,
+						game._course_builder.goals[0].global_position.z
+					)
+				) \
+				or relay_progress.text != "골 1 / 2":
 			push_error("Confirmed relay capture did not retain checkpoint one in the leg-two planning frame.")
 			quit(1)
 			return

@@ -57,7 +57,7 @@ affected code path is designed.
 | Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
 | Q-12 | The initial two-course prototype uses deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |
-| Q-10 | Ordered relay courses assign goals one at a time. Only the active goal may confirm; intermediate confirmation preserves its ball, moves the reusable launcher to the next relay anchor, and does not clear the course. Only the final required goal clears. | `DECISIONS.md` D-030 |
+| Q-10 | Ordered relay courses assign goals one at a time. Only the active goal may confirm; intermediate confirmation preserves its ball, moves the reusable launcher to the completed goal's exact horizontal center, advances the compact goal tally, and does not clear the course. Only the final required goal clears. | `DECISIONS.md` D-030 and D-031 |
 
 ## Recommendations
 

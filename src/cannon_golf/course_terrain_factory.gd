@@ -16,8 +16,8 @@ const TERRAIN_BASE_Y := -14.0
 const PLAY_BOUNDS_HORIZONTAL_MARGIN := 20.0
 const PLAY_BOUNDS_MAXIMUM_HEIGHT := 190.0
 const RELAY_LAUNCH_ADMISSION_EXCLUSION_RADIUS := 30.0
-const LAUNCHER_BASE_RADIUS := 1.95
-const RELAY_ANCHOR_CLEARANCE := LAUNCHER_BASE_RADIUS + 1.0
+const RELAY_LAUNCH_SURFACE_OFFSET := 0.05
+const RELAY_CENTERED_UNION_HEIGHT_MARGIN := 0.0
 
 static var _terrain_cache: Dictionary = {}
 static var _generation_build_count := 0
@@ -229,7 +229,9 @@ static func _build_explicit_uncached(course: CannonGolfCourseData) -> CannonGolf
 		leg.goal_rim_y = source_rims[index]
 		leg.goal_lip_y = source_rims[index] + authored.goal_lip_height
 		var goal_position: Variant = _topology_position_at(topology, goal_xzs[index])
-		var launcher_position: Variant = _explicit_launcher_position(course, topology, route_graph, authored, index)
+		var launcher_position: Variant = _explicit_launcher_position(
+			course, topology, route_graph, authored, index, goal_xzs
+		)
 		if goal_position == null or launcher_position == null:
 			push_error("Longitudinal leg surface resolution failed.")
 			return null
@@ -251,8 +253,8 @@ static func _build_explicit_uncached(course: CannonGolfCourseData) -> CannonGolf
 			push_error("Longitudinal leg %d is incomplete." % (index + 1))
 			return null
 		result.add_leg(leg)
-	if not _validate_relay_anchor_clearance(result.legs, authored_legs):
-		push_error("Longitudinal relay launcher clearance failed.")
+	if not _validate_relay_launcher_centers(result.legs):
+		push_error("Longitudinal relay launcher centering failed.")
 		return null
 	var admission_points := _terrain_admission_points(topology)
 	if admission_points.is_empty():
@@ -566,10 +568,21 @@ static func _explicit_launcher_position(
 		topology: TerrainTopTopology,
 		route_graph: GeneratedRouteGraph,
 		leg: CannonGolfCourseLegData,
-		leg_index: int
+		leg_index: int,
+		goal_xzs: Array[Vector2]
 ) -> Variant:
-	if topology == null or route_graph == null or leg == null:
+	if topology == null or route_graph == null or leg == null \
+			or leg_index < 0 or leg_index >= goal_xzs.size():
 		return null
+	if leg_index > 0:
+		var previous_goal_surface: Variant = _topology_position_at(
+			topology, goal_xzs[leg_index - 1]
+		)
+		if previous_goal_surface == null:
+			return null
+		var centered_position: Vector3 = previous_goal_surface
+		centered_position.y += RELAY_LAUNCH_SURFACE_OFFSET
+		return centered_position if centered_position.is_finite() else null
 	var route_launcher := route_graph.route_position(0, leg.launcher_route_t)
 	if not route_launcher.is_finite():
 		return null
@@ -637,11 +650,14 @@ static func _validate_union_launch_envelope(
 		var first_index := _nearest_leg_index(point, legs)
 		for offset in range(legs.size()):
 			var leg := legs[(first_index + offset) % legs.size()]
-			var admission := _admit_union_point(point, leg)
+			var admission := _admit_union_point(
+				point, leg, RELAY_CENTERED_UNION_HEIGHT_MARGIN
+			)
 			if bool(admission.passed):
 				accepted = admission
 				break
 		if accepted.is_empty():
+			push_error("Relay terrain point %s is outside every launch envelope." % point)
 			return {}
 		minimum_range_margin = minf(minimum_range_margin, float(accepted.range_margin))
 		minimum_yaw_margin = minf(minimum_yaw_margin, float(accepted.yaw_margin_degrees))
@@ -675,7 +691,9 @@ static func _nearest_leg_index(
 
 
 static func _admit_union_point(
-		point: Vector3, leg: CannonGolfGeneratedCourseLeg
+		point: Vector3,
+		leg: CannonGolfGeneratedCourseLeg,
+		required_height_margin: float = CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN
 ) -> Dictionary:
 	var horizontal_delta := Vector2(
 		point.x - leg.launcher_position.x,
@@ -698,7 +716,7 @@ static func _admit_union_point(
 		relative_height - sampled_interval.x,
 		sampled_interval.y - relative_height
 	) if sampled_interval.is_finite() and sampled_interval.x <= sampled_interval.y else -INF
-	if height_margin < CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN:
+	if height_margin < required_height_margin:
 		return CannonGolfBallistics.admit_world_point(
 			point, leg.launcher_position, leg.shot_axis_yaw_degrees
 		)
@@ -728,17 +746,17 @@ static func _is_relay_launch_exclusion(
 	return false
 
 
-static func _validate_relay_anchor_clearance(
-		legs: Array[CannonGolfGeneratedCourseLeg], authored_legs: Array[CannonGolfCourseLegData]
+static func _validate_relay_launcher_centers(
+		legs: Array[CannonGolfGeneratedCourseLeg]
 ) -> bool:
-	if legs.size() != authored_legs.size():
-		return false
 	for index in range(1, legs.size()):
 		var previous_goal := legs[index - 1].goal_position
-		var anchor := legs[index].launcher_position
-		var clearance := Vector2(previous_goal.x, previous_goal.z).distance_to(Vector2(anchor.x, anchor.z))
-		var required_clearance := authored_legs[index - 1].goal_radius + RELAY_ANCHOR_CLEARANCE
-		if clearance < required_clearance:
+		var launcher_position := legs[index].launcher_position
+		if not Vector2(launcher_position.x, launcher_position.z).is_equal_approx(
+			Vector2(previous_goal.x, previous_goal.z)
+		) or not is_equal_approx(
+			launcher_position.y, previous_goal.y + RELAY_LAUNCH_SURFACE_OFFSET
+		):
 			return false
 	return true
 

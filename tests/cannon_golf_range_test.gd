@@ -7,12 +7,23 @@ func _initialize() -> void:
 		if course.has_explicit_legs():
 			var relay := generated as CannonGolfGeneratedCourse
 			_assert_true(relay != null and relay.union_range_metrics.size() > 0, "Relay must provide union admission metrics.")
+			_assert_true(float(relay.union_range_metrics.minimum_range_margin) >= 8.0, "Relay range margin failed.")
+			_assert_true(float(relay.union_range_metrics.minimum_yaw_margin_degrees) >= 8.0, "Relay yaw margin failed.")
+			_assert_true(
+				float(relay.union_range_metrics.minimum_height_margin) \
+						>= CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN,
+				"Centered relay terrain must remain inside at least one reachable height interval."
+			)
 			for point in relay.admission_points:
 				if CannonGolfCourseTerrainFactory._is_relay_launch_exclusion(point, relay.legs):
 					continue
 				var admitted := false
 				for leg in relay.legs:
-					var admission := CannonGolfBallistics.admit_world_point(point, leg.launcher_position, leg.shot_axis_yaw_degrees)
+					var admission := CannonGolfCourseTerrainFactory._admit_union_point(
+						point,
+						leg,
+						CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN
+					)
 					admitted = admitted or bool(admission.passed)
 				_assert_true(admitted, "Every relay terrain point must be admitted by at least one leg.")
 			continue

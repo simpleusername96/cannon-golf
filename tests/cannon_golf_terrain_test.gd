@@ -156,8 +156,19 @@ func _assert_relay_terrain(generated: CannonGolfGeneratedCourse, course: CannonG
 		_assert_true(leg.goal_lip_y - leg.goal_position.y >= 5.6, "Relay goal center must sit below its raised lip.")
 		_assert_true(leg.goal_lip_y - leg.launcher_position.y >= 25.0, "Each relay raised lip must rise 25m above its launcher.")
 		_assert_true(not leg.corridor_admission.is_empty(), "Each relay leg requires corridor admission metrics.")
+		if index > 0:
+			var previous_goal := generated.leg_at(index - 1).goal_position
+			_assert_true(
+				Vector2(leg.launcher_position.x, leg.launcher_position.z).is_equal_approx(
+					Vector2(previous_goal.x, previous_goal.z)
+				) and is_equal_approx(
+					leg.launcher_position.y,
+					previous_goal.y + CannonGolfCourseTerrainFactory.RELAY_LAUNCH_SURFACE_OFFSET
+				),
+				"Each later relay launcher must sit at the exact prior-goal center."
+			)
 	_assert_true(not generated.union_range_metrics.is_empty(), "Relay requires union admission metrics.")
-	_assert_true(int(generated.union_range_metrics.excluded_point_count) > 0, "Relay union admission must exclude the terrain-sited launcher zone.")
+	_assert_true(int(generated.union_range_metrics.excluded_point_count) > 0, "Relay union admission must exclude the centered launch footprint.")
 
 
 func _assert_route_graph_cache_isolation(

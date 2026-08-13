@@ -135,12 +135,13 @@ coefficients, stage data formats, or code ownership.
   remain visibly unsuccessful.
 - A confirmed goal must show the settled ball clearly from every planning view,
   and the ball must not move when later shots occur.
-- Ordered relay goals use three world states without a persistent goal counter
-  or progress panel: the active goal has the strongest flag height and rim-marker
-  rhythm; future goals are visibly restrained; confirmed goals are led by their
-  retained ball and a completed marker rhythm. Shape, height, spacing, and the
-  confirmed ball must distinguish these states in grayscale; color and contrast
-  are secondary cues.
+- Ordered relay goals use three world states: the active goal has the strongest
+  flag height and rim-marker rhythm; future goals are visibly restrained;
+  confirmed goals are led by their retained ball and a completed marker rhythm.
+  One small edge-aligned tally may show completed goals over total goals, such as
+  `1 / 2`; it must not become a progress card or central status panel. Shape,
+  height, spacing, and the confirmed ball must distinguish the world states in
+  grayscale; color and contrast are secondary cues.
 - The two-course prototype ball uses one `0.75 m` physical and visual radius so
   it remains readable over the original-scale mountain without becoming a
   non-physical screen-space marker.
@@ -190,15 +191,17 @@ coefficients, stage data formats, or code ownership.
   copy, edge alignment, generous padding, and minimal containment.
 - Keep the course center open. Normal play may persist only one compact
   three-module aim panel, Fire, and overview, side-view, ball-follow,
-  quick-retry, pause, camera, and help icon actions at safe edges. The help icon
-  may open one concise shortcut panel at the upper-right edge; it stays collapsed
-  by default and manages keyboard focus. Put full course reset, settings, course
-  selection, and main-menu navigation in the pause overlay.
+  quick-retry, pause, a compact completed-goals/total-goals tally, camera, and
+  help icon actions at safe edges. The help icon may open one concise shortcut
+  panel at the upper-right edge; it stays collapsed by default and manages
+  keyboard focus. Put full course reset, settings, course selection, and
+  main-menu navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
-- Horizontal aim, vertical angle, power, device stock, and menu are valid only
-  when they support a current decision. Do not persist course prose, progress,
-  camera-state labels, feedback copy, permanently expanded shortcut legends,
-  time, lives, finite ball stock, or remaining shots over normal play.
+- Horizontal aim, vertical angle, power, device stock, the goal tally, and menu
+  are valid only when they support a current decision. Do not persist course
+  prose, a progress card, camera-state labels, feedback copy, permanently
+  expanded shortcut legends, time, lives, finite ball stock, or remaining shots
+  over normal play.
 - Remove coverage rails, coverage percentages, paint icons, paint-result copy,
   and any control that implies terrain painting.
 - Do not add dashboard cards, decorative borders, multiple shortcut owners,

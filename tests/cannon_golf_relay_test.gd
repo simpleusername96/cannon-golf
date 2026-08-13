@@ -44,8 +44,12 @@ func _run() -> void:
 	)
 	_assert_true(
 		relay._course_builder.launcher.global_position.is_equal_approx(leg_two.launcher_position) \
-				and not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor),
-		"Goal one confirmation must place the same launcher at the authored leg-two anchor."
+				and not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor) \
+				and Vector2(
+					relay._course_builder.launcher.global_position.x,
+					relay._course_builder.launcher.global_position.z
+				).is_equal_approx(Vector2(first_goal.global_position.x, first_goal.global_position.z)),
+		"Goal one confirmation must center the same launcher in the completed goal."
 	)
 	var leg_two_origin := relay._course_builder.launcher.launch_origin()
 	_assert_true(
@@ -139,6 +143,16 @@ func _run() -> void:
 	_assert_true(discarded_ball.is_queued_for_deletion(), "Goal one confirmation must remove other unconfirmed balls.")
 	_assert_true(relay.active_leg_index == 1 and relay._course_builder.goal == relay._course_builder.goals[1], "Goal one confirmation must activate leg two.")
 	_assert_true(not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor), "Goal one confirmation must relocate the launcher.")
+	_assert_true(
+		Vector2(
+			relay._course_builder.launcher.global_position.x,
+			relay._course_builder.launcher.global_position.z
+		).is_equal_approx(Vector2(
+			relay._course_builder.goals[0].global_position.x,
+			relay._course_builder.goals[0].global_position.z
+		)),
+		"The next-leg launcher must remain centered in confirmed goal one."
+	)
 	_assert_defaults(relay, "A new relay leg")
 	await process_frame
 	_assert_true(is_instance_valid(first_ball) and first_ball.is_inside_tree(), "Goal one ball must survive deferred cleanup.")

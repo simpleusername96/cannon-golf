@@ -25,9 +25,16 @@ func _initialize() -> void:
 			_assert_true(builder.get_node_or_null("Launcher") == builder.launcher, "Relay must retain one reusable launcher node.")
 			_assert_true(builder.goal == builder.goals[0], "Relay must begin on its first ordered goal.")
 			var first_anchor := builder.launcher.position
+			var completed_goal_center := builder.goals[0].position
 			_assert_true(builder.activate_leg(1), "Relay must activate its authored second leg.")
 			_assert_true(builder.goal == builder.goals[1], "Relay activation must expose the second goal.")
 			_assert_true(not builder.launcher.position.is_equal_approx(first_anchor), "Relay activation must relocate the reusable launcher.")
+			_assert_true(
+				Vector2(builder.launcher.position.x, builder.launcher.position.z).is_equal_approx(
+					Vector2(completed_goal_center.x, completed_goal_center.z)
+				),
+				"Relay activation must center the reusable launcher in the completed goal."
+			)
 			_assert_true(builder.get_node_or_null("Launcher") == builder.launcher, "Relay activation must not spawn a second launcher.")
 			_assert_true(builder.activate_leg(0), "Relay builder must return to the first leg for the next build.")
 	print("Cannon Golf course-build contract passed.")

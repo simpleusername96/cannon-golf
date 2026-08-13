@@ -338,6 +338,25 @@ in `OPEN_QUESTIONS.md`.
   whole-terrain single-launcher admission rule. This decision adds no constraint
   to those retained courses and preserves their behavior as historical baseline.
 
+### D-031 — Center relay launchers and show a compact goal tally
+
+- Status: accepted on 2026-08-13; supersedes the conflicting relay-anchor and
+  no-counter clauses in D-025 and D-030.
+- After an intermediate goal confirms, the reusable launcher's horizontal
+  position is the exact center of that completed goal. Its vertical position is
+  aligned to the generated goal surface. It is not authored as a separate relay
+  anchor beside the goal.
+- Normal play shows one small edge-aligned completed-goals/total-goals tally.
+  It is status text, not a progress card, and does not add course prose or a
+  second control panel.
+- A centered launcher necessarily occupies the bottom of a concave goal. The
+  local `30` metre support footprint remains excluded from whole-terrain union
+  admission. Outside that footprint, every visible terrain point must remain
+  inside at least one leg's real ballistic interval with the full `8` metre
+  range and `8` degree yaw guards; the prior additional `8` metre whole-terrain
+  height guard is reduced to a nonnegative height margin. Authored goal and
+  launcher-to-goal corridor validation retain the full height guard.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

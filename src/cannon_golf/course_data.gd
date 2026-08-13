@@ -113,11 +113,6 @@ func _explicit_legs_are_valid() -> bool:
 		if index == 0:
 			if not is_equal_approx(leg.launcher_route_t, cannon_route_t):
 				return false
-		else:
-			# Every relay anchor stays on the route segment from the completed goal
-			# toward the incoming goal; route t decreases toward the summit.
-			if leg.launcher_route_t >= previous_goal_t or leg.launcher_route_t <= leg.goal_route_t:
-				return false
 		if leg.goal_route_t >= previous_goal_t:
 			return false
 		previous_goal_t = leg.goal_route_t
