@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-13
 scope: Add one depth-dominant ordered multi-goal relay course while preserving the two existing courses
 related:
@@ -262,7 +262,7 @@ Source owners: `src/cannon_golf/course_data.gd`, new
 `src/cannon_golf/course_terrain_factory.gd`,
 `resources/cannon_golf/courses/`
 
-- [ ] **2.1** Establish one normalized leg contract and typed generated output.
+- [x] **2.1** Establish one normalized leg contract and typed generated output.
   - Change: add the authored leg Resource and immutable generated course/leg
     types. Add `leg_count`, `leg_at`, and `solution_for_leg` access through
     `CannonGolfCourseData`. Normalize the existing singular fields to one leg
@@ -275,8 +275,11 @@ Source owners: `src/cannon_golf/course_data.gd`, new
   - Accept: both existing `.tres` files remain byte-unchanged and normalize to
     one leg; an invalid, unordered, overlapping, or missing-final-goal course
     fails closed with a focused data test.
+  - Evidence: `cannon_golf_course_test.gd` passes for all three catalog entries;
+    explicit leg resources and sealed generated course/leg views reject invalid
+    authored order, overlap, missing-final-goal, and mutable-cache cases.
 
-- [ ] **2.2** Author the isolated longitudinal profile and third course.
+- [x] **2.2** Author the isolated longitudinal profile and third course.
   - Change: implement the Cannon Golf-only exact contract subclass and add a
     deterministic profile with 18 monotonically increasing route stations
     spanning exactly `-140` to `+140` metres. Add `deep_relay.tres` with two
@@ -288,8 +291,11 @@ Source owners: `src/cannon_golf/course_data.gd`, new
   - Accept: the new profile validates without editing the shared contract; the
     catalog order is exactly `first_ridge`, `rising_bend`, `deep_relay`; course
     3 reports two legs, a `210 x 320` source extent, and vertical scale `1.35`.
+  - Evidence: `deep_relay_profile.tres` supplies 18 ordered stations from
+    `-140` to `+140`; `deep_relay.tres` is catalog index 2 with the locked
+    extent, scale, two legs, and unchanged legacy resource bytes.
 
-- [ ] **2.3** Generate both goals, per-leg envelopes, bounds, and cached output.
+- [x] **2.3** Generate both goals, per-leg envelopes, bounds, and cached output.
   - Change: preserve the exact existing one-goal generation path. For explicit
     legs, resolve all goal centers, apply non-overlapping terrain deformation,
     rebuild topology once, resolve each launcher and hidden shot axis, compute
@@ -315,6 +321,10 @@ Source owners: `src/cannon_golf/course_data.gd`, new
     incoming launch anchor by at least `25` metres, each relay anchor clears the
     previous goal lip and confirmed-ball footprint, and every applicable
     admission guard passes.
+  - Evidence: terrain, range, build, and performance tests pass for the native
+    and longitudinal paths. The generated course has one connected body,
+    `80+` metres playable-top relief, both `25+` metre incoming rises, raised
+    terrain lips, guarded leg envelopes, and isolated cached output views.
 
 ### Phase 3: Implement the relay session state
 
@@ -331,7 +341,7 @@ Source owners: `src/cannon_golf/course_builder.gd`,
 `src/cannon_golf/cannon_golf_game.gd`,
 `src/cannon_golf/cannon_golf_hud.gd`
 
-- [ ] **3.1** Build one launcher and an ordered goal collection.
+- [x] **3.1** Build one launcher and an ordered goal collection.
   - Change: make the builder consume typed generated output, instantiate one
     non-colliding `CannonGolfSettlementGoal` per generated leg, and expose
     ordered `goals`/`goal_at` access. Add launcher leg configuration that moves
@@ -340,8 +350,10 @@ Source owners: `src/cannon_golf/course_builder.gd`,
     courses build one goal; `deep_relay` builds two; no goal contains a
     `StaticBody3D`; the relay launcher does not overlap the completed goal or
     ball.
+  - Evidence: course-build and relay tests count one terrain body, one reused
+    launcher, and two non-colliding goal presenters for `deep_relay`.
 
-- [ ] **3.2** Separate checkpoint confirmation from final course clear.
+- [x] **3.2** Separate checkpoint confirmation from final course clear.
   - Change: replace the singular progression assumption with
     `active_leg_index` plus one canonical confirmed-ball collection. Check only
     the active goal. On intermediate confirmation, lock and retain the winning
@@ -354,8 +366,11 @@ Source owners: `src/cannon_golf/course_builder.gd`,
     enables Fire from a distinct next origin, and does not enter `CLEARED`;
     landing in goal 2 before it is active does not advance; goal 2 confirmation
     enters `CLEARED` with both balls still visible.
+  - Evidence: the relay regression confirms intermediate planning state,
+    inactive-goal rejection, launcher relocation, and final clear with both
+    protected balls retained.
 
-- [ ] **3.3** Preserve retries, concurrency, and one-goal behavior across legs.
+- [x] **3.3** Preserve retries, concurrency, and one-goal behavior across legs.
   - Change: make Fire availability depend on final-clear state rather than the
     existence of any confirmed ball. Keep the two-live-ball limit. Scope quick
     retry to the newest current-leg ball and course reset to the complete relay
@@ -365,6 +380,9 @@ Source owners: `src/cannon_golf/course_builder.gd`,
     can start while one current-leg ball is live; confirming one removes the
     other before relocation; reset returns to leg 1 and clears all course-local
     state. Both old one-goal courses still clear on their first confirmed goal.
+  - Evidence: relay, session, and goal tests cover checkpoint retry, concurrent
+    ball cleanup, full reset, repeat Fire, and unchanged one-goal final-clear
+    behavior.
 
 ### Phase 4: Make the long course readable and selectable
 
@@ -382,7 +400,7 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
 `scenes/cannon_golf/cannon_golf.tscn`,
 `scenes/cannon_golf/app/cannon_golf_course_select.tscn`
 
-- [ ] **4.1** Add current-leg framing and full-course exploration.
+- [x] **4.1** Add current-leg framing and full-course exploration.
   - Change: configure the gameplay rig from generated course/leg bounds. Reset
     and leg transition use the active leg's high-oblique frame; pan limits span
     the complete content bounds; maximum zoom-out can frame the entire route;
@@ -398,8 +416,11 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
     `80+` metre relief unmistakable; goal 1 confirmation establishes a valid
     leg-2 frame; no terrain,
     goal, launcher, or confirmed ball is clipped by the world envelope.
+  - Evidence: camera tests and rendered initial/confirmed/overview captures
+    verify leg-local reset and side frames, full-route maximum zoom-out, pan
+    bounds, preview framing, and bounds-derived apron/far/shadow values.
 
-- [ ] **4.2** Express active, future, and confirmed states in the world.
+- [x] **4.2** Express active, future, and confirmed states in the world.
   - Change: add the three visual states to `CannonGolfSettlementGoal`; have the
     session owner set them on load and transition. Use flag height and rim-marker
     rhythm as primary differences and restrained color/contrast as secondary
@@ -408,8 +429,11 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
     goals; raised terrain walls remain visible; neither goal is obscured by its
     markers; no persistent goal count, status text, toast, or progress panel is
     added.
+  - Evidence: goal tests and grayscale-aware visual inspection distinguish the
+    three marker rhythms and flag heights while the confirmed ball remains the
+    dominant completion cue.
 
-- [ ] **4.3** Make course selection catalog-driven.
+- [x] **4.3** Make course selection catalog-driven.
   - Change: replace the two hardcoded course buttons with one reusable button
     component generated from catalog data. Preserve course order, selected
     state, keyboard/controller focus, back/start actions, Korean copy, concise
@@ -418,6 +442,9 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
     without clipping or overflow; selection state is visible without color
     alone; selecting index 2 previews and starts `deep_relay`; no explanatory
     card or course-progress copy returns.
+  - Evidence: app-flow and UI-contract tests verify three catalog buttons,
+    deterministic focus order, index-2 preview/start, and fit at 1280, 1600,
+    and 1920 pixel desktop widths.
 
 ### Phase 5: Certify, inspect, audit, and package
 
@@ -443,7 +470,7 @@ Source owners: `tests/cannon_golf_course_test.gd`,
 `tests/capture_cannon_golf_frame.gd`,
 `scripts/test-cannon-golf.ps1`, this contract
 
-- [ ] **5.1** Add deterministic data, physics, state, camera, UI, and performance
+- [x] **5.1** Add deterministic data, physics, state, camera, UI, and performance
   regression coverage.
   - Change: extend the focused runner and existing owners; add one relay-specific
     test only for behavior that has no current owner. Replay each new leg's
@@ -455,8 +482,11 @@ Source owners: `tests/cannon_golf_course_test.gd`,
     witnesses settle in order; future-goal contact, bounced-out contact,
     concurrent-ball cleanup, retry-at-checkpoint, final clear, camera framing,
     catalog selection, cache reuse, and performance ratios all pass headlessly.
+  - Evidence: the focused runner passes all 16 checks. Real rigid-body replay
+    certifies leg witnesses `50 / 54 / 84` and `50 / 67 / 91` in order, while
+    both `50 / 50 / 50` defaults miss.
 
-- [ ] **5.2** Complete rendered evidence, code-quality audit, source gate, and
+- [x] **5.2** Complete rendered evidence, code-quality audit, source gate, and
   Windows delivery.
   - Change: extend the capture runner with deterministic `relay_initial`,
     `relay_confirmed`, and `relay_overview` states. Capture course selection and
@@ -474,6 +504,12 @@ Source owners: `tests/cannon_golf_course_test.gd`,
   - Accept: captures are nonblank and visually pass; audit has no reachable
     task-owned failure or competing state owner; all commands exit zero; the
     Windows executable starts and exits cleanly.
+  - Evidence: course-select and relay captures passed visual inspection at
+    `1280 x 720`, `1600 x 900`, and `1920 x 1080`. After correcting cached
+    route-graph isolation and explicit fail-closed generation, the 16-test
+    focused suite passed in `189.6` seconds; `scripts/verify.ps1`,
+    `git diff --check`, Windows release export, and built-executable smoke all
+    exited zero. Implementation commit: `dec88da`.
 
 ## Validation and Rework Controls
 
@@ -562,11 +598,14 @@ Rendered-evidence checklist:
   terrain relief to at least `80` metres and each relay-leg rise to at least
   `25` metres with new-course vertical scale `1.35`.
 - [x] Phase 1 specification alignment completed and checked.
-- [ ] Phase 2 data and generation implementation is in progress.
+- [x] Phases 2 through 5 completed: data/generation, relay state, camera/UI,
+  deterministic physics, rendered inspection, audit corrections, source
+  verification, Windows delivery, and implementation commit `dec88da` satisfy
+  their recorded acceptance evidence.
 
-Next action: complete Task 2.1. Resume thereafter at the first unchecked task
-whose preconditions are satisfied. Record acceptance evidence under the
-corresponding checkbox; do not maintain a second progress list.
+Next action: none. This completed plan is retained as a historical execution
+record; future work must use the active product specs and a new task-scoped plan
+when `.agents/PLANS.md` requires one.
 
 ## Completion and Stop Conditions
 
