@@ -125,6 +125,10 @@ func _input(event: InputEvent) -> void:
 	var key_event := event as InputEventKey
 	var pressed_key := key_event.keycode \
 			if key_event.keycode != KEY_NONE else key_event.physical_keycode
+	if pressed_key == KEY_TAB:
+		if return_to_planning_view():
+			get_viewport().set_input_as_handled()
+		return
 	if pressed_key == KEY_HOME:
 		reset_planning_camera()
 		get_viewport().set_input_as_handled()
@@ -170,9 +174,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	match event.keycode:
-		KEY_TAB:
-			if toggle_shot_camera():
-				get_viewport().set_input_as_handled()
 		KEY_1:
 			set_planning_view(&"oblique")
 		KEY_2:

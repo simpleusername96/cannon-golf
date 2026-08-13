@@ -65,6 +65,8 @@ func _capture() -> void:
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
 		game.pan_planning(Vector2(1.0, 0.0))
+	elif requested_state == "shortcuts":
+		game._hud.set_shortcut_panel_visible(true)
 	elif requested_state == "follow":
 		if not game.fire():
 			push_error("Follow capture could not launch its ball.")
@@ -90,7 +92,7 @@ func _capture() -> void:
 		game._confirm_goal()
 	for _frame in range(36):
 		await process_frame
-	if game != null and requested_state in ["planning", "side", "explored"]:
+	if game != null and requested_state in ["planning", "side", "explored", "shortcuts"]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
 			push_error("Planning capture received live input and left the planning state.")
 			quit(1)
@@ -101,6 +103,11 @@ func _capture() -> void:
 			push_error("Explored capture did not retain an orbit and zoom change.")
 			quit(1)
 			return
+	if game != null and requested_state == "shortcuts" \
+			and not game._hud.is_shortcut_panel_visible():
+		push_error("Shortcut capture did not retain its open help panel.")
+		quit(1)
+		return
 	if game != null and requested_state == "follow":
 		if game.active_ball_count() != 1 or game._camera_rig.camera_mode != &"follow":
 			push_error("Follow capture did not retain one followed live ball.")

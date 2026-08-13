@@ -201,9 +201,11 @@ than the inherited frontal cannon composition.
 - Requirement: planning must support terrain-reading compositions such as
   top/oblique and side/profile views. A behind-cannon view may support launch
   drama or local aim, but must not be the only or automatically dominant view.
-  Firing temporarily follows the newest ball. `Tab`, the compact follow action,
-  overview, or side view must immediately restore the stored planning pose while
-  balls remain live. Direct planning interaction uses left-drag to orbit around
+  Firing temporarily follows the newest ball. `Tab` is a one-way immediate
+  return to the stored planning pose; it never enters Shot Follow. The compact
+  follow action explicitly enters or leaves follow. Overview, side view, or
+  direct course exploration also restore planning while balls remain live.
+  Direct planning interaction uses left-drag to orbit around
   the current fixed course focus, the mouse wheel or compact zoom actions to
   change distance, arrow keys to pan, and `Home` or the compact reset action to
   restore the authored high-oblique pose. A click without drag must not refocus
@@ -219,10 +221,12 @@ than the inherited frontal cannon composition.
 - Requirement: normal play must not display an exact predicted landing point,
   a full post-launch trajectory, or a separate UI label for the prior impact.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
-  compact horizontal aim, vertical angle, and power controls, Fire, overview,
-  side view, ball follow, quick retry, pause, and one restrained icon-only camera
-  zoom/reset dock. Course prose, progress cards, shortcut legends, feedback
-  panels, and in-game course navigation do not persist over the world.
+  compact horizontal aim, vertical angle, and power modules with direct
+  decrement, slider, and increment input; Fire; overview; side view; ball
+  follow; quick retry; pause; and one restrained camera/help dock. A single
+  shortcut panel may open on demand from that dock and must be collapsed by
+  default. Course prose, progress cards, permanently expanded shortcut legends,
+  feedback panels, and in-game course navigation do not persist over the world.
 - Reason: estimation and learning are the intended challenge.
 
 ### FR-10: Overlay HUD continuity
@@ -351,9 +355,10 @@ than the inherited frontal cannon composition.
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. After
-  firing, `Tab` or the follow icon restores that framing without waiting for the
-  ball to resolve, direct drag/wheel exploration also restores planning, and the
-  launch controls remain usable. Orbit keeps a fixed course focus, click-only
+  firing, `Tab` restores that framing without waiting for the ball to resolve;
+  the follow icon explicitly controls follow; direct drag/wheel exploration also
+  restores planning; and the launch controls remain usable. Orbit keeps a fixed
+  course focus, click-only
   input does not move it, and camera reset returns to a valid authored frame.
 
 ### AC-6: Repeatability

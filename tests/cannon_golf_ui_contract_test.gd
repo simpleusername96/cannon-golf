@@ -20,19 +20,28 @@ func _run() -> void:
 	_assert(hud.get_node_or_null("Root/AimPanel") is PanelContainer, "Normal play needs one compact aim panel.")
 	_assert(hud.get_node_or_null("Root/ActionDock") is PanelContainer, "Normal play needs one compact action dock.")
 	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
+	_assert(hud.get_node_or_null("Root/ShortcutPanel") is PanelContainer, "Normal play needs on-demand shortcut help.")
+	_assert(not hud.is_shortcut_panel_visible(), "Shortcut help must be collapsed by default.")
 	for retired_node in [
-		"CoursePanel", "CourseNavigation", "FeedbackPanel", "ShortcutPanel",
+		"CoursePanel", "CourseNavigation", "FeedbackPanel",
 		"ViewPanel", "ResetButton", "ResultBody",
 	]:
 		_assert(_find_named(hud, retired_node) == null, "Retired HUD owner must be absent: %s." % retired_node)
 
 	var normal_controls: Array[Control] = [
+		hud.get_node("%HorizontalDecrease"),
 		hud.get_node("%HorizontalSlider"),
+		hud.get_node("%HorizontalIncrease"),
+		hud.get_node("%ElevationDecrease"),
 		hud.get_node("%ElevationSlider"),
+		hud.get_node("%ElevationIncrease"),
+		hud.get_node("%PowerDecrease"),
 		hud.get_node("%PowerSlider"),
+		hud.get_node("%PowerIncrease"),
 		hud.get_node("%ZoomInButton"),
 		hud.get_node("%CameraResetButton"),
 		hud.get_node("%ZoomOutButton"),
+		hud.get_node("%ShortcutButton"),
 		hud.get_node("%ObliqueButton"),
 		hud.get_node("%SideButton"),
 		hud.get_node("%FollowButton"),
@@ -49,7 +58,9 @@ func _run() -> void:
 			"Normal controls must expose an explicit task-order focus chain: %s." % normal_controls[index].name
 		)
 	for button_name in [
-		"ZoomInButton", "CameraResetButton", "ZoomOutButton", "ObliqueButton",
+		"HorizontalDecrease", "HorizontalIncrease", "ElevationDecrease",
+		"ElevationIncrease", "PowerDecrease", "PowerIncrease", "ZoomInButton",
+		"CameraResetButton", "ZoomOutButton", "ShortcutButton", "ObliqueButton",
 		"SideButton", "FollowButton", "RetryButton", "PauseButton",
 	]:
 		var button := hud.get_node("%%%s" % button_name) as Button
@@ -60,12 +71,17 @@ func _run() -> void:
 	_assert(not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(center_seventy), "Aim panel must not occupy the center 70%.")
 	_assert(not (hud.get_node("Root/ActionDock") as Control).get_global_rect().intersects(center_seventy), "Action dock must not occupy the center 70%.")
 	_assert(not (hud.get_node("Root/CameraDock") as Control).get_global_rect().intersects(center_seventy), "Camera dock must not occupy the center 70%.")
-	_assert(
-		(hud.get_node("Root/AimPanel") as Control).get_global_rect().encloses(
-			(hud.get_node("%PowerValue") as Control).get_global_rect()
-		),
-		"Aim panel must enclose the complete power value."
-	)
+	for control_name in [
+		"HorizontalValue", "HorizontalDecrease", "HorizontalSlider", "HorizontalIncrease",
+		"ElevationValue", "ElevationDecrease", "ElevationSlider", "ElevationIncrease",
+		"PowerValue", "PowerDecrease", "PowerSlider", "PowerIncrease",
+	]:
+		_assert(
+			(hud.get_node("Root/AimPanel") as Control).get_global_rect().encloses(
+				(hud.get_node("%%%s" % control_name) as Control).get_global_rect()
+			),
+			"Aim panel must enclose the complete control: %s." % control_name
+		)
 	var normal_primary_count := 0
 	for node in _all_descendants(hud):
 		if node is Button and node.is_visible_in_tree() \
@@ -94,12 +110,23 @@ func _run() -> void:
 		(hud.get_node("%FollowButton") as Button).tooltip_text.contains("돌아가기"),
 		"Follow mode must describe the action that returns to planning."
 	)
+	hud.set_camera_mode(&"planning")
+	_assert(
+		not (hud.get_node("%FollowButton") as Button).tooltip_text.contains("Tab"),
+		"Planning mode must not claim that Tab enters Shot Follow."
+	)
 	hud.set_launch_availability(2, 2, false)
 	_assert(fire_button.disabled, "Two live balls must visibly disable Fire at capacity.")
 
 	var korean_copy := _visible_copy(hud)
 	for required in ["좌우", "상하", "파워", "발사"]:
 		_assert(korean_copy.contains(required), "Normal Korean HUD must expose %s." % required)
+	hud.set_shortcut_panel_visible(true)
+	await process_frame
+	var korean_shortcut_copy := _visible_copy(hud.get_node("%ShortcutPanel"))
+	for required in ["Q / E", "Space", "Tab", "조준으로 복귀", "Shift + R", "드래그", "휠", "방향키", "Esc"]:
+		_assert(korean_shortcut_copy.contains(required), "Korean shortcut help must expose %s." % required)
+	hud.set_shortcut_panel_visible(false)
 	hud.apply_language("en")
 	await process_frame
 	var english_copy := _visible_copy(hud)
@@ -109,6 +136,14 @@ func _run() -> void:
 		var label := hud.get_node("%%%s" % label_name) as Label
 		_assert(label.get_minimum_size().x <= label.size.x + 0.5, "HUD label must fit without clipping: %s." % label_name)
 	_assert_hud_edge_fit(hud, Vector2(1280.0, 720.0), "1280x720")
+	hud.set_shortcut_panel_visible(true)
+	await process_frame
+	_assert(hud.is_shortcut_panel_visible(), "Shortcut help must open on request.")
+	_assert((hud.get_node("%ShortcutCloseButton") as Button).has_focus(), "Shortcut help must move focus to its close action.")
+	var shortcut_copy := _visible_copy(hud.get_node("%ShortcutPanel"))
+	for required in ["Q / E", "Space", "Tab", "Return to aim", "Shift + R", "Drag", "Wheel", "Arrows", "Esc"]:
+		_assert(shortcut_copy.contains(required), "English shortcut help must expose %s." % required)
+	_assert_hud_edge_fit(hud, Vector2(1280.0, 720.0), "1280x720 shortcut-open")
 	root.size = Vector2i(1600, 900)
 	await process_frame
 	await process_frame
@@ -155,7 +190,10 @@ func _all_descendants(parent: Node) -> Array[Node]:
 
 func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: String) -> void:
 	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
-	for path in ["Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]:
+	var paths := ["Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]
+	if hud.is_shortcut_panel_visible():
+		paths.append("Root/ShortcutPanel")
+	for path in paths:
 		var control := hud.get_node(path) as Control
 		_assert(
 			viewport_rect.encloses(control.get_global_rect()),

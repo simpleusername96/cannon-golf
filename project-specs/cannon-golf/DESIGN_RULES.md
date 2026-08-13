@@ -52,10 +52,11 @@ coefficients, stage data formats, or code ownership.
   upper-right panel demonstrates a true side/profile reading of height and the
   gravity drop. The lower-right panel demonstrates temporary ball follow.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
-  balls, and remaining shots with a compact horizontal aim, vertical angle, and
-  power edge panel plus one primary Fire action. Overview, side view, ball
-  follow, quick retry, pause, and a compact zoom/reset dock remain small icon
-  actions with accessible names.
+  balls, and remaining shots with three compact launch-control modules and one
+  primary Fire action. Each module pairs a prominent current value and key hint
+  with direct decrement, slider, and increment input. Overview, side view, ball
+  follow, quick retry, pause, camera controls, and on-demand shortcut help remain
+  small icon actions with accessible names.
 - The combined board deliberately shows player-placed bounce, damping, airflow,
   and gravity in one frame so their visual roles can be compared. It does not
   set content order or inventory limits.
@@ -167,19 +168,20 @@ coefficients, stage data formats, or code ownership.
   navy type, saturated blue for the sole primary action, Pretendard, Korean-first
   copy, edge alignment, generous padding, and minimal containment.
 - Keep the course center open. Normal play may persist only one compact
-  three-control aim panel, Fire, and overview, side-view, ball-follow,
-  quick-retry, pause, and one restrained icon-only camera zoom/reset dock at safe
-  edges. Put full course reset, settings, course selection, and main-menu
-  navigation in the pause overlay.
+  three-module aim panel, Fire, and overview, side-view, ball-follow,
+  quick-retry, pause, camera, and help icon actions at safe edges. The help icon
+  may open one concise shortcut panel at the upper-right edge; it stays collapsed
+  by default and manages keyboard focus. Put full course reset, settings, course
+  selection, and main-menu navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
 - Horizontal aim, vertical angle, power, device stock, and menu are valid only
   when they support a current decision. Do not persist course prose, progress,
-  camera-state labels, feedback copy, shortcut legends, time, lives, finite ball
-  stock, or remaining shots over normal play.
+  camera-state labels, feedback copy, permanently expanded shortcut legends,
+  time, lives, finite ball stock, or remaining shots over normal play.
 - Remove coverage rails, coverage percentages, paint icons, paint-result copy,
   and any control that implies terrain painting.
-- Do not add dashboard cards, decorative borders, detached shortcut tiles,
-  filler explanations, or duplicated state.
+- Do not add dashboard cards, decorative borders, multiple shortcut owners,
+  detached shortcut tiles, filler explanations, or duplicated state.
 
 ### Color and materials
 

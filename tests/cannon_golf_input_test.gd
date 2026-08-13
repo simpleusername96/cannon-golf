@@ -21,8 +21,12 @@ func _run() -> void:
 	_assert_true(fire_button.has_focus(), "Fire must own initial keyboard focus.")
 	await _push_space()
 	_assert_ball_count(game, 1, "One physical Space press must create exactly one ball.")
+	_assert_true(game._camera_rig.camera_mode == &"follow", "Fire must enter Shot Follow.")
+	await _push_key(KEY_TAB)
+	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must return immediately to aiming.")
+	await _push_key(KEY_TAB)
+	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must never re-enter Shot Follow.")
 
-	game.return_to_planning_view()
 	game.set_planning_view(&"side")
 	var oblique_button := game._hud.get_node("%ObliqueButton") as Button
 	oblique_button.grab_focus()
@@ -39,6 +43,79 @@ func _run() -> void:
 	_assert_ball_count(game, 2, "Space must not bypass the two-live-ball capacity.")
 
 	var launcher := game._course_builder.launcher
+	var hud := game._hud
+	var initial_setup := Vector3(
+		launcher.horizontal_aim,
+		launcher.elevation_degrees,
+		launcher.power_percent
+	)
+	_press_step(hud.get_node("%HorizontalDecrease"))
+	_assert_setup(launcher, initial_setup + Vector3(-1.0, 0.0, 0.0), "Horizontal decrease must change only horizontal aim.")
+	_press_step(hud.get_node("%HorizontalIncrease"))
+	_press_step(hud.get_node("%ElevationDecrease"))
+	_assert_setup(launcher, initial_setup + Vector3(0.0, -1.0, 0.0), "Elevation decrease must change only elevation.")
+	_press_step(hud.get_node("%ElevationIncrease"))
+	_press_step(hud.get_node("%PowerDecrease"))
+	_assert_setup(launcher, initial_setup + Vector3(0.0, 0.0, -1.0), "Power decrease must change only power.")
+	_press_step(hud.get_node("%PowerIncrease"))
+	_assert_setup(launcher, initial_setup, "Matching step buttons must restore the initial setup.")
+
+	var horizontal_increase := hud.get_node("%HorizontalIncrease") as Button
+	horizontal_increase.button_down.emit()
+	hud._process(CannonGolfHUD.STEP_HOLD_DELAY + CannonGolfHUD.STEP_HOLD_REPEAT * 2.1)
+	horizontal_increase.button_up.emit()
+	_assert_true(
+		launcher.horizontal_aim >= initial_setup.x + 3.0,
+		"Holding a step button must repeat after the initial press."
+	)
+	game._on_setup_changed(initial_setup.x, initial_setup.y, initial_setup.z)
+	hud.set_setup(0.0, 10.0, 10.0)
+	for button_name in ["HorizontalDecrease", "ElevationDecrease", "PowerDecrease"]:
+		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable at its lower bound." % button_name)
+	hud.set_setup(100.0, 68.0, 100.0)
+	for button_name in ["HorizontalIncrease", "ElevationIncrease", "PowerIncrease"]:
+		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable at its upper bound." % button_name)
+	hud.set_setup(99.0, 68.0, 100.0)
+	horizontal_increase.button_down.emit()
+	_assert_true(
+		is_equal_approx((hud.get_node("%HorizontalSlider") as HSlider).value, 100.0)
+			and hud._held_slider == null,
+		"Hold-repeat must stop immediately when its first step reaches a bound."
+	)
+	horizontal_increase.button_up.emit()
+	hud.set_setup(initial_setup.x, initial_setup.y, initial_setup.z)
+	hud.set_launch_availability(2, 2, true)
+	for button_name in [
+		"HorizontalDecrease", "HorizontalIncrease", "ElevationDecrease",
+		"ElevationIncrease", "PowerDecrease", "PowerIncrease",
+	]:
+		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable after clear." % button_name)
+	hud.set_launch_availability(2, 2, false)
+
+	var pause_emissions := [0]
+	hud.pause_requested.connect(func() -> void: pause_emissions[0] += 1)
+	_assert_true(not hud.is_shortcut_panel_visible(), "Shortcut help must start collapsed.")
+	(hud.get_node("%ShortcutButton") as Button).pressed.emit()
+	await process_frame
+	_assert_true(hud.is_shortcut_panel_visible(), "The help action must open shortcut help.")
+	var escape := InputEventKey.new()
+	escape.keycode = KEY_ESCAPE
+	escape.pressed = true
+	hud._unhandled_input(escape)
+	await process_frame
+	_assert_true(
+		not hud.is_shortcut_panel_visible() and pause_emissions[0] == 0,
+		"Escape must close shortcut help before it can pause."
+	)
+	(hud.get_node("%ShortcutButton") as Button).pressed.emit()
+	await process_frame
+	(hud.get_node("%ShortcutCloseButton") as Button).pressed.emit()
+	await process_frame
+	_assert_true(
+		not hud.is_shortcut_panel_visible() and (hud.get_node("%ShortcutButton") as Button).has_focus(),
+		"The shortcut close action must restore focus to its opener."
+	)
+
 	var stored_setup := Vector3(
 		launcher.horizontal_aim,
 		launcher.elevation_degrees,
@@ -163,6 +240,19 @@ func _push_drag(position: Vector2, relative: Vector2) -> void:
 	Input.parse_input_event(motion)
 	await process_frame
 	await _push_mouse_button(MOUSE_BUTTON_LEFT, false, motion.position)
+
+
+func _press_step(button: Button) -> void:
+	button.button_down.emit()
+	button.button_up.emit()
+
+
+func _assert_setup(launcher: CannonGolfLauncher, expected: Vector3, message: String) -> void:
+	_assert_true(
+		Vector3(launcher.horizontal_aim, launcher.elevation_degrees, launcher.power_percent) \
+				.is_equal_approx(expected),
+		message
+	)
 
 
 func _assert_ball_count(game: CannonGolfGame, expected: int, message: String) -> void:

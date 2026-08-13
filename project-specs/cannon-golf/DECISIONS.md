@@ -169,8 +169,8 @@ in `OPEN_QUESTIONS.md`.
   the authored high-oblique view, zero pan, and default distance. Direct camera
   input during Shot Follow returns to planning before applying the input, and
   Shot Follow returns to the same stored view, pan, orbit, zoom, angle, and power.
-  `Tab` and the compact follow action toggle between the newest live ball and
-  that stored planning pose without waiting for the shot to resolve.
+  The follow action explicitly enters or leaves Shot Follow. Per D-027, `Tab`
+  only returns to that stored planning pose and never enters follow.
 - The prototype does not include a separate behind-cannon planning mode.
 
 ### D-019 — Retain five impact marks by launch order
@@ -251,10 +251,11 @@ in `OPEN_QUESTIONS.md`.
   It preserves impact history and planning context. Course reset remains a
   separate pause-menu action and clears course-local attempt state.
 - Normal play shows only the compact three-control aim panel, Fire, overview,
-  side view, ball follow, quick retry, pause, and one restrained icon-only camera
-  zoom/reset dock. Course prose, progress/status cards, shortcut legends,
-  feedback panels, in-game course navigation, and visible full-course reset do
-  not persist over the course.
+  side view, ball follow, quick retry, pause, and one restrained camera/help
+  dock. Per D-027, one collapsed-by-default shortcut panel may open from that
+  dock. Course prose, progress/status cards, permanently expanded shortcut
+  legends, feedback panels, in-game course navigation, and visible full-course
+  reset do not persist over the course.
 
 ### D-026 — Shot Follow does not lock the next launch
 
@@ -265,6 +266,21 @@ in `OPEN_QUESTIONS.md`.
   its settlement and failure state; quick retry replaces only the newest one.
 - The first ball to confirm safe goal settlement clears the course. All other
   unconfirmed balls are then removed so they cannot invalidate the result.
+
+### D-027 — Aim controls are stepper-enhanced and Tab only returns
+
+- Status: accepted for the two-course prototype on 2026-08-13.
+- Horizontal aim, vertical angle, and power each use one compact module with a
+  prominent value, matching keyboard pair, decrement and increment buttons, and
+  a slider. Step buttons change one canonical unit and repeat while held. This
+  preserves precise direct input without making the HUD read like a settings
+  screen.
+- One `?` action opens the sole shortcut explanation panel. The panel is
+  collapsed by default, is localized, restores focus when closed, and closes on
+  `Esc` before pause opens.
+- `Tab` is a one-way immediate return from Shot Follow to the stored planning
+  pose. It does nothing to camera mode while already planning, so it never
+  re-enters follow. The explicit follow icon remains the entry/exit control.
 
 ## Rationale
 

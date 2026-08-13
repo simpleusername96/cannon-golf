@@ -38,11 +38,12 @@ func _run() -> void:
 	var tab := InputEventKey.new()
 	tab.keycode = KEY_TAB
 	tab.pressed = true
-	game._unhandled_input(tab)
+	game._input(tab)
 	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must leave Shot Follow during flight.")
-	game._unhandled_input(tab)
-	_assert_true(game._camera_rig.is_following(first_ball), "Tab must return to the newest live ball.")
-	_assert_true(game.return_to_planning_view(), "The explicit camera action must also return to planning.")
+	game._input(tab)
+	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must not enter Shot Follow from planning.")
+	_assert_true(game.toggle_shot_camera(), "The explicit follow action must return to the newest live ball.")
+	_assert_true(game.return_to_planning_view(), "The explicit camera action must return to planning.")
 	_assert_true(game.planning_view == &"side", "Camera return must preserve planning view.")
 	_assert_true(game.planning_pan.is_equal_approx(stored_pan), "Camera return must preserve planning pan.")
 	_assert_true(is_equal_approx(game.planning_zoom, stored_zoom), "Camera return must preserve planning zoom.")

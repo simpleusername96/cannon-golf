@@ -31,16 +31,19 @@ Horizontal aim, vertical angle, and power all visibly start at `50`. That
 `50 / 50 / 50` setup intentionally misses. Each course stores a separate
 three-value solution witness that is replayed against the real rigid-body
 simulation by the focused test suite. Normal play shows no trajectory, landing
-prediction, range dome, course prose, progress card, or shortcut panel.
+prediction, range dome, course prose, progress card, or permanently open help.
+The `?` camera-dock action opens the complete shortcut panel when needed.
 
 Controls:
 
 - `Q` / `E`: horizontal aim
 - `W` / `S`: elevation angle
 - `A` / `D`: power
+- Each launch axis also has hold-repeat `−` / `+` buttons and a direct slider
 - `Space`: fire
 - `1` / `2`: high-oblique / side view
-- `Tab`: toggle between the newest live ball and the stored planning view
+- `Tab`: return immediately from ball follow to the stored planning view
+- Follow icon: enter or leave follow for the newest live ball
 - Left-drag terrain: orbit around the fixed planning focus
 - Arrow keys: pan across the course
 - Mouse wheel or the compact `+` / `−` actions: planning zoom
@@ -49,6 +52,7 @@ Controls:
   with the same setup; camera state and impact marks remain
 - `Shift` + `R`: reset the current course and impact history
 - `Esc`: pause or resume
+- `?` icon: open the shortcut explanation panel; `Esc` closes it before pausing
 
 Screen flow:
 
