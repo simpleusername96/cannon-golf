@@ -46,6 +46,7 @@ var last_launch_outcome: StringName = &""
 var _active_balls: Array[CannonGolfBall] = []
 var _live_shots: Dictionary = {}
 var _planning_drag_active := false
+var _planning_drag_button: MouseButton = MOUSE_BUTTON_NONE
 
 
 func _ready() -> void:
@@ -71,7 +72,7 @@ func _exit_tree() -> void:
 
 
 func _process(delta: float) -> void:
-	if _planning_drag_active and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+	if _planning_drag_active and not Input.is_mouse_button_pressed(_planning_drag_button):
 		_end_planning_drag()
 	_update_camera(delta)
 
@@ -94,13 +95,7 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 	if shot == null or shot.ending:
 		return
 	var goal := _course_builder.goal
-	var inside := goal.contains_rebound_column(
-		ball.global_position,
-		CannonGolfBall.RADIUS
-	) if shot.entered_goal else goal.contains_ball(
-		ball.global_position,
-		CannonGolfBall.RADIUS
-	)
+	var inside := _active_goal_contains(ball, shot)
 	if inside:
 		shot.entered_goal = true
 		shot.reset_low_speed()
@@ -123,6 +118,18 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 				_fail_ball(ball, &"stopped_outside")
 		else:
 			shot.reset_low_speed()
+
+
+func _active_goal_contains(ball: CannonGolfBall, shot: CannonGolfLiveShotState) -> bool:
+	if ball == null or shot == null or _course_builder.goal == null:
+		return false
+	return _course_builder.goal.contains_rebound_column(
+		ball.global_position,
+		CannonGolfBall.RADIUS
+	) if shot.entered_goal else _course_builder.goal.contains_ball(
+		ball.global_position,
+		CannonGolfBall.RADIUS
+	)
 
 
 func _input(event: InputEvent) -> void:
@@ -153,11 +160,11 @@ func _input(event: InputEvent) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_button := event as InputEventMouseButton
-		if mouse_button.button_index == MOUSE_BUTTON_LEFT:
+		if mouse_button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 			if mouse_button.pressed:
-				_begin_planning_drag()
+				_begin_planning_drag(mouse_button.button_index)
 				get_viewport().set_input_as_handled()
-			elif _planning_drag_active:
+			elif _planning_drag_active and mouse_button.button_index == _planning_drag_button:
 				_end_planning_drag()
 				get_viewport().set_input_as_handled()
 			return
@@ -171,7 +178,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseMotion and _planning_drag_active:
 		var mouse_motion := event as InputEventMouseMotion
-		if mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
+		if _planning_drag_button == MOUSE_BUTTON_LEFT \
+				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			pan_planning_drag(mouse_motion.position, mouse_motion.relative)
+		elif _planning_drag_button == MOUSE_BUTTON_RIGHT \
+				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_RIGHT:
 			orbit_planning(mouse_motion.relative)
 		else:
 			_end_planning_drag()
@@ -321,6 +332,11 @@ func pan_planning(screen_direction: Vector2) -> void:
 	_camera_rig.pan(screen_direction)
 
 
+func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
+	_activate_planning_camera()
+	return _camera_rig.pan_drag(screen_position, relative)
+
+
 func orbit_planning(relative: Vector2) -> bool:
 	_activate_planning_camera()
 	return _camera_rig.orbit(relative)
@@ -345,9 +361,10 @@ func _activate_planning_camera() -> void:
 	_hud.set_camera_mode(&"planning")
 
 
-func _begin_planning_drag() -> void:
+func _begin_planning_drag(button: MouseButton) -> void:
 	_activate_planning_camera()
 	_planning_drag_active = true
+	_planning_drag_button = button
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG)
 
 
@@ -355,6 +372,7 @@ func _end_planning_drag() -> void:
 	if not _planning_drag_active:
 		return
 	_planning_drag_active = false
+	_planning_drag_button = MOUSE_BUTTON_NONE
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
@@ -466,8 +484,17 @@ func _on_first_surface_contact(
 
 
 func _on_ball_launch_ended(ball: CannonGolfBall, reason: StringName) -> void:
-	if launch_state != LaunchState.CLEARED:
-		_fail_ball(ball, reason)
+	if launch_state == LaunchState.CLEARED:
+		return
+	var shot := _shot_state(ball)
+	# A late but valid arrival must finish the goal's settlement check. The ball
+	# can still fail by leaving the rebound column, so this does not turn contact
+	# alone into confirmation.
+	if reason == &"timeout" and shot != null and _active_goal_contains(ball, shot):
+		shot.entered_goal = true
+		shot.reset_low_speed()
+		return
+	_fail_ball(ball, reason)
 
 
 func _fail_launch(reason: StringName) -> void:

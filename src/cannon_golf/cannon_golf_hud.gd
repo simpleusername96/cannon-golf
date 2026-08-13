@@ -203,8 +203,8 @@ func apply_language(language: String) -> void:
 	_set_icon_copy(_zoom_in_button, "Zoom in (Wheel up)" if english else "확대 (휠 위)")
 	_set_icon_copy(
 		_camera_reset_button,
-		"Reset view (Home) · Drag terrain to orbit" if english \
-				else "시점 원위치 (Home) · 지형을 드래그해 회전"
+		"Reset view (Home) · Left-drag move · Right-drag orbit" if english \
+				else "시점 원위치 (Home) · 왼쪽 드래그 이동 · 오른쪽 드래그 회전"
 	)
 	_set_icon_copy(_zoom_out_button, "Zoom out (Wheel down)" if english else "축소 (휠 아래)")
 	_set_icon_copy(_shortcut_button, "Show controls" if english else "조작법 보기")
@@ -218,8 +218,8 @@ func apply_language(language: String) -> void:
 	%ShortcutRetry.text = "Relaunch same setup" if english else "같은 설정 재발사"
 	%ShortcutReset.text = "Reset course" if english else "코스 초기화"
 	%ShortcutView.text = "Overview / side view" if english else "전체 / 측면 보기"
-	%DragKey.text = "Drag" if english else "드래그"
-	%ShortcutDrag.text = "Orbit view" if english else "시점 회전"
+	%DragKey.text = "L / R Drag" if english else "좌 / 우 드래그"
+	%ShortcutDrag.text = "Move / orbit view" if english else "화면 이동 / 회전"
 	%WheelKey.text = "Wheel" if english else "휠"
 	%ShortcutWheel.text = "Zoom" if english else "확대 / 축소"
 	%PanKey.text = "Arrows" if english else "방향키"

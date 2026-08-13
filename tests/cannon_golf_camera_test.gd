@@ -41,7 +41,19 @@ func _run() -> void:
 			for _step in range(20):
 				rig.pan(Vector2(1.0, 1.0))
 			rig.snap_to_planning()
-			_assert_fits(camera, builder.course, rig, "%s %s panned" % [source_course.course_id, view])
+			_assert_true(
+				rig.planning_focus().distance_to(orbit_focus) > 1.0,
+				"Planning pan must move the camera focus across the course."
+			)
+			_assert_bounds_fit(
+				camera,
+				AABB(
+					builder.course.content_bounds.position + rig.pan_offset,
+					builder.course.content_bounds.size
+				),
+				rig.planning_focus(),
+				"%s %s translated pan window" % [source_course.course_id, view]
+			)
 			var default_distance := camera.global_position.distance_to(rig.planning_focus())
 			_assert_true(rig.zoom_by_steps(1.0), "One planning zoom step must move toward the course.")
 			rig.snap_to_planning()
@@ -143,7 +155,7 @@ func _assert_fits(
 		rig: CannonGolfCourseCameraRig,
 		label: String
 ) -> void:
-	var focus := course.planning_focus + rig.pan_offset
+	var focus := rig.planning_focus()
 	_assert_true(
 		TerrainCameraFramer.pose_fits_bounds(
 			course.content_bounds,

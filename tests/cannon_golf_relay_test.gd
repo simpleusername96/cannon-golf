@@ -17,6 +17,44 @@ func _run() -> void:
 	_assert_true(relay._course_builder.get_node_or_null("Launcher") == relay._course_builder.launcher, "Relay must own one launcher.")
 	_assert_true(relay.active_leg_index == 0 and relay._course_builder.goal == relay._course_builder.goals[0], "Relay must begin at goal one.")
 
+	# A late arrival inside the active basin must settle instead of being removed
+	# by the general flight horizon.
+	_assert_true(relay.fire(), "Relay must permit a late-arrival settlement probe.")
+	var timeout_probe := relay.current_ball
+	timeout_probe.global_position = relay._course_builder.goal.global_position \
+			+ Vector3.UP * CannonGolfBall.RADIUS
+	timeout_probe.linear_velocity = Vector3.ZERO
+	timeout_probe.angular_velocity = Vector3.ZERO
+	relay._update_live_ball(timeout_probe, 0.01)
+	timeout_probe.end_launch(&"timeout")
+	await process_frame
+	_assert_true(
+		relay.active_ball_count() == 1 and relay.active_leg_index == 0,
+		"An active-goal timeout must defer to settlement instead of deleting the ball."
+	)
+	relay._update_live_ball(timeout_probe, relay._course_builder.goal.settle_seconds + 0.1)
+	_assert_true(
+		relay.active_leg_index == 1 and relay.confirmed_ball_count() == 1,
+		"A late safe arrival must confirm relay goal one."
+	)
+	relay.reset_course()
+	_assert_true(relay.active_leg_index == 0, "Timeout regression setup must restore relay leg one.")
+	_assert_true(relay.fire(), "Relay must permit a post-timeout bounce-out probe.")
+	var bounce_probe := relay.current_ball
+	bounce_probe.global_position = relay._course_builder.goal.global_position \
+			+ Vector3.UP * CannonGolfBall.RADIUS
+	relay._update_live_ball(bounce_probe, 0.01)
+	bounce_probe.end_launch(&"timeout")
+	bounce_probe.global_position += Vector3.RIGHT \
+			* (relay._course_builder.goal.inner_radius + CannonGolfBall.RADIUS)
+	relay._update_live_ball(bounce_probe, 0.01)
+	await process_frame
+	_assert_true(
+		relay.confirmed_ball_count() == 0 and relay.active_leg_index == 0 \
+				and relay.last_launch_outcome == &"bounced_out",
+		"A timed-out ball that leaves the active goal must still fail as bounced out."
+	)
+
 	# A ball resting in the future basin is still evaluated only against goal one.
 	_assert_true(relay.fire(), "Relay must permit the first shot.")
 	var future_probe := relay.current_ball

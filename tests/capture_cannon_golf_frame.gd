@@ -18,6 +18,8 @@ func _capture() -> void:
 	var fired_zoom := 0.0
 	var fired_orbit := Vector2.ZERO
 	var fired_transform := Transform3D.IDENTITY
+	var panned_start_focus := Vector3.ZERO
+	var panned_end_focus := Vector3.ZERO
 	var output_path := ProjectSettings.globalize_path(
 		"res://.godot/capture-temp/cannon-golf.png"
 	)
@@ -70,6 +72,12 @@ func _capture() -> void:
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
 		game.pan_planning(Vector2(1.0, 0.0))
+	elif requested_state == "panned":
+		panned_start_focus = game._camera_rig.planning_focus()
+		for _drag_index in range(4):
+			game.pan_planning_drag(Vector2(760.0, 360.0), Vector2(120.0, 0.0))
+			game._camera_rig.update(1.0)
+		panned_end_focus = game._camera_rig.planning_focus()
 	elif requested_state == "zoom_close":
 		game.zoom_planning(3.0)
 	elif requested_state == "zoom_far":
@@ -130,7 +138,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "side", "explored", "zoom_close", "zoom_far", "shortcuts",
+		"planning", "side", "explored", "panned", "zoom_close", "zoom_far", "shortcuts",
 		"relay_initial", "relay_overview",
 	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
@@ -141,6 +149,12 @@ func _capture() -> void:
 		if game._camera_rig.orbit_degrees.is_zero_approx() \
 				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM):
 			push_error("Explored capture did not retain an orbit and zoom change.")
+			quit(1)
+			return
+	if game != null and requested_state == "panned":
+		if panned_end_focus.distance_to(panned_start_focus) <= 20.0 \
+				or not game.active_course().content_bounds.has_point(panned_end_focus):
+			push_error("Panned capture did not move through the bounded course.")
 			quit(1)
 			return
 	if game != null and requested_state == "zoom_close" \

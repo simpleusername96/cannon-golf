@@ -73,12 +73,40 @@ func pan(screen_direction: Vector2) -> void:
 		pan_offset += Vector3(0.0, screen_direction.y * scale, screen_direction.x * scale)
 	else:
 		pan_offset += Vector3(screen_direction.x * scale, 0.0, -screen_direction.y * scale)
-	var horizontal_limit := course_span * 0.10
-	var vertical_limit := maxf(_course.content_bounds.size.y * 0.18, 6.0)
-	pan_offset.x = clampf(pan_offset.x, -horizontal_limit, horizontal_limit)
-	pan_offset.y = clampf(pan_offset.y, -vertical_limit, vertical_limit)
-	pan_offset.z = clampf(pan_offset.z, -horizontal_limit, horizontal_limit)
+	_clamp_pan_to_exploration()
 	_planning_pose_dirty = true
+
+
+func pan_drag(screen_position: Vector2, relative: Vector2) -> bool:
+	if _camera == null or _course == null or relative.is_zero_approx():
+		return false
+	var focus := _base_planning_focus + pan_offset
+	var plane_normal := Vector3.UP if view_mode == &"oblique" \
+			else -_camera.global_transform.basis.z.normalized()
+	var drag_plane := Plane(plane_normal, plane_normal.dot(focus))
+	var previous_position := screen_position - relative
+	var previous_hit: Variant = drag_plane.intersects_ray(
+		_camera.project_ray_origin(previous_position),
+		_camera.project_ray_normal(previous_position)
+	)
+	var current_hit: Variant = drag_plane.intersects_ray(
+		_camera.project_ray_origin(screen_position),
+		_camera.project_ray_normal(screen_position)
+	)
+	if previous_hit == null or current_hit == null:
+		return false
+	var previous_world: Vector3 = previous_hit
+	var current_world: Vector3 = current_hit
+	var world_delta := previous_world - current_world
+	if not world_delta.is_finite() or world_delta.is_zero_approx():
+		return false
+	var previous_pan := pan_offset
+	pan_offset += world_delta
+	_clamp_pan_to_exploration()
+	if pan_offset.is_equal_approx(previous_pan):
+		return false
+	_planning_pose_dirty = true
+	return true
 
 
 func zoom_by_steps(wheel_steps: float) -> bool:
@@ -140,7 +168,7 @@ func set_planning_context(frame_bounds: AABB, focus: Vector3) -> bool:
 
 
 func planning_focus() -> Vector3:
-	return _base_planning_focus + pan_offset if _course != null else Vector3.ZERO
+	return _effective_planning_focus() if _course != null else Vector3.ZERO
 
 
 func follow(target: Node3D) -> bool:
@@ -239,7 +267,7 @@ func _apply_planning(delta: float) -> void:
 
 
 func _resolve_planning_pose(viewport_size: Vector2) -> void:
-	var focus := _base_planning_focus + pan_offset
+	var focus := _effective_planning_focus()
 	var base_offset := _course.side_offset if view_mode == &"side" else _course.oblique_offset
 	var base_direction := base_offset.normalized()
 	var yaw := atan2(base_direction.x, base_direction.z) + deg_to_rad(orbit_degrees.x)
@@ -277,15 +305,14 @@ func _resolve_planning_pose(viewport_size: Vector2) -> void:
 
 
 func _zoom_adjusted_frame_bounds() -> AABB:
-	# Side view stays local to the active leg. The high-oblique view expands
-	# continuously toward the complete course so maximum zoom-out is a reliable
-	# map-inspection state instead of only a more distant leg view.
-	if view_mode == &"side" or _frame_bounds == _exploration_bounds:
-		return _frame_bounds
+	var shifted_frame := AABB(_frame_bounds.position + pan_offset, _frame_bounds.size)
+	# Panning translates the local inspection window. Zooming out blends that
+	# window back to the complete course, so the maximum overview remains a
+	# reliable way to recover context without discarding the stored pan.
 	var blend := _exploration_blend()
 	return AABB(
-		_frame_bounds.position.lerp(_exploration_bounds.position, blend),
-		_frame_bounds.size.lerp(_exploration_bounds.size, blend)
+		shifted_frame.position.lerp(_exploration_bounds.position, blend),
+		shifted_frame.size.lerp(_exploration_bounds.size, blend)
 	)
 
 
@@ -295,3 +322,18 @@ func _exploration_blend() -> float:
 		0.0,
 		1.0
 	)
+
+
+func _clamp_pan_to_exploration() -> void:
+	if not _exploration_bounds.has_volume():
+		return
+	var focus := _base_planning_focus + pan_offset
+	focus.x = clampf(focus.x, _exploration_bounds.position.x, _exploration_bounds.end.x)
+	focus.y = clampf(focus.y, _exploration_bounds.position.y, _exploration_bounds.end.y)
+	focus.z = clampf(focus.z, _exploration_bounds.position.z, _exploration_bounds.end.z)
+	pan_offset = focus - _base_planning_focus
+
+
+func _effective_planning_focus() -> Vector3:
+	var user_focus := _base_planning_focus + pan_offset
+	return user_focus.lerp(_exploration_bounds.get_center(), _exploration_blend())
