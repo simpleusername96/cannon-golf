@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-12
+last_reviewed: 2026-08-13
 canonical_for: Current product requirements for the provisional Cannon Golf project
 scope: Game concept and observable player experience; two-course direct-shot prototype implemented
 source: User direction recorded on 2026-08-12
@@ -27,7 +27,8 @@ multi-goal and device requirements remain specified but unimplemented.
 ## Summary
 
 Cannon Golf is a deliberate, retry-driven 3D golf puzzle. The player launches
-balls from a stationary cannon, reads the result, adjusts angle and power, and
+balls from a stationary cannon, reads the result, adjusts horizontal aim,
+vertical angle, and power, and
 settles one ball in each goal on the stage. A goal may be a physical hole or a
 small bounded landing zone, but it counts only after the ball remains safely at
 rest. A shot leaves one visible mark at its first terrain impact. That mark is
@@ -73,7 +74,8 @@ than the inherited frontal cannon composition.
 - Make misses useful without drawing an exact predicted landing point.
 - Make the terrain, goals, settled balls, impact history, and device orientation
   readable from planning cameras.
-- Preserve angle, power, placed devices, completed goals, and selected context
+- Preserve horizontal aim, vertical angle, power, placed devices, completed
+  goals, and selected context
   while the player changes view or explores the course.
 - Teach direct one-goal shots first, then increase goal count and route
   dependency.
@@ -103,8 +105,9 @@ than the inherited frontal cannon composition.
 
 - Trigger: the player starts an introductory stage with one nearby, unobstructed
   goal and no required device.
-- Main steps: inspect the course, set the cannon angle and power, fire, observe
-  the ball and its first-impact mark, then correct the next launch if needed.
+- Main steps: inspect the course, set horizontal aim, vertical angle, and power,
+  fire, observe the ball and its first-impact mark, then correct the next launch
+  if needed.
 - Expected outcome: one ball settles safely in the goal and the stage clears.
 
 ### Flow 2: Solve a multi-goal course
@@ -133,9 +136,12 @@ than the inherited frontal cannon composition.
 
 ### FR-1: Ballistic launch
 
-- Requirement: the stationary cannon must launch a physical ball from explicit
-  pre-shot parameters that include angle and power. The player cannot steer the
-  ball in flight.
+- Requirement: the stationary cannon must launch a physical ball from three
+  explicit pre-shot parameters: horizontal aim `0..100`, physical vertical
+  angle `10..68` degrees, and power `10..100`. Horizontal aim `50` follows the
+  generated course shot axis; the endpoints map linearly to `-80..+80` degrees
+  from that axis. All three visible values start at `50` on every course. The
+  player cannot steer the ball in flight.
 - Reason: the game is about planning and result-based correction.
 
 ### FR-2: First-impact history
@@ -157,7 +163,9 @@ than the inherited frontal cannon composition.
   bounded landing zone with a readable physical footprint. A ball counts only
   after it remains inside the goal under the stage's position, speed, and
   settle-duration tolerances. Entering and then bouncing out is an unsuccessful
-  launch.
+  launch. A recessed goal may have a flat or concave floor, but its interior
+  must not rise toward the center and eject a safely arriving ball. The first
+  two courses use a terrain-owned concave basin with no separate physical cup.
 - Reason: success is controlled settlement, not brief trigger contact or target
   shooting.
 
@@ -202,7 +210,11 @@ than the inherited frontal cannon composition.
 
 - Requirement: normal play must not display an exact predicted landing point,
   a full post-launch trajectory, or a separate UI label for the prior impact.
-  The terrain mark itself is the feedback.
+  The terrain mark itself is the feedback. Persistent gameplay UI is limited to
+  compact horizontal aim, vertical angle, and power controls, Fire, overview,
+  side view, quick retry, and pause. Course prose, progress cards, shortcut
+  legends, feedback panels, and in-game course navigation do not persist over
+  the world.
 - Reason: estimation and learning are the intended challenge.
 
 ### FR-10: Overlay HUD continuity
@@ -219,7 +231,12 @@ than the inherited frontal cannon composition.
   transition or consumable limit. A miss never creates a timer, life, ball-stock,
   or shot-count game over. Before the next launch, the unsuccessful ball leaves
   the active simulation; only confirmed settled balls persist. Identical
-  launch/device state must produce materially similar first impacts.
+  launch/device state must produce materially similar first impacts. During a
+  live launch, quick retry removes only the active unconfirmed ball and
+  immediately relaunches with the exact horizontal aim, vertical angle, and
+  power. It preserves impact history, camera view, exploration state, placed
+  devices, and confirmed goals. Course reset remains a separate pause-menu
+  action and clears course-local attempt state.
 - Reason: iterative correction becomes frustrating when setup is slow or the
   physics result is noisy.
 
@@ -259,11 +276,16 @@ than the inherited frontal cannon composition.
   such as play bounds, camera bookmarks, goal tolerances, per-device stock,
   placement legality, and certified solution witnesses.
 - Prototype baseline: the first two courses must use Paint Mountain's retained
-  route-graph mountain height synthesis, topology, and geometry pipeline. A
-  course may select deterministic generation inputs and adapt world scale, then
-  lower only the samples around a route-adjacent high point to form its goal.
-  That depressed terrain remains the sole physical goal floor and wall; goal
-  rings and flags are non-colliding markers.
+  route-graph mountain height synthesis, topology, and geometry pipeline at its
+  original `210 x 120` metre horizontal extent. A course may select deterministic
+  generation inputs, use `0.45` vertical scale, place the cannon `75` metres
+  behind the route start, then lower only the samples around a route-adjacent
+  high point to form its goal. The complete playable terrain top and visible
+  support-shell boundary must fit in front of the cannon within its legal yaw,
+  range, and reachable-height envelope with the accepted margins. That depressed
+  terrain remains the sole physical goal floor and wall; goal rings and flags
+  are non-colliding markers. The launch envelope is an internal admission rule,
+  never a visible trajectory or range overlay.
 - Reason: the course supplies the spatial problem while the player supplies all
   route-changing mechanisms.
 
@@ -297,8 +319,9 @@ than the inherited frontal cannon composition.
 
 - Applies to: FR-4, FR-6.
 - Conditions for done: the first two teaching stages each contain one
-  unobstructed goal with at least one direct angle-and-power solution that does
-  not require a device.
+  unobstructed goal with at least one direct horizontal-aim, vertical-angle, and
+  power solution that does not require a device. Their visible `50 / 50 / 50`
+  defaults remain misses and are separate from certified solution metadata.
 
 ### AC-4: Initial course progression
 
@@ -339,7 +362,9 @@ than the inherited frontal cannon composition.
 - Conditions for done: repeated misses never exhaust time, lives, balls, or
   shots; each unsuccessful launch returns to a stable planning state with prior
   confirmed goals intact and without leaving a failed ball that can affect the
-  next launch.
+  next launch. Quick retry during flight immediately starts a replacement ball
+  with identical launch origin and velocity while retaining all prior impact
+  marks and planning context; course reset clears that attempt history.
 
 ### AC-9: Predictable baseline rebound
 
@@ -366,7 +391,8 @@ than the inherited frontal cannon composition.
   in the course; only terrain, cannon, and goals are visible gameplay objects.
   For the first two courses, the terrain and goal collision must come from the
   retained generated-mountain topology rather than an authored shelf mesh or a
-  separate physical cup.
+  separate physical cup. Their generated top and support shell pass the accepted
+  whole-terrain launch-envelope admission and margin checks.
 
 ### AC-12: Certified solution [assumption]
 
@@ -383,8 +409,8 @@ than the inherited frontal cannon composition.
   `scenes/cannon_golf/`, and `resources/cannon_golf/`; retained legacy owners
   remain available as source history.
 - No new production dependency is approved.
-- Current product name, exact camera transition grammar, angle-control
-  presentation, goal-order rule, and device editing rules remain open. Exact
+- Current product name, exact camera transition grammar beyond the accepted
+  prototype views, goal-order rule, and device editing rules remain open. Exact
   damping, airflow, and gravity values, inventory limits, introduction stages,
   later-course terrain variation, and solution robustness tolerances also
   remain open. The first two courses' generated heightfield topology, impact

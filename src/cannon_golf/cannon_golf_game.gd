@@ -40,11 +40,9 @@ var _settle_elapsed := 0.0
 var _low_speed_elapsed := 0.0
 var _entered_goal := false
 var _failure_pending := false
-var _language := "ko"
 func _ready() -> void:
 	_hud.fire_requested.connect(fire)
 	_hud.setup_changed.connect(_on_setup_changed)
-	_hud.course_step_requested.connect(_on_course_step_requested)
 	_hud.view_requested.connect(set_planning_view)
 	_hud.retry_requested.connect(retry_attempt)
 	_hud.reset_requested.connect(reset_course)
@@ -83,7 +81,6 @@ func _physics_process(delta: float) -> void:
 		if goal.motion_is_safe(current_ball.linear_velocity, current_ball.angular_velocity):
 			launch_state = LaunchState.SETTLING
 			_settle_elapsed += delta
-			_hud.set_feedback(_copy("골 안에서 안전 착지를 확인하는 중...", "Checking for a safe landing..."), true)
 			if _settle_elapsed >= goal.settle_seconds:
 				_confirm_goal()
 		else:
@@ -126,14 +123,18 @@ func _unhandled_input(event: InputEvent) -> void:
 				reset_course()
 			else:
 				retry_attempt()
+		KEY_Q:
+			_adjust_setup(-1.0, 0.0, 0.0)
+		KEY_E:
+			_adjust_setup(1.0, 0.0, 0.0)
 		KEY_W:
-			_adjust_setup(1.0, 0.0)
+			_adjust_setup(0.0, 1.0, 0.0)
 		KEY_S:
-			_adjust_setup(-1.0, 0.0)
+			_adjust_setup(0.0, -1.0, 0.0)
 		KEY_D:
-			_adjust_setup(0.0, 1.0)
+			_adjust_setup(0.0, 0.0, 1.0)
 		KEY_A:
-			_adjust_setup(0.0, -1.0)
+			_adjust_setup(0.0, 0.0, -1.0)
 		KEY_LEFT:
 			pan_planning(Vector2(-1.0, 0.0))
 		KEY_RIGHT:
@@ -166,7 +167,6 @@ func fire() -> bool:
 	last_launch_outcome = &""
 	_hud.set_busy(true)
 	_hud.hide_clear()
-	_hud.set_feedback(_copy("공을 따라가는 중...", "Following the ball..."), true)
 	return true
 
 
@@ -176,11 +176,11 @@ func reset_course() -> void:
 	_load_course(course_index)
 
 
-func retry_attempt() -> void:
-	if launch_state == LaunchState.CLEARED or confirmed_ball != null:
-		return
-	if current_ball != null and is_instance_valid(current_ball):
-		current_ball.queue_free()
+func retry_attempt() -> bool:
+	if launch_state == LaunchState.CLEARED or confirmed_ball != null \
+			or current_ball == null or not is_instance_valid(current_ball):
+		return false
+	current_ball.queue_free()
 	current_ball = null
 	launch_state = LaunchState.PLANNING
 	_failure_pending = false
@@ -191,7 +191,7 @@ func retry_attempt() -> void:
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
 	_hud.set_busy(false)
-	fire()
+	return fire()
 
 
 func toggle_pause() -> void:
@@ -219,10 +219,7 @@ func focus_pause_settings() -> void:
 
 
 func apply_language(language: String) -> void:
-	_language = language
 	_hud.apply_language(language)
-	if launch_state == LaunchState.PLANNING:
-		_hud.set_feedback(_copy("각도와 파워를 조절한 뒤 발사하세요.", "Adjust angle and power, then fire."))
 
 
 func set_planning_view(view_mode: StringName) -> void:
@@ -250,15 +247,14 @@ func _load_course(index: int) -> void:
 	_entered_goal = false
 	_failure_pending = false
 	last_launch_outcome = &""
-	_hud.set_course(_course_builder.course, course_index, courses.size())
 	_hud.set_setup(
+		_course_builder.launcher.horizontal_aim,
 		_course_builder.launcher.elevation_degrees,
 		_course_builder.launcher.power_percent
 	)
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_busy(false)
 	_hud.hide_clear()
-	_hud.set_feedback(_copy("각도와 파워를 조절한 뒤 발사하세요.", "Adjust angle and power, then fire."))
 	_hud.focus_fire()
 
 
@@ -274,31 +270,27 @@ func _clear_marks() -> void:
 	_impact_history.clear()
 
 
-func _on_setup_changed(elevation: float, power: float) -> void:
+func _on_setup_changed(horizontal: float, elevation: float, power: float) -> void:
 	if launch_state != LaunchState.PLANNING:
 		return
-	_course_builder.launcher.set_setup(elevation, power)
+	_course_builder.launcher.set_setup(horizontal, elevation, power)
 	_hud.set_setup(
+		_course_builder.launcher.horizontal_aim,
 		_course_builder.launcher.elevation_degrees,
 		_course_builder.launcher.power_percent
 	)
 
 
-func _adjust_setup(elevation_delta: float, power_delta: float) -> void:
+func _adjust_setup(horizontal_delta: float, elevation_delta: float, power_delta: float) -> void:
 	if launch_state != LaunchState.PLANNING:
 		return
 	var launcher := _course_builder.launcher
 	launcher.set_setup(
+		launcher.horizontal_aim + horizontal_delta,
 		launcher.elevation_degrees + elevation_delta,
 		launcher.power_percent + power_delta
 	)
-	_hud.set_setup(launcher.elevation_degrees, launcher.power_percent)
-
-
-func _on_course_step_requested(step: int) -> void:
-	if launch_state == LaunchState.FLYING or launch_state == LaunchState.SETTLING:
-		return
-	_load_course(course_index + step)
+	_hud.set_setup(launcher.horizontal_aim, launcher.elevation_degrees, launcher.power_percent)
 
 
 func _on_result_primary_requested() -> void:
@@ -349,15 +341,7 @@ func _finish_failed_launch(reason: StringName) -> void:
 	current_ball = null
 	launch_state = LaunchState.PLANNING
 	_failure_pending = false
-	var message := _copy("골에서 튕겨 나왔습니다. 다시 조정해 보세요.", "The ball bounced out. Adjust and try again.")
-	if reason == &"stopped_outside":
-		message = _copy("골 밖에 멈췄습니다. 다시 조정해 보세요.", "The ball stopped outside the goal. Adjust and try again.")
-	elif reason == &"out_of_bounds":
-		message = _copy("코스 밖으로 나갔습니다. 다시 조정해 보세요.", "The ball left the course. Adjust and try again.")
-	elif reason == &"timeout":
-		message = _copy("공이 안정되지 않았습니다. 다시 조정해 보세요.", "The ball did not settle. Adjust and try again.")
 	_hud.set_busy(false)
-	_hud.set_feedback(message)
 	_hud.focus_fire()
 
 
@@ -370,8 +354,6 @@ func _confirm_goal() -> void:
 	current_ball = null
 	launch_state = LaunchState.CLEARED
 	_hud.set_busy(true)
-	_hud.set_goal_complete(true)
-	_hud.set_feedback(_copy("안전 착지 완료", "Safe landing complete"), true)
 	_hud.show_clear(
 		_course_builder.course,
 		course_index + 1 < CannonGolfCourseCatalog.all_courses().size()
@@ -392,7 +374,3 @@ func impact_mark_count() -> int:
 
 func active_course() -> CannonGolfCourseData:
 	return _course_builder.course
-
-
-func _copy(korean: String, english: String) -> String:
-	return english if _language == "en" else korean

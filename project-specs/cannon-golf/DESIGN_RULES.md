@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-12
+last_reviewed: 2026-08-13
 canonical_for: Current visual composition and UI direction for the provisional Cannon Golf project
 scope: Camera, terrain readability, impact marks, settlement goals, devices, HUD, and visual hierarchy
 source: Paint Mountain design system plus user direction recorded on 2026-08-12
@@ -52,8 +52,9 @@ coefficients, stage data formats, or code ownership.
   upper-right panel demonstrates a true side/profile reading of height and the
   gravity drop. The lower-right panel demonstrates temporary ball follow.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
-  balls, and remaining shots with goal progress, view state, device selection,
-  angle, power, and one primary Fire action.
+  balls, and remaining shots with a compact horizontal aim, vertical angle, and
+  power edge panel plus one primary Fire action. Overview, side view, quick
+  retry, and pause remain small icon actions with accessible names.
 - The combined board deliberately shows player-placed bounce, damping, airflow,
   and gravity in one frame so their visual roles can be compared. It does not
   set content order or inventory limits.
@@ -86,6 +87,10 @@ coefficients, stage data formats, or code ownership.
 - Terrain must have visible thickness, contact shadows, clear walkable or
   rollable faces, and legible gaps. It must not look like a card, backdrop, or
   flat height strip.
+- The first two courses retain the original `210 x 120` metre generated mountain
+  extent and must fit inside the real three-parameter launch envelope. Do not
+  shrink or clip the mountain to make a shot appear feasible, and do not draw
+  the envelope in normal play.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,
@@ -95,6 +100,10 @@ coefficients, stage data formats, or code ownership.
 
 - A hole goal is a real cup or recessed basin with visible inner depth, not a
   floating ring, target decal, or waypoint icon.
+- A recessed goal may be flat or concave. Its interior must not rise toward the
+  center. For the first two courses, use a terrain-owned basin whose center is
+  lowest and whose height increases toward the rim; do not add a separate cup
+  collider or freeze an unconfirmed ball.
 - A landing-zone goal is a small physical surface with a clear perimeter,
   containment shape, or material boundary. It must not be an invisible trigger
   or a broad arbitrary patch of terrain.
@@ -148,12 +157,15 @@ coefficients, stage data formats, or code ownership.
 - Retain Paint Mountain's Quiet Context qualities: warm paper-white surfaces,
   navy type, saturated blue for the sole primary action, Pretendard, Korean-first
   copy, edge alignment, generous padding, and minimal containment.
-- Keep the course center open. Place persistent status and controls at safe
-  edges and verify them against every supported planning view.
+- Keep the course center open. Normal play may persist only one compact
+  three-control aim panel, Fire, and overview, side-view, quick-retry, and pause
+  icon actions at safe edges. Put full reset, settings, course selection, and
+  main-menu navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
-- Angle, power, goal progress, camera mode, device stock, and menu are valid only
-  when they support a current decision. Do not show time, lives, finite ball
-  stock, or remaining shots as failure resources.
+- Horizontal aim, vertical angle, power, device stock, and menu are valid only
+  when they support a current decision. Do not persist course prose, progress,
+  camera-state labels, feedback copy, shortcut legends, time, lives, finite ball
+  stock, or remaining shots over normal play.
 - Remove coverage rails, coverage percentages, paint icons, paint-result copy,
   and any control that implies terrain painting.
 - Do not add dashboard cards, decorative borders, detached shortcut tiles,
@@ -175,9 +187,10 @@ coefficients, stage data formats, or code ownership.
 - A still from a planning state reads as 3D golf without explanatory copy.
 - At least one top/high-oblique and one side/near-profile view show every
   required goal and the selected pad without persistent HUD obstruction.
-- Switching views, exploring the course, and returning from Shot Follow retains
-  angle, power, placements, selection, and confirmed goals without clipping or
-  invalid framing.
+- Switching views, exploring the course, quick retry, and returning from Shot
+  Follow retain horizontal aim, vertical angle, power, impact history,
+  placements, selection, and confirmed goals without clipping or invalid
+  framing.
 - Three retained impact marks can be ordered newest to oldest from appearance
   alone.
 - No normal gameplay capture shows surface coverage, continuous paint, an exact

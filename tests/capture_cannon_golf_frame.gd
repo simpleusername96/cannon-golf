@@ -34,6 +34,7 @@ func _capture() -> void:
 		DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_NO_FOCUS, true)
 		DisplayServer.window_set_position(Vector2i(-32000, -32000))
 	root.size = requested_size
+	root.gui_disable_input = true
 	DirAccess.make_dir_recursive_absolute(output_path.get_base_dir())
 	var game: CannonGolfGame
 	var app: CannonGolfApp
@@ -64,7 +65,17 @@ func _capture() -> void:
 		game._confirm_goal()
 	for _frame in range(36):
 		await process_frame
-	await RenderingServer.frame_post_draw
+	if game != null and requested_state in ["planning", "side"]:
+		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
+			push_error("Planning capture received live input and left the planning state.")
+			quit(1)
+			return
+	# Compatibility rendering can publish the terrain frame before every font
+	# atlas and Control batch has reached the viewport texture. Wait for several
+	# completed draws so delivery evidence records a stable composed frame.
+	for _render_frame in range(4):
+		await RenderingServer.frame_post_draw
+		await process_frame
 	var image := root.get_texture().get_image()
 	var error := image.save_png(output_path)
 	if error != OK:

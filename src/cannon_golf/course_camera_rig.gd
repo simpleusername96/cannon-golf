@@ -2,10 +2,11 @@ class_name CannonGolfCourseCameraRig
 extends Node
 
 const FOLLOW_OFFSET := Vector3(10.0, 6.5, 12.0)
+const FRAME_MARGIN := 1.08
 
 var view_mode: StringName = &"oblique"
 var pan_offset := Vector3.ZERO
-var zoom := 1.16
+var zoom := 1.05
 
 var _camera: Camera3D
 var _course: CannonGolfCourseData
@@ -18,7 +19,7 @@ func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
 	_course = course
 	view_mode = &"oblique"
 	pan_offset = Vector3.ZERO
-	zoom = 1.16
+	zoom = 1.05
 	snap_to_planning()
 
 
@@ -30,18 +31,21 @@ func set_view(next_view: StringName) -> bool:
 
 
 func pan(screen_direction: Vector2) -> void:
-	var scale := 2.25 * zoom
+	var course_span := maxf(_course.content_bounds.size.x, _course.content_bounds.size.z)
+	var scale := maxf(course_span * 0.02, 2.25) * zoom
 	if view_mode == &"side":
 		pan_offset += Vector3(0.0, screen_direction.y * scale, screen_direction.x * scale)
 	else:
 		pan_offset += Vector3(screen_direction.x * scale, 0.0, -screen_direction.y * scale)
-	pan_offset.x = clampf(pan_offset.x, -12.0, 12.0)
-	pan_offset.y = clampf(pan_offset.y, -6.0, 10.0)
-	pan_offset.z = clampf(pan_offset.z, -16.0, 16.0)
+	var horizontal_limit := course_span * 0.10
+	var vertical_limit := maxf(_course.content_bounds.size.y * 0.18, 6.0)
+	pan_offset.x = clampf(pan_offset.x, -horizontal_limit, horizontal_limit)
+	pan_offset.y = clampf(pan_offset.y, -vertical_limit, vertical_limit)
+	pan_offset.z = clampf(pan_offset.z, -horizontal_limit, horizontal_limit)
 
 
 func adjust_zoom(delta: float) -> void:
-	zoom = clampf(zoom + delta, 0.72, 1.38)
+	zoom = clampf(zoom + delta, 1.0, 1.45)
 
 
 func update(delta: float, follow_target: Node3D = null) -> void:
@@ -67,7 +71,19 @@ func _apply_planning(delta: float) -> void:
 		return
 	var focus := _course.planning_focus + pan_offset
 	var base_offset := _course.side_offset if view_mode == &"side" else _course.oblique_offset
-	var desired_position := focus + base_offset * zoom
+	var viewport_size := _camera.get_viewport().get_visible_rect().size
+	var aspect := viewport_size.x / maxf(viewport_size.y, 1.0)
+	var framed_pose := TerrainCameraFramer.framed_pose_around(
+		_course.content_bounds,
+		focus,
+		focus + base_offset,
+		focus,
+		_camera.fov,
+		aspect,
+		FRAME_MARGIN
+	)
+	var framed_position: Vector3 = framed_pose[0]
+	var desired_position := focus + (framed_position - focus) * zoom
 	if delta >= 0.999:
 		_camera.global_position = desired_position
 	else:

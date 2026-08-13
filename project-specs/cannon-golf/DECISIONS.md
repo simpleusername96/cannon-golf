@@ -150,8 +150,7 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-017 — The first slice fixes horizontal aim per course
 
-- Status: accepted for the two-course prototype under the owner's delegated
-  implementation authority on 2026-08-12.
+- Status: superseded by D-023 on 2026-08-13.
 - Each introductory course points the stationary cannon down its authored shot
   axis. The player adjusts elevation angle and power in one-degree and
   one-percent steps; there is no horizontal aim control or exact trajectory
@@ -191,9 +190,9 @@ in `OPEN_QUESTIONS.md`.
   synthesizer, adapts the generated coordinates to the Cannon Golf world, then
   passes the result through the retained top-topology and geometry builders.
 - Cannon Golf selects a deterministic generation key and route-adjacent high
-  point. It modifies only the local height samples needed to make a shallow goal
-  depression before topology construction; it does not rebuild the mountain as
-  authored shelves.
+  point. It modifies only the local height samples needed to make a flat or
+  concave goal depression before topology construction; it does not rebuild the
+  mountain as authored shelves.
 - The generated terrain owns the goal floor and side collision. The goal owner
   contains settlement rules plus non-colliding ring and flag markers only.
 - Courses remain connected heightfield-like masses without caves, bridges,
@@ -202,11 +201,52 @@ in `OPEN_QUESTIONS.md`.
 ### D-022 — Keep the initial setup separate from the solution witness
 
 - Status: accepted for the two-course prototype.
-- A course's visible default angle and power must not equal or clear with its
-  certified direct solution. The default is an intentional, readable miss that
-  asks the player to adjust both controls.
+- A course's visible default horizontal aim, vertical angle, and power all start
+  at `50` and must not equal or clear with its certified direct solution. The
+  default is an intentional, readable miss.
 - The solution witness remains course metadata for real-physics regression
   replay; it is not copied into the launch controls shown to the player.
+
+### D-023 — Expose centered three-parameter free aim
+
+- Status: accepted for the two-course prototype on 2026-08-13; supersedes
+  D-017.
+- The generated `shot axis` remains hidden world yaw from the cannon toward the
+  goal. Player-facing horizontal aim is `0..100`; `50` follows that axis and the
+  endpoints map linearly to `-80..+80` degrees.
+- Vertical angle remains a physical `10..68` degree value and power remains
+  `10..100`. Horizontal aim, vertical angle, and power visibly start at `50` on
+  every course.
+- Normal play exposes no trajectory, predicted impact, dome, or range overlay.
+
+### D-024 — Admit the whole original-scale mountain through real ballistics
+
+- Status: accepted for the two-course prototype on 2026-08-13.
+- Retain the generated mountain's original `210 x 120` metre horizontal extent,
+  use `0.45` vertical scale, and place the cannon `75` metres behind the route
+  start. Launch speed spans `14..60` metres/second under the retained damping,
+  gravity, rebound, and flight horizon.
+- Every playable terrain-top vertex and visible support-shell boundary point
+  must be in front of the cannon and pass legal yaw, horizontal range, and
+  reachable-height admission with at least `8` metres range, `8` degrees yaw,
+  and `8` metres height-interval margin. Course construction fails closed when
+  this contract is violated.
+- The envelope exists only for generation and validation. It is not player UI.
+
+### D-025 — Keep goal, retry, and normal-play UI physically direct
+
+- Status: accepted for the two-course prototype on 2026-08-13.
+- Each goal is a terrain-owned concave basin: its center is lowest, height rises
+  toward the rim, and the goal node adds no physical cup. Safe settlement still
+  determines success; a ball that rebounds out fails.
+- Quick retry during a live shot removes only the active unconfirmed ball and
+  immediately launches a replacement with the exact three-parameter setup. It
+  preserves impact history and planning context. Course reset remains a
+  separate pause-menu action and clears course-local attempt state.
+- Normal play shows only the compact three-control aim panel, Fire, overview,
+  side view, quick retry, and pause. Course prose, progress/status cards,
+  shortcut legends, feedback panels, in-game course navigation, and visible
+  reset do not persist over the course.
 
 ## Rationale
 

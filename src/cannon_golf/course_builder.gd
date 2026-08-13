@@ -78,8 +78,9 @@ func terrain_body_count() -> int:
 func _apply_generated_play_data(terrain: Dictionary) -> void:
 	course.cannon_position = terrain.cannon_position
 	course.goal_position = terrain.goal_position
-	course.shot_yaw_degrees = float(terrain.shot_yaw_degrees)
+	course.shot_axis_yaw_degrees = float(terrain.shot_axis_yaw_degrees)
 	course.play_bounds = terrain.play_bounds
+	course.content_bounds = terrain.content_bounds
 	course.planning_focus = course.cannon_position.lerp(course.goal_position, 0.5) + Vector3.UP * 2.0
 
 

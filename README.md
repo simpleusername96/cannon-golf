@@ -5,32 +5,40 @@ puzzle prototype derived from the Paint Mountain runtime.
 
 The app now opens at a main menu and provides a live two-course selection,
 persistent settings, gameplay pause/return navigation, and two introductory
-direct-shot courses. Adjust elevation and power, launch a rebound-capable ball,
-learn from first-contact marks, and settle the ball safely inside the goal.
-Retry is unlimited. High-oblique and side planning views preserve the current
-launch setup and course state.
+direct-shot courses. Adjust horizontal aim, vertical angle, and power, launch a
+rebound-capable ball, learn from first-contact marks, and settle it safely
+inside the goal. Retry is unlimited. High-oblique and side planning views
+preserve the complete launch setup, exploration state, and impact history.
 
 Both courses call Paint Mountain's retained route-graph mountain synthesizer,
 then use its topology and geometry builders for the rendered and colliding
-faceted mountain. Cannon Golf only scales that generated field and lowers the
-samples around a selected high point into the shallow goal basin. The terrain
-itself owns the goal floor and slope collision; the ring and flag are visual
-markers. The game and menu preview share the retained panorama, open-ground
-material, daylight palette, and restrained low-poly nature props.
+faceted mountain. The two courses retain the original `210 x 120` metre
+horizontal extent, use `0.45` vertical scale, and place the cannon 75 metres
+behind the route. Generation fails if any playable top or visible support-shell
+point falls outside the legal real-ballistics envelope and its safety margins.
+Cannon Golf lowers samples around the selected high point into a 10 metre,
+3.5 metre-deep concave basin whose center is lowest. The terrain itself owns all
+goal collision; the ring and enlarged flag are non-colliding markers. The game
+and menu preview share the retained panorama, open-ground material, daylight
+palette, and restrained low-poly nature props.
 
-The initial angle and power are intentionally not the solution. Each course
-stores a separate solution witness that is replayed against the real rigid-body
-simulation by the focused test suite.
+Horizontal aim, vertical angle, and power all visibly start at `50`. That
+`50 / 50 / 50` setup intentionally misses. Each course stores a separate
+three-value solution witness that is replayed against the real rigid-body
+simulation by the focused test suite. Normal play shows no trajectory, landing
+prediction, range dome, course prose, progress card, or shortcut panel.
 
 Controls:
 
+- `Q` / `E`: horizontal aim
 - `W` / `S`: elevation angle
 - `A` / `D`: power
 - `Space`: fire
 - `1` / `2`: high-oblique / side view
 - Arrow keys: explore the course
 - Mouse wheel: planning zoom
-- `R`: immediately relaunch with the current setup
+- `R`: while a shot is active, replace only that ball and immediately relaunch
+  with the same setup; camera state and impact marks remain
 - `Shift` + `R`: reset the current course and impact history
 - `Esc`: pause or resume
 

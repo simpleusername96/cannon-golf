@@ -34,8 +34,8 @@ shader_parameter/source_saturation = 0.15
 
 [sub_resource type="CylinderMesh" id="BaseMesh"]
 material = SubResource("BaseMaterial")
-top_radius = 48.0
-bottom_radius = 52.0
+top_radius = 160.0
+bottom_radius = 166.0
 height = 2.0
 radial_segments = 32
 
@@ -50,7 +50,7 @@ rotation_degrees = Vector3(-48, -58, 0)
 light_color = Color(1, 0.95, 0.84, 1)
 light_energy = 1.05
 shadow_enabled = true
-directional_shadow_max_distance = 260.0
+directional_shadow_max_distance = 520.0
 
 [node name="Fill" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-30, 136, 0)
@@ -62,7 +62,7 @@ unique_name_in_owner = true
 current = true
 fov = 48.0
 near = 0.1
-far = 260.0
+far = 520.0
 
 [node name="DioramaBase" type="MeshInstance3D" parent="."]
 position = Vector3(0, -5, -13)

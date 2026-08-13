@@ -19,7 +19,7 @@ func _ready() -> void:
 	_camera.name = "PreviewCamera"
 	_camera.fov = 46.0
 	_camera.near = 0.1
-	_camera.far = 260.0
+	_camera.far = 520.0
 	add_child(_camera)
 	_camera_rig = CannonGolfCourseCameraRig.new()
 	_camera_rig.name = "PreviewCameraRig"
@@ -75,13 +75,14 @@ func _build_environment() -> void:
 	sun.light_color = Color(1.0, 0.96, 0.88, 1.0)
 	sun.light_energy = 1.05
 	sun.shadow_enabled = true
+	sun.directional_shadow_max_distance = 520.0
 	add_child(sun)
 	_ground = MeshInstance3D.new()
 	_ground.name = "GroundApron"
 	_ground.position = Vector3(0.0, -5.0, -13.0)
 	var ground_mesh := CylinderMesh.new()
-	ground_mesh.top_radius = 48.0
-	ground_mesh.bottom_radius = 52.0
+	ground_mesh.top_radius = 160.0
+	ground_mesh.bottom_radius = 166.0
 	ground_mesh.height = 2.0
 	ground_mesh.radial_segments = 32
 	var material := ShaderMaterial.new()

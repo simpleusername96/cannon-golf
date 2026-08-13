@@ -50,6 +50,13 @@ func newest_position() -> Vector3:
 	return _marks.back().global_position if not _marks.is_empty() else Vector3.INF
 
 
+func mark_instance_ids() -> PackedInt64Array:
+	var identities := PackedInt64Array()
+	for mark in _marks:
+		identities.append(mark.get_instance_id())
+	return identities
+
+
 func _refresh_materials() -> void:
 	var mark_count := _marks.size()
 	for index in range(mark_count):

@@ -4,14 +4,16 @@ extends RefCounted
 ## Cannon Golf adapter for Paint Mountain's canonical terrain pipeline.
 ##
 ## The retained route resolver and mountain synthesizer own the mountain form.
-## This adapter only maps it into the smaller golf world and depresses one
-## route-adjacent patch before the canonical topology and geometry are built.
+## This adapter preserves the original horizontal scale, carves one terrain
+## basin, and admits the complete visible mountain through Cannon Golf's real
+## launch envelope before canonical topology and geometry are exposed.
 
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
-const CANNON_FRONT_STANDOFF := 8.0
-const GOAL_FLOOR_RATIO := 0.56
-const GOAL_BLEND_WIDTH := 2.4
+const CANNON_FRONT_STANDOFF := 75.0
+const GOAL_BLEND_WIDTH := 5.0
 const TERRAIN_BASE_Y := -14.0
+const PLAY_BOUNDS_HORIZONTAL_MARGIN := 20.0
+const PLAY_BOUNDS_MAXIMUM_HEIGHT := 190.0
 
 
 static func build(course: CannonGolfCourseData) -> Dictionary:
@@ -37,9 +39,14 @@ static func build(course: CannonGolfCourseData) -> Dictionary:
 		contract.cell_count, bounds, heights, generated.footprint
 	)
 	assert(preliminary != null and preliminary.is_valid(), "Generated golf terrain topology failed.")
-	var goal_surface_y := preliminary.height_at_local(goal_xz.x, goal_xz.y)
-	var goal_floor_y := goal_surface_y - course.goal_recess_depth
-	_depress_goal_samples(heights, contract.cell_count, bounds, goal_xz, goal_floor_y, course.goal_radius)
+	var goal_rim_y := _carve_goal_basin(
+		heights,
+		contract.cell_count,
+		bounds,
+		goal_xz,
+		course.goal_radius,
+		course.goal_recess_depth
+	)
 	var topology := TerrainTopTopology.build(
 		contract.cell_count, bounds, heights, generated.footprint
 	)
@@ -72,9 +79,22 @@ static func build(course: CannonGolfCourseData) -> Dictionary:
 	var cannon_position := Vector3(cannon_xz.x, course.terrain_origin.y + 0.05, cannon_xz.y)
 	var goal_position := Vector3(goal_xz.x, topology.height_at_local(goal_xz.x, goal_xz.y), goal_xz.y)
 	var aim_delta := goal_position - cannon_position
-	var shot_yaw := rad_to_deg(atan2(aim_delta.x, -aim_delta.z))
-	var play_minimum := Vector3(bounds.position.x - 12.0, TERRAIN_BASE_Y - 3.0, bounds.position.y - 12.0)
-	var play_maximum := Vector3(bounds.end.x + 12.0, 34.0, maxf(bounds.end.y + 22.0, cannon_position.z + 12.0))
+	var shot_axis_yaw := rad_to_deg(atan2(aim_delta.x, -aim_delta.z))
+	var admission_points := _terrain_admission_points(topology)
+	var range_metrics := _validate_launch_envelope(
+		admission_points, cannon_position, shot_axis_yaw
+	)
+	var content_points := admission_points.duplicate()
+	content_points.append(cannon_position)
+	content_points.append(goal_position)
+	var content_bounds := _bounds_for_points(content_points)
+	var play_minimum := content_bounds.position - Vector3(
+		PLAY_BOUNDS_HORIZONTAL_MARGIN, 3.0, PLAY_BOUNDS_HORIZONTAL_MARGIN
+	)
+	var play_maximum := content_bounds.end + Vector3(
+		PLAY_BOUNDS_HORIZONTAL_MARGIN, 0.0, PLAY_BOUNDS_HORIZONTAL_MARGIN
+	)
+	play_maximum.y = maxf(play_maximum.y, cannon_position.y + PLAY_BOUNDS_MAXIMUM_HEIGHT)
 	return {
 		"layout": layout,
 		"geometry": geometry,
@@ -83,9 +103,12 @@ static func build(course: CannonGolfCourseData) -> Dictionary:
 		"source_heights": generated.heights,
 		"source_footprint": generated.footprint,
 		"goal_position": goal_position,
-		"goal_rim_y": goal_surface_y,
+		"goal_rim_y": goal_rim_y,
 		"cannon_position": cannon_position,
-		"shot_yaw_degrees": shot_yaw,
+		"shot_axis_yaw_degrees": shot_axis_yaw,
+		"admission_points": admission_points,
+		"range_metrics": range_metrics,
+		"content_bounds": content_bounds,
 		"play_bounds": AABB(play_minimum, play_maximum - play_minimum),
 	}
 
@@ -133,31 +156,102 @@ static func _scaled_route_graph(
 	return GeneratedRouteGraph.new(nodes, edges)
 
 
-static func _depress_goal_samples(
+static func _carve_goal_basin(
 		heights: PackedFloat32Array,
 		cell_count: Vector2i,
 		bounds: Rect2,
 		goal_xz: Vector2,
-		goal_floor_y: float,
-		goal_radius: float
-) -> void:
+		goal_radius: float,
+		goal_depth: float
+) -> float:
 	var sample_size := cell_count + Vector2i.ONE
-	var floor_radius := goal_radius * GOAL_FLOOR_RATIO
+	var rim_y := INF
+	for sample_z in range(sample_size.y):
+		var z := lerpf(bounds.position.y, bounds.end.y, float(sample_z) / float(cell_count.y))
+		for sample_x in range(sample_size.x):
+			var x := lerpf(bounds.position.x, bounds.end.x, float(sample_x) / float(cell_count.x))
+			if Vector2(x, z).distance_to(goal_xz) <= goal_radius:
+				rim_y = minf(rim_y, heights[sample_z * sample_size.x + sample_x])
+	assert(is_finite(rim_y), "Goal basin requires at least one source sample inside its radius.")
 	var outer_radius := goal_radius + GOAL_BLEND_WIDTH
 	for sample_z in range(sample_size.y):
 		var z := lerpf(bounds.position.y, bounds.end.y, float(sample_z) / float(cell_count.y))
 		for sample_x in range(sample_size.x):
 			var x := lerpf(bounds.position.x, bounds.end.x, float(sample_x) / float(cell_count.x))
 			var distance := Vector2(x, z).distance_to(goal_xz)
-			if distance >= outer_radius:
+			if distance > outer_radius:
 				continue
 			var index := sample_z * sample_size.x + sample_x
-			if distance <= floor_radius:
-				heights[index] = goal_floor_y
+			var source_height := heights[index]
+			if distance <= goal_radius:
+				var radius_ratio := distance / goal_radius
+				var basin_height := rim_y - goal_depth + goal_depth * radius_ratio * radius_ratio
+				heights[index] = minf(source_height, basin_height)
 				continue
-			var blend := (distance - floor_radius) / (outer_radius - floor_radius)
+			var blend := (distance - goal_radius) / GOAL_BLEND_WIDTH
 			var smooth_blend := blend * blend * (3.0 - 2.0 * blend)
-			heights[index] = lerpf(goal_floor_y, heights[index], smooth_blend)
+			heights[index] = minf(source_height, lerpf(rim_y, source_height, smooth_blend))
+	return rim_y
+
+
+static func _terrain_admission_points(topology: TerrainTopTopology) -> PackedVector3Array:
+	var points := PackedVector3Array()
+	var seen_top: Dictionary = {}
+	for source_index in topology.canonical_triangle_indices_read_only():
+		if seen_top.has(source_index):
+			continue
+		seen_top[source_index] = true
+		points.append(topology.vertex_at(source_index))
+	var seen_boundary: Dictionary = {}
+	for source_index in topology.boundary_edges_read_only():
+		if seen_boundary.has(source_index):
+			continue
+		seen_boundary[source_index] = true
+		var top := topology.vertex_at(source_index)
+		points.append(Vector3(top.x, TERRAIN_BASE_Y, top.z))
+	return points
+
+
+static func _validate_launch_envelope(
+		points: PackedVector3Array,
+		cannon_position: Vector3,
+		shot_axis_yaw_degrees: float
+) -> Dictionary:
+	var minimum_range_margin := INF
+	var minimum_yaw_margin := INF
+	var minimum_height_margin := INF
+	var farthest_distance := 0.0
+	for point in points:
+		var admission := CannonGolfBallistics.admit_world_point(
+			point, cannon_position, shot_axis_yaw_degrees
+		)
+		assert(
+			bool(admission.passed),
+			"Generated terrain point %s failed launch-envelope admission: %s" % [point, admission]
+		)
+		minimum_range_margin = minf(minimum_range_margin, float(admission.range_margin))
+		minimum_yaw_margin = minf(minimum_yaw_margin, float(admission.yaw_margin_degrees))
+		minimum_height_margin = minf(minimum_height_margin, float(admission.height_margin))
+		farthest_distance = maxf(farthest_distance, float(admission.distance))
+	return {
+		"point_count": points.size(),
+		"minimum_range_margin": minimum_range_margin,
+		"minimum_yaw_margin_degrees": minimum_yaw_margin,
+		"minimum_height_margin": minimum_height_margin,
+		"farthest_distance": farthest_distance,
+	}
+
+
+static func _bounds_for_points(points: PackedVector3Array) -> AABB:
+	assert(not points.is_empty(), "Generated course bounds require visible content points.")
+	var bounds := AABB(points[0], Vector3.ZERO)
+	for point in points:
+		bounds = bounds.expand(point)
+	if bounds.size.y <= 0.0:
+		bounds.size.y = 0.01
+	# Godot AABB point containment excludes the maximum face. A centimetre of
+	# framing slack keeps generated extrema truthfully inside the content bounds.
+	return bounds.grow(0.01)
 
 
 static func _apply_material(mesh: ArrayMesh, course: CannonGolfCourseData) -> void:

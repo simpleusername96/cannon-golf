@@ -1,13 +1,11 @@
 class_name CannonGolfLauncher
 extends Node3D
 
-const BALL_RADIUS := 0.55
-const MINIMUM_SPEED := 14.0
-const MAXIMUM_SPEED := 38.0
-
+var shot_axis_yaw_degrees := 0.0
+var horizontal_aim := 50.0
 var yaw_degrees := 0.0
-var elevation_degrees := 42.0
-var power_percent := 55.0
+var elevation_degrees := 50.0
+var power_percent := 50.0
 
 var _yaw_pivot: Node3D
 var _elevation_pivot: Node3D
@@ -22,31 +20,30 @@ func _ready() -> void:
 func configure(course: CannonGolfCourseData) -> void:
 	assert(course != null and course.is_valid(), "Launcher requires valid course data.")
 	position = course.cannon_position
-	yaw_degrees = course.shot_yaw_degrees
+	shot_axis_yaw_degrees = course.shot_axis_yaw_degrees
+	horizontal_aim = course.default_horizontal_aim
 	elevation_degrees = course.default_elevation_degrees
 	power_percent = course.default_power_percent
+	yaw_degrees = CannonGolfBallistics.world_yaw_degrees(shot_axis_yaw_degrees, horizontal_aim)
 	_apply_visuals()
 
 
-func set_setup(elevation: float, power: float) -> void:
-	elevation_degrees = clampf(roundf(elevation), 10.0, 68.0)
-	power_percent = clampf(roundf(power), 10.0, 100.0)
+func set_setup(horizontal: float, elevation: float, power: float) -> void:
+	horizontal_aim = CannonGolfBallistics.canonical_horizontal_aim(horizontal)
+	elevation_degrees = CannonGolfBallistics.canonical_elevation(elevation)
+	power_percent = CannonGolfBallistics.canonical_power(power)
+	yaw_degrees = CannonGolfBallistics.world_yaw_degrees(shot_axis_yaw_degrees, horizontal_aim)
 	_apply_visuals()
 
 
 func launch_direction() -> Vector3:
-	var yaw := deg_to_rad(yaw_degrees)
-	var elevation := deg_to_rad(elevation_degrees)
-	var horizontal := cos(elevation)
-	return Vector3(
-		sin(yaw) * horizontal,
-		sin(elevation),
-		-cos(yaw) * horizontal
-	).normalized()
+	return CannonGolfBallistics.launch_direction(
+		shot_axis_yaw_degrees, horizontal_aim, elevation_degrees
+	)
 
 
 func launch_speed() -> float:
-	return lerpf(MINIMUM_SPEED, MAXIMUM_SPEED, power_percent / 100.0)
+	return CannonGolfBallistics.launch_speed(power_percent)
 
 
 func launch_velocity() -> Vector3:
@@ -54,11 +51,10 @@ func launch_velocity() -> Vector3:
 
 
 func launch_origin() -> Vector3:
-	# Keep launch physics independent from scene readiness. The visual muzzle is
-	# four metres from the elevation pivot and must follow this same contract.
 	var root_position := global_position if is_inside_tree() else position
-	return root_position + Vector3.UP * 1.05 \
-			+ launch_direction() * (4.0 + BALL_RADIUS * 1.2)
+	return CannonGolfBallistics.launch_origin(
+		root_position, shot_axis_yaw_degrees, horizontal_aim, elevation_degrees
+	)
 
 
 func _build_visuals() -> void:
@@ -70,8 +66,8 @@ func _build_visuals() -> void:
 	var base := MeshInstance3D.new()
 	base.name = "Base"
 	var base_mesh := CylinderMesh.new()
-	base_mesh.top_radius = 1.15
-	base_mesh.bottom_radius = 1.35
+	base_mesh.top_radius = 1.65
+	base_mesh.bottom_radius = 1.95
 	base_mesh.height = 0.6
 	base_mesh.radial_segments = 16
 	base_mesh.material = dark
@@ -84,8 +80,8 @@ func _build_visuals() -> void:
 	add_child(_yaw_pivot)
 	var pivot := MeshInstance3D.new()
 	var pivot_mesh := SphereMesh.new()
-	pivot_mesh.radius = 0.72
-	pivot_mesh.height = 1.44
+	pivot_mesh.radius = 0.98
+	pivot_mesh.height = 1.96
 	pivot_mesh.radial_segments = 16
 	pivot_mesh.rings = 8
 	pivot_mesh.material = dark
@@ -97,8 +93,8 @@ func _build_visuals() -> void:
 	var barrel := MeshInstance3D.new()
 	barrel.name = "Barrel"
 	var barrel_mesh := CylinderMesh.new()
-	barrel_mesh.top_radius = 0.28
-	barrel_mesh.bottom_radius = 0.42
+	barrel_mesh.top_radius = 0.42
+	barrel_mesh.bottom_radius = 0.62
 	barrel_mesh.height = 4.0
 	barrel_mesh.radial_segments = 16
 	barrel_mesh.material = white
@@ -108,8 +104,8 @@ func _build_visuals() -> void:
 	_elevation_pivot.add_child(barrel)
 	var band := MeshInstance3D.new()
 	var band_mesh := CylinderMesh.new()
-	band_mesh.top_radius = 0.46
-	band_mesh.bottom_radius = 0.46
+	band_mesh.top_radius = 0.68
+	band_mesh.bottom_radius = 0.68
 	band_mesh.height = 0.22
 	band_mesh.radial_segments = 16
 	band_mesh.material = blue

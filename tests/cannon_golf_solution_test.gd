@@ -17,10 +17,11 @@ func _run() -> void:
 		var solution_result := await _replay(course_index, true)
 		_assert_true(
 			bool(solution_result.cleared),
-			"Direct solution witness failed for %s at %.0f degrees / %.0f percent; state %d; outcome %s; last mark %s; ball %s; velocity %s." % [
+			"Direct solution witness failed for %s at %.0f horizontal / %.0f degrees / %.0f percent; state %d; outcome %s; last mark %s; ball %s; velocity %s." % [
 				solution_result.course_id,
 				solution_result.setup.x,
 				solution_result.setup.y,
+				solution_result.setup.z,
 				solution_result.state,
 				solution_result.outcome,
 				solution_result.mark,
@@ -39,10 +40,12 @@ func _replay(course_index: int, use_solution: bool) -> Dictionary:
 	await process_frame
 	await process_frame
 	var course := game.active_course()
-	var setup := course.direct_solution() if use_solution else Vector2(
-		course.default_elevation_degrees, course.default_power_percent
+	var setup := course.direct_solution() if use_solution else Vector3(
+		course.default_horizontal_aim,
+		course.default_elevation_degrees,
+		course.default_power_percent
 	)
-	game._course_builder.launcher.set_setup(setup.x, setup.y)
+	game._course_builder.launcher.set_setup(setup.x, setup.y, setup.z)
 	_assert_true(game.fire(), "Replay must start for %s." % course.course_id)
 	for _frame in range(60 * 18):
 		await physics_frame

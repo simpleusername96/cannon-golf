@@ -22,7 +22,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.98, 0.97, 0.94, 0.54)
+color = Color(0.98, 0.97, 0.94, 0.34)
 
 [node name="Heading" type="Label" parent="."]
 layout_mode = 0
@@ -33,23 +33,12 @@ offset_bottom = 78.0
 theme_type_variation = &"ScreenTitle"
 text = "코스 선택"
 
-[node name="Back" type="Button" parent="."]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(112, 46)
-layout_mode = 0
-offset_left = 42.0
-offset_top = 650.0
-offset_right = 154.0
-offset_bottom = 696.0
-theme_type_variation = &"QuietButton"
-text = "뒤로"
-
 [node name="CardsPanel" type="PanelContainer" parent="."]
 layout_mode = 0
 offset_left = 42.0
 offset_top = 98.0
-offset_right = 510.0
-offset_bottom = 620.0
+offset_right = 420.0
+offset_bottom = 338.0
 self_modulate = Color(1, 1, 1, 0.9)
 
 [node name="Margin" type="MarginContainer" parent="CardsPanel"]
@@ -61,95 +50,48 @@ theme_override_constants/margin_bottom = 22
 
 [node name="Cards" type="VBoxContainer" parent="CardsPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 12
 
 [node name="CourseOne" type="Button" parent="CardsPanel/Margin/Cards"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 104)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 theme_type_variation = &"QuietButton"
 toggle_mode = true
 text = "첫 능선"
 
-[node name="CourseOneHint" type="Label" parent="CardsPanel/Margin/Cards"]
-layout_mode = 2
-theme_type_variation = &"StageCardFacts"
-text = "01  ·  직접 조준"
-
 [node name="CourseTwo" type="Button" parent="CardsPanel/Margin/Cards"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 104)
+custom_minimum_size = Vector2(0, 88)
 layout_mode = 2
 theme_type_variation = &"QuietButton"
 toggle_mode = true
 text = "오르는 굽이"
 
-[node name="CourseTwoHint" type="Label" parent="CardsPanel/Margin/Cards"]
-layout_mode = 2
-theme_type_variation = &"StageCardFacts"
-text = "02  ·  높이 차 읽기"
-
-[node name="SelectionHint" type="Label" parent="CardsPanel/Margin/Cards"]
+[node name="Back" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-theme_type_variation = &"HudBody"
-text = "선택한 코스를 살펴본 뒤 시작하세요."
-autowrap_mode = 2
-
-[node name="PreviewPanel" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(112, 48)
 layout_mode = 0
-offset_left = 560.0
-offset_top = 98.0
-offset_right = 1238.0
-offset_bottom = 620.0
-self_modulate = Color(1, 1, 1, 0.78)
+offset_left = 42.0
+offset_top = 648.0
+offset_right = 154.0
+offset_bottom = 696.0
+theme_type_variation = &"QuietButton"
+text = "뒤로"
 
-[node name="Margin" type="MarginContainer" parent="PreviewPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 30
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 30
-theme_override_constants/margin_bottom = 28
-
-[node name="Content" type="VBoxContainer" parent="PreviewPanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="PreviewCaption" type="Label" parent="PreviewPanel/Margin/Content"]
-layout_mode = 2
-theme_type_variation = &"MenuEyebrow"
-text = "실제 코스 미리 보기"
-
-[node name="PreviewTitle" type="Label" parent="PreviewPanel/Margin/Content"]
+[node name="Start" type="Button" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"MenuTitle"
-text = "첫 능선"
-
-[node name="PreviewBrief" type="Label" parent="PreviewPanel/Margin/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 66)
-layout_mode = 2
-theme_type_variation = &"HudBody"
-text = "넓은 첫 홀. 각도와 파워만 맞춰 안전하게 착지하세요."
-autowrap_mode = 2
-
-[node name="PreviewFacts" type="Label" parent="PreviewPanel/Margin/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 62)
-layout_mode = 2
-theme_type_variation = &"StagePreviewFacts"
-text = "골 1개  ·  직접 조준\n고요한 재시도  ·  각도와 파워"
-autowrap_mode = 2
-
-[node name="Spacer" type="Control" parent="PreviewPanel/Margin/Content"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Start" type="Button" parent="PreviewPanel/Margin/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
+custom_minimum_size = Vector2(220, 52)
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -262.0
+offset_top = -76.0
+offset_right = -42.0
+offset_bottom = -24.0
+grow_horizontal = 0
+grow_vertical = 0
 theme_type_variation = &"PrimaryButton"
 text = "코스 시작"

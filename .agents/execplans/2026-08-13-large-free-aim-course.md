@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-13
 scope: Large launch-envelope-constrained mountain courses, three-parameter free aim, terrain-owned concave goals, retry persistence, and a minimal interface for the two-course Cannon Golf prototype
 related:
@@ -172,7 +172,7 @@ Source owners: `project-specs/cannon-golf/PRD.md`,
 `project-specs/cannon-golf/DECISIONS.md`,
 `project-specs/cannon-golf/OPEN_QUESTIONS.md`
 
-- [ ] **1.1** Active product records state the locked three-parameter, world,
+- [x] **1.1** Active product records state the locked three-parameter, world,
   goal, retry, and minimal-interface behavior.
   - Change: add accepted decisions that supersede D-017 and refine D-021/D-022;
     update PRD requirements/acceptance, the resolved Q-01 entry, and design
@@ -198,7 +198,7 @@ Source owners: `src/cannon_golf/cannon_golf_ballistics.gd` (new),
 `src/cannon_golf/app/cannon_golf_preview_world.gd`,
 `scenes/cannon_golf/cannon_golf.tscn`, `resources/cannon_golf/courses/`
 
-- [ ] **2.1** One pure Cannon Golf ballistics owner maps the three parameters to
+- [x] **2.1** One pure Cannon Golf ballistics owner maps the three parameters to
   launch origin, direction, speed, and reachable height intervals.
   - Change: move duplicated constants/math out of `CannonGolfLauncher`; expose
     named horizontal/vertical/power operations, centered-horizontal mapping,
@@ -209,7 +209,7 @@ Source owners: `src/cannon_golf/cannon_golf_ballistics.gd` (new),
     repeated input gives identical origin/velocity, and higher power increases
     speed.
   - Guard: no exact impact point or trajectory is published to gameplay UI.
-- [ ] **2.2** Both generated mountains use the locked scale/standoff and pass a
+- [x] **2.2** Both generated mountains use the locked scale/standoff and pass a
   fail-closed whole-terrain launch-envelope gate.
   - Change: update course data/resource limits and values; place the cannon from
     the route tangent at `75` metres; compute content/play bounds; test active
@@ -223,7 +223,7 @@ Source owners: `src/cannon_golf/cannon_golf_ballistics.gd` (new),
     `RouteGraphMountainSynthesizer`, `TerrainTopTopology`, and
     `TerrainGeometryFactory`; it does not scale below `1.00`, clip geometry, or
     replace the source mountain with authored shelves.
-- [ ] **2.3** Gameplay and preview worlds frame the large course without manual
+- [x] **2.3** Gameplay and preview worlds frame the large course without manual
   per-course camera guesswork.
   - Change: store generated content bounds on the runtime course; use
     `TerrainCameraFramer` to preserve high-oblique and true side directions while
@@ -254,7 +254,7 @@ Source owners: `src/cannon_golf/course_terrain_factory.gd`,
 `resources/cannon_golf/courses/`, `tests/cannon_golf_goal_test.gd`,
 `tests/cannon_golf_terrain_test.gd`, `tests/cannon_golf_solution_test.gd`
 
-- [ ] **3.1** The goal is a monotonic concave basin in the generated topology.
+- [x] **3.1** The goal is a monotonic concave basin in the generated topology.
   - Change: replace `_depress_goal_samples` with a basin carver. Let `rim_y` be
     the minimum original sample height within the 10 metre goal radius, set
     `height(r) = rim_y - 3.5 + 3.5 * (r / 10)^2` inside the goal, then smooth
@@ -268,7 +268,7 @@ Source owners: `src/cannon_golf/course_terrain_factory.gd`,
   - Guard: a low-speed ball released at center and several off-center basin
     positions remains contained until settlement; a fast ball that exits still
     fails and does not confirm.
-- [ ] **3.2** Defaults miss and the locked solution witnesses clear through the
+- [x] **3.2** Defaults miss and the locked solution witnesses clear through the
   real rigid-body simulation.
   - Change: add horizontal solution metadata, set all default fields to `50`,
     and set the two locked witnesses in the course resources.
@@ -294,7 +294,7 @@ Source owners: `src/cannon_golf/cannon_golf_game.gd`,
 `src/cannon_golf/cannon_golf_launcher.gd`,
 `src/cannon_golf/impact_history.gd`, `tests/cannon_golf_session_test.gd`
 
-- [ ] **4.1** Quick retry replaces only the active ball and immediately reuses
+- [x] **4.1** Quick retry replaces only the active ball and immediately reuses
   the exact current three-parameter setup.
   - Change: extend game/HUD setup signals and keyboard adjustment to horizontal
     aim (`Q/E`), vertical angle (`W/S`), and power (`A/D`). Keep `R` wired to an
@@ -326,7 +326,7 @@ Source owners: `scenes/cannon_golf/cannon_golf_hud.tscn`,
 `tests/cannon_golf_ui_contract_test.gd`,
 `tests/cannon_golf_app_flow_test.gd`
 
-- [ ] **5.1** Normal gameplay shows only aim, Fire, view, retry, and pause.
+- [x] **5.1** Normal gameplay shows only aim, Fire, view, retry, and pause.
   - Change: remove course panel/brief/progress, in-game previous/next course,
     feedback panel, shortcut panel, separate view panel, visible reset action,
     and duplicated labels. Build one compact edge aim panel with `좌우`, `상하`,
@@ -340,7 +340,7 @@ Source owners: `scenes/cannon_golf/cannon_golf_hud.tscn`,
     Korean/English labels fit, and every icon has a non-empty accessible name.
   - Guard: the center 70% of the viewport has no persistent panel and Fire is
     the only saturated primary action.
-- [ ] **5.2** Main menu and course selection retain their jobs without filler.
+- [x] **5.2** Main menu and course selection retain their jobs without filler.
   - Change: remove the menu eyebrow/tagline/summary and course-selection hints,
     preview caption/brief/fact list. Keep working title, Play, Course Select,
     Settings, Exit, Back, two course names, live preview, and Start.
@@ -349,7 +349,7 @@ Source owners: `scenes/cannon_golf/cannon_golf_hud.tscn`,
     tests find no removed filler strings.
   - Guard: settings controls and pause navigation are not removed merely to
     reduce text.
-- [ ] **5.3** The Level 3 desktop UI gate passes on the actual rendered world.
+- [x] **5.3** The Level 3 desktop UI gate passes on the actual rendered world.
   - Change: extend capture states only as needed for the three controls, live
     retry, concise pause/result, and simplified shell.
   - Accept: inspect both courses in planning and side views plus menu, course
@@ -376,7 +376,7 @@ Source owners: `scripts/test-cannon-golf.ps1`, `scripts/verify.ps1`,
 `tests/capture_cannon_golf_frame.gd`, `README.md`, this contract,
 `builds/windows/CannonGolfPrototype.exe`
 
-- [ ] **6.1** Focused coverage, documentation, and task-owned architecture agree.
+- [x] **6.1** Focused coverage, documentation, and task-owned architecture agree.
   - Change: add the range test to the focused runner; update README controls,
     world scale, goal, retry, and minimal UI; run the repository-required
     multi-file quality audit and make only small task-scoped corrections.
@@ -385,7 +385,7 @@ Source owners: `scripts/test-cannon-golf.ps1`, `scripts/verify.ps1`,
     whitespace errors.
   - Guard: no Cannon Golf-owned catch-all gains unrelated legacy paint,
     coverage, prediction, device, or app-shell responsibility.
-- [ ] **6.2** The refreshed Windows release starts and exposes the simplified
+- [x] **6.2** The refreshed Windows release starts and exposes the simplified
   large-course flow.
   - Change: export the existing `Windows Desktop` preset to the existing build
     path and run a bounded hidden startup smoke.
@@ -455,9 +455,74 @@ acceptance.
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 1 - Align the product contract.
-- Next task: Task 1.1.
-- Last completed gate: Discovery Closure Gate on 2026-08-13.
+- Current phase: Complete.
+- Next task: None; all contract tasks and gates passed.
+- Last completed gate: Phase 6 Windows release gate on 2026-08-13.
+- Task 1.1 evidence: PRD, design rules, decisions, and resolved questions now
+  define centered three-parameter aim, original-scale whole-terrain admission,
+  a terrain-owned concave goal, live quick retry, and minimal normal-play UI.
+  Targeted terminology and future-device/eleven-stage guards passed, followed by
+  `git diff --check`.
+- Task 2.1 evidence: `cannon_golf_ballistics_test.gd` passed centered and
+  endpoint horizontal mapping, clamping, deterministic origin/velocity, and
+  increasing power through the pure `CannonGolfBallistics` owner. No gameplay
+  trajectory or range surface was added.
+- Task 2.2 evidence: `cannon_golf_range_test.gd` passed both original
+  `210 x 120` metre generated mountains, at least 140 metres cannon-to-goal,
+  at least 175 metres far-terrain distance, and every active top/support-shell
+  point with all locked range, yaw, and height margins. The retained resolver,
+  synthesizer, topology, and geometry owners remain the construction path.
+- Task 2.3 evidence: `cannon_golf_camera_test.gd` passed full generated-content
+  bounds at `1280x720` in oblique and true side views, at minimum/maximum zoom
+  and derived pan limits. Gameplay and preview retain the shared course builder,
+  camera rig, `TerrainCameraFramer`, 520-metre far/shadow distances, and the
+  enlarged apron contract.
+- Phase 2 gate evidence: ballistics, whole-terrain range, native terrain,
+  course-build, and camera tests passed. The first course-build run exposed an
+  AABB maximum-face containment edge; a one-centimetre content-bounds slack
+  fixed it, and only the affected course-build and camera checks were rerun.
+- Task 3.1 evidence: terrain and goal checks passed the center-lowest monotonic
+  basin profile, source-only lowering, shared render/collision topology, no goal
+  body, rim-derived containment, three low-speed start positions per course,
+  and a fast physical exit that remains unconfirmed.
+- Task 3.2 evidence: the real rigid-body replay passed a miss for `50/50/50`
+  on both courses and safe settlements for the exact `50/46/72` first-ridge and
+  `50/42/72` rising-bend witnesses.
+- Phase 3 gate evidence: terrain, goal, ordinary rebound, course metadata, and
+  real solution replay all passed together for both generated courses.
+- Task 4.1 evidence: the session test passed active-ball-only immediate retry,
+  a different ball with identical origin/velocity, retained horizontal/vertical/
+  power, view/pan/zoom, and the same five impact-mark instance identities. It
+  also passed planning/confirmed retry rejection and reset-to-`50/50/50` with
+  cleared marks.
+- Task 5.1 evidence: UI contract inspection passed exactly three normal-play
+  sliders, Fire, four named icon actions, 40-pixel targets, keyboard focus,
+  Korean/English copy fit, one primary action, no retired panels/reset, and no
+  persistent panel intersecting the center 70 percent of `1280x720`.
+- Task 5.2 evidence: app-flow and UI-copy checks passed menu -> course select ->
+  gameplay, gameplay settings/pause return, course-select/main-menu return, live
+  generated preview, both course names, and all retained shell actions with the
+  eyebrow/tagline/hints/preview prose/facts absent.
+- Task 5.3 evidence: inspected final rendered planning and side views for both
+  courses, menu, course select, pause, and clear at `1280x720`, plus planning at
+  `1600x900`. The first render pass found and fixed a selected-side Fire clip;
+  a HUD-local flat Fire style then passed two stability captures. Final frames
+  keep the world center open, show readable cannon/goal markers and all values,
+  preserve visible focus/disabled states, and contain no text/panel overlap.
+  Desktop-only remains the explicit supported-layout exception; no mobile claim
+  is made. App, session, and UI checks passed for the final flow.
+- Task 6.1 evidence: the 13-test focused suite passed course metadata, pure
+  ballistics, whole-terrain range admission, terrain/goal construction,
+  generated-content camera framing, rigid-body rebound, live retry state,
+  default misses, both real solution witnesses, UI/accessibility, settings, and
+  app flow. `scripts/verify.ps1` passed import, parsing, and main-scene startup;
+  `git diff --check` passed. The quality audit removed the obsolete HUD course
+  contract, added finite shot-axis validation, and found no remaining
+  task-owned responsibility, contract, or reachable-failure-path issue.
+- Task 6.2 evidence: the existing `Windows Desktop` export preset refreshed
+  `builds/windows/CannonGolfPrototype.exe` (127,446,776 bytes), and the built
+  executable completed the bounded hidden `--headless --quit-after 3` startup
+  smoke with exit code zero.
 - Discovery evidence: current source/UI inspection, 1280x720 planning/side/menu
   captures, a removed ballistic range probe, and a removed real-physics concave
   basin probe. No temporary probe or generated capture is tracked by Git.

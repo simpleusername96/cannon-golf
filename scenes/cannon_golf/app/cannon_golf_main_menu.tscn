@@ -22,52 +22,34 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.98, 0.97, 0.94, 0.68)
+color = Color(0.98, 0.97, 0.94, 0.58)
 
 [node name="BrandPanel" type="PanelContainer" parent="."]
 layout_mode = 0
 offset_left = 56.0
-offset_top = 110.0
+offset_top = 158.0
 offset_right = 500.0
-offset_bottom = 610.0
+offset_bottom = 562.0
 
 [node name="Margin" type="MarginContainer" parent="BrandPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 34
-theme_override_constants/margin_top = 32
+theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 34
-theme_override_constants/margin_bottom = 32
+theme_override_constants/margin_bottom = 30
 
 [node name="Content" type="VBoxContainer" parent="BrandPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="Eyebrow" type="Label" parent="BrandPanel/Margin/Content"]
-layout_mode = 2
-theme_type_variation = &"MenuEyebrow"
-text = "각도와 파워 · 안전 착지"
+theme_override_constants/separation = 12
 
 [node name="Title" type="Label" parent="BrandPanel/Margin/Content"]
 layout_mode = 2
 theme_type_variation = &"MenuTitle"
 text = "CANNON GOLF"
 
-[node name="Subtitle" type="Label" parent="BrandPanel/Margin/Content"]
-custom_minimum_size = Vector2(0, 54)
-layout_mode = 2
-theme_type_variation = &"MenuSubtitle"
-text = "코스를 읽고, 한 번 쏘고, 다시 조정하세요."
-autowrap_mode = 2
-
-[node name="CourseHint" type="Label" parent="BrandPanel/Margin/Content"]
-layout_mode = 2
-theme_type_variation = &"HudBody"
-text = "두 코스 · 무제한 재시도"
-
 [node name="Spacer" type="Control" parent="BrandPanel/Margin/Content"]
-custom_minimum_size = Vector2(0, 12)
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="Play" type="Button" parent="BrandPanel/Margin/Content"]
 unique_name_in_owner = true

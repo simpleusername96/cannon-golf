@@ -25,13 +25,14 @@ func contains_ball(ball_position: Vector3, ball_radius: float) -> bool:
 	var origin := global_position if is_inside_tree() else position
 	var local := ball_position - origin
 	return _local_horizontal_contains(local, ball_radius) \
-			and local.y >= -0.45 and local.y <= 3.2
+			and local.y >= -ball_radius * 0.8 \
+			and local.y <= rim_height + ball_radius * 1.5
 
 
 func contains_rebound_column(ball_position: Vector3, ball_radius: float) -> bool:
 	var origin := global_position if is_inside_tree() else position
 	var local := ball_position - origin
-	return _local_horizontal_contains(local, ball_radius) and local.y >= -0.45
+	return _local_horizontal_contains(local, ball_radius) and local.y >= -ball_radius * 0.8
 
 
 func motion_is_safe(linear_velocity: Vector3, angular_velocity: Vector3) -> bool:
@@ -67,20 +68,20 @@ func _build_rim() -> void:
 func _build_flag() -> void:
 	var pole := MeshInstance3D.new()
 	var pole_mesh := CylinderMesh.new()
-	pole_mesh.top_radius = 0.07
-	pole_mesh.bottom_radius = 0.07
-	pole_mesh.height = 6.2
+	pole_mesh.top_radius = 0.11
+	pole_mesh.bottom_radius = 0.11
+	pole_mesh.height = 10.0
 	pole_mesh.radial_segments = 10
 	pole_mesh.material = _material(Color("13243A"), 0.22, 0.44)
 	pole.mesh = pole_mesh
-	pole.position = Vector3(inner_radius * 0.72, rim_height + 3.1, 0.0)
+	pole.position = Vector3(inner_radius * 0.72, rim_height + 5.0, 0.0)
 	add_child(pole)
 	var flag := MeshInstance3D.new()
 	var flag_mesh := BoxMesh.new()
-	flag_mesh.size = Vector3(1.9, 0.9, 0.08)
+	flag_mesh.size = Vector3(4.0, 1.7, 0.10)
 	flag_mesh.material = _material(Color("2584FF"), 0.08, 0.42)
 	flag.mesh = flag_mesh
-	flag.position = Vector3(inner_radius * 0.72 - 0.9, rim_height + 5.55, 0.0)
+	flag.position = Vector3(inner_radius * 0.72 - 1.9, rim_height + 9.0, 0.0)
 	add_child(flag)
 
 
