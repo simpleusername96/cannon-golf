@@ -2,6 +2,7 @@ class_name CannonGolfCourseCameraRig
 extends Node
 
 const FOLLOW_OFFSET := Vector3(10.0, 6.5, 12.0)
+const CONFIRMED_FOLLOW_OFFSET := Vector3(11.0, 20.0, 16.0)
 const FRAME_MARGIN := 1.08
 const MODE_PLANNING: StringName = &"planning"
 const MODE_FOLLOW: StringName = &"follow"
@@ -22,6 +23,7 @@ var orbit_degrees := Vector2.ZERO
 var _camera: Camera3D
 var _course: CannonGolfCourseData
 var _follow_target: Node3D
+var _follow_offset := FOLLOW_OFFSET
 var _planning_position := Vector3.ZERO
 var _planning_focus := Vector3.ZERO
 var _planning_pose_dirty := true
@@ -40,6 +42,7 @@ func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
 	zoom = DEFAULT_ZOOM
 	orbit_degrees = Vector2.ZERO
 	_follow_target = null
+	_follow_offset = FOLLOW_OFFSET
 	_planning_pose_dirty = true
 	_planning_pose_builds = 0
 	snap_to_planning()
@@ -121,15 +124,27 @@ func planning_focus() -> Vector3:
 
 
 func follow(target: Node3D) -> bool:
+	return _begin_follow(target, FOLLOW_OFFSET, false)
+
+
+func follow_confirmed(target: Node3D) -> bool:
+	return _begin_follow(target, CONFIRMED_FOLLOW_OFFSET, true)
+
+
+func _begin_follow(target: Node3D, offset: Vector3, immediate: bool) -> bool:
 	if target == null or not is_instance_valid(target):
 		return false
 	_follow_target = target
+	_follow_offset = offset
 	camera_mode = MODE_FOLLOW
+	if immediate:
+		_apply_follow(1.0, true)
 	return true
 
 
 func return_to_planning(immediate: bool = false) -> void:
 	_follow_target = null
+	_follow_offset = FOLLOW_OFFSET
 	camera_mode = MODE_PLANNING
 	if immediate:
 		snap_to_planning()
@@ -159,13 +174,7 @@ func update(delta: float) -> void:
 			return_to_planning()
 			_apply_planning(delta)
 			return
-		var focus := _follow_target.get_global_transform_interpolated().origin
-		var desired_position := focus + FOLLOW_OFFSET
-		_camera.global_position = _camera.global_position.lerp(
-			desired_position,
-			1.0 - exp(-delta * 4.2)
-		)
-		_camera.look_at(focus + Vector3.UP * 0.4, Vector3.UP)
+		_apply_follow(delta)
 		return
 	_apply_planning(delta)
 
@@ -173,7 +182,21 @@ func update(delta: float) -> void:
 func snap_to_planning() -> void:
 	camera_mode = MODE_PLANNING
 	_follow_target = null
+	_follow_offset = FOLLOW_OFFSET
 	_apply_planning(1.0)
+
+
+func _apply_follow(delta: float, immediate: bool = false) -> void:
+	if _camera == null or _follow_target == null or not is_instance_valid(_follow_target):
+		return
+	var focus := _follow_target.global_position if immediate \
+			else _follow_target.get_global_transform_interpolated().origin
+	var desired_position := focus + _follow_offset
+	_camera.global_position = desired_position if immediate else _camera.global_position.lerp(
+		desired_position,
+		1.0 - exp(-delta * 4.2)
+	)
+	_camera.look_at(focus + Vector3.UP * 0.4, Vector3.UP)
 
 
 func _apply_planning(delta: float) -> void:

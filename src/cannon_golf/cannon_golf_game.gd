@@ -485,8 +485,10 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 	_live_shots.clear()
 	current_ball = null
 	launch_state = LaunchState.CLEARED
-	_camera_rig.return_to_planning()
-	_hud.set_camera_mode(&"planning")
+	# Success owns its result presentation: keep the confirmed ball in view
+	# while the side-anchored result action leaves the screen center unobstructed.
+	_camera_rig.follow_confirmed(winning_ball)
+	_hud.set_camera_mode(&"follow")
 	_refresh_hud_availability()
 	_hud.show_clear(
 		_course_builder.course,

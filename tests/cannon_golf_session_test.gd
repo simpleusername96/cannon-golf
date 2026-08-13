@@ -159,6 +159,19 @@ func _run() -> void:
 	_assert_true(game.launch_state == CannonGolfGame.LaunchState.CLEARED, "Either live ball may confirm the course.")
 	_assert_true(game.confirmed_ball == first_ball and first_ball.freeze, "The winning ball must remain frozen and visible.")
 	_assert_true(second_ball.is_queued_for_deletion(), "Confirmation must remove other unconfirmed live balls.")
+	_assert_true(game._camera_rig.is_following(first_ball), "Success presentation must follow the winning ball.")
+	await process_frame
+	await process_frame
+	await process_frame
+	var confirmed_mesh := first_ball.get_node_or_null("GolfBallMesh") as MeshInstance3D \
+			if is_instance_valid(first_ball) else null
+	_assert_true(
+		is_instance_valid(first_ball) and first_ball.is_inside_tree() \
+				and not first_ball.is_queued_for_deletion() \
+				and first_ball.get_parent() == game._ball_root \
+				and confirmed_mesh != null and confirmed_mesh.is_visible_in_tree(),
+		"The confirmed ball and its visible mesh must survive deferred cleanup."
+	)
 	_assert_true(game.active_ball_count() == 0 and not game.fire(), "A cleared goal must reject later launches.")
 	_assert_true(game.planning_view == &"side" and game.planning_pan.is_equal_approx(stored_pan), "Clear must preserve planning context.")
 	if not _failed:

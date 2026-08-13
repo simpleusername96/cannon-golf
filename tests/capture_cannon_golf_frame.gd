@@ -167,6 +167,24 @@ func _capture() -> void:
 			push_error("Fire changed the explored planning camera.")
 			quit(1)
 			return
+	if game != null and requested_state == "clear":
+		var confirmed := game.confirmed_ball
+		var confirmed_mesh := confirmed.get_node_or_null("GolfBallMesh") as MeshInstance3D \
+				if confirmed != null else null
+		var result_panel := game._hud.get_node("Root/ResultOverlay/Panel") as Control
+		var ball_screen_position := game._camera.unproject_position(confirmed.global_position) \
+				if confirmed != null else Vector2.ZERO
+		var viewport_rect := Rect2(Vector2.ZERO, Vector2(root.size))
+		if confirmed == null or not is_instance_valid(confirmed) \
+				or not confirmed.is_inside_tree() or confirmed.is_queued_for_deletion() \
+				or confirmed_mesh == null or not confirmed_mesh.is_visible_in_tree() \
+				or not game._camera_rig.is_following(confirmed) \
+				or game._camera.is_position_behind(confirmed.global_position) \
+				or not viewport_rect.has_point(ball_screen_position) \
+				or result_panel.get_global_rect().has_point(ball_screen_position):
+			push_error("Clear capture did not retain an unobstructed visible confirmed ball.")
+			quit(1)
+			return
 	# Compatibility rendering can publish the terrain frame before every font
 	# atlas and Control batch has reached the viewport texture. Wait for several
 	# completed draws so delivery evidence records a stable composed frame.
