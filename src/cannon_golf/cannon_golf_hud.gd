@@ -6,6 +6,8 @@ signal retry_requested
 signal setup_changed(horizontal_aim: float, elevation_degrees: float, power_percent: float)
 signal view_requested(view_mode: StringName)
 signal follow_requested
+signal camera_zoom_requested(wheel_steps: float)
+signal camera_reset_requested
 signal reset_requested
 signal pause_requested
 signal settings_requested
@@ -22,6 +24,9 @@ signal result_primary_requested
 @onready var _oblique_button: Button = %ObliqueButton
 @onready var _side_button: Button = %SideButton
 @onready var _follow_button: Button = %FollowButton
+@onready var _zoom_in_button: Button = %ZoomInButton
+@onready var _camera_reset_button: Button = %CameraResetButton
+@onready var _zoom_out_button: Button = %ZoomOutButton
 @onready var _retry_button: Button = %RetryButton
 @onready var _fire_button: Button = %FireButton
 @onready var _pause_retry: Button = %PauseRetry
@@ -47,6 +52,9 @@ func _ready() -> void:
 	_oblique_button.pressed.connect(func() -> void: view_requested.emit(&"oblique"))
 	_side_button.pressed.connect(func() -> void: view_requested.emit(&"side"))
 	_follow_button.pressed.connect(func() -> void: follow_requested.emit())
+	_zoom_in_button.pressed.connect(func() -> void: camera_zoom_requested.emit(1.0))
+	_camera_reset_button.pressed.connect(func() -> void: camera_reset_requested.emit())
+	_zoom_out_button.pressed.connect(func() -> void: camera_zoom_requested.emit(-1.0))
 	_retry_button.pressed.connect(func() -> void: retry_requested.emit())
 	_fire_button.pressed.connect(func() -> void: fire_requested.emit())
 	%PauseButton.pressed.connect(func() -> void: pause_requested.emit())
@@ -138,6 +146,13 @@ func apply_language(language: String) -> void:
 	_set_icon_copy(_fire_button, "Fire (Space)" if english else "발사 (Space)")
 	_set_icon_copy(_oblique_button, "Overview (1)" if english else "전체 보기 (1)")
 	_set_icon_copy(_side_button, "Side view (2)" if english else "측면 보기 (2)")
+	_set_icon_copy(_zoom_in_button, "Zoom in (Wheel up)" if english else "확대 (휠 위)")
+	_set_icon_copy(
+		_camera_reset_button,
+		"Reset view (Home) · Drag terrain to orbit" if english \
+				else "시점 원위치 (Home) · 지형을 드래그해 회전"
+	)
+	_set_icon_copy(_zoom_out_button, "Zoom out (Wheel down)" if english else "축소 (휠 아래)")
 	_set_icon_copy(_retry_button, "Quick retry (R)" if english else "빠른 재발사 (R)")
 	_set_icon_copy(%PauseButton, "Pause (Esc)" if english else "일시정지 (Esc)")
 	%PauseTitle.text = "PAUSED" if english else "일시정지"
@@ -198,6 +213,9 @@ func _install_focus_order() -> void:
 		_horizontal_slider,
 		_elevation_slider,
 		_power_slider,
+		_zoom_in_button,
+		_camera_reset_button,
+		_zoom_out_button,
 		_oblique_button,
 		_side_button,
 		_follow_button,
@@ -211,3 +229,9 @@ func _install_focus_order() -> void:
 		control.focus_previous = control.focus_neighbor_left
 		control.focus_neighbor_right = controls[(index + 1) % controls.size()].get_path()
 		control.focus_next = control.focus_neighbor_right
+	_zoom_in_button.focus_neighbor_top = _zoom_out_button.get_path()
+	_zoom_in_button.focus_neighbor_bottom = _camera_reset_button.get_path()
+	_camera_reset_button.focus_neighbor_top = _zoom_in_button.get_path()
+	_camera_reset_button.focus_neighbor_bottom = _zoom_out_button.get_path()
+	_zoom_out_button.focus_neighbor_top = _camera_reset_button.get_path()
+	_zoom_out_button.focus_neighbor_bottom = _zoom_in_button.get_path()

@@ -163,8 +163,12 @@ in `OPEN_QUESTIONS.md`.
 
 - Status: accepted for the two-course prototype.
 - A whole-course high-oblique view is the default. A true side/profile view is
-  the alternate. Arrow keys pan, the mouse wheel changes planning distance, and
-  Shot Follow returns to the same stored view, pan, zoom, angle, and power.
+  the alternate. Left-drag orbits around a fixed course focus, arrow keys pan,
+  and the mouse wheel or compact icon actions change planning distance. Clicking
+  without dragging does not refocus. `Home` or the compact reset action restores
+  the authored high-oblique view, zero pan, and default distance. Direct camera
+  input during Shot Follow returns to planning before applying the input, and
+  Shot Follow returns to the same stored view, pan, orbit, zoom, angle, and power.
   `Tab` and the compact follow action toggle between the newest live ball and
   that stored planning pose without waiting for the shot to resolve.
 - The prototype does not include a separate behind-cannon planning mode.
@@ -247,9 +251,10 @@ in `OPEN_QUESTIONS.md`.
   It preserves impact history and planning context. Course reset remains a
   separate pause-menu action and clears course-local attempt state.
 - Normal play shows only the compact three-control aim panel, Fire, overview,
-  side view, ball follow, quick retry, and pause. Course prose, progress/status
-  cards, shortcut legends, feedback panels, in-game course navigation, and
-  visible reset do not persist over the course.
+  side view, ball follow, quick retry, pause, and one restrained icon-only camera
+  zoom/reset dock. Course prose, progress/status cards, shortcut legends,
+  feedback panels, in-game course navigation, and visible full-course reset do
+  not persist over the course.
 
 ### D-026 — Shot Follow does not lock the next launch
 

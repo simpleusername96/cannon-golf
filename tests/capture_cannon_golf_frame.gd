@@ -61,6 +61,10 @@ func _capture() -> void:
 		app.show_settings()
 	elif requested_state == "side":
 		game.set_planning_view(&"side")
+	elif requested_state == "explored":
+		game.orbit_planning(Vector2(190.0, -62.0))
+		game.zoom_planning(2.0)
+		game.pan_planning(Vector2(1.0, 0.0))
 	elif requested_state == "follow":
 		if not game.fire():
 			push_error("Follow capture could not launch its ball.")
@@ -86,9 +90,15 @@ func _capture() -> void:
 		game._confirm_goal()
 	for _frame in range(36):
 		await process_frame
-	if game != null and requested_state in ["planning", "side"]:
+	if game != null and requested_state in ["planning", "side", "explored"]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
 			push_error("Planning capture received live input and left the planning state.")
+			quit(1)
+			return
+	if game != null and requested_state == "explored":
+		if game._camera_rig.orbit_degrees.is_zero_approx() \
+				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM):
+			push_error("Explored capture did not retain an orbit and zoom change.")
 			quit(1)
 			return
 	if game != null and requested_state == "follow":

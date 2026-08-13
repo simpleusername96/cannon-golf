@@ -39,6 +39,7 @@ var confirmed_ball: CannonGolfBall
 var last_launch_outcome: StringName = &""
 var _active_balls: Array[CannonGolfBall] = []
 var _live_shots: Dictionary = {}
+var _planning_drag_active := false
 
 
 func _ready() -> void:
@@ -46,6 +47,8 @@ func _ready() -> void:
 	_hud.setup_changed.connect(_on_setup_changed)
 	_hud.view_requested.connect(set_planning_view)
 	_hud.follow_requested.connect(toggle_shot_camera)
+	_hud.camera_zoom_requested.connect(zoom_planning)
+	_hud.camera_reset_requested.connect(reset_planning_camera)
 	_hud.retry_requested.connect(retry_attempt)
 	_hud.reset_requested.connect(reset_course)
 	_hud.pause_requested.connect(toggle_pause)
@@ -57,10 +60,13 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_end_planning_drag()
 	get_tree().paused = false
 
 
 func _process(delta: float) -> void:
+	if _planning_drag_active and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		_end_planning_drag()
 	_update_camera(delta)
 
 
@@ -113,22 +119,60 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 			shot.reset_low_speed()
 
 
+func _input(event: InputEvent) -> void:
+	if not (event is InputEventKey) or not event.pressed or event.echo:
+		return
+	var key_event := event as InputEventKey
+	var pressed_key := key_event.keycode \
+			if key_event.keycode != KEY_NONE else key_event.physical_keycode
+	if pressed_key == KEY_HOME:
+		reset_planning_camera()
+		get_viewport().set_input_as_handled()
+		return
+	if pressed_key != KEY_SPACE:
+		return
+	var focus_owner := get_viewport().gui_get_focus_owner()
+	if focus_owner is Button and focus_owner.name != &"FireButton":
+		return
+	# Consume an accepted launch before GUI dispatch so the focused Fire button
+	# cannot activate a second launch from the same physical Space press.
+	if fire():
+		get_viewport().set_input_as_handled()
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_camera_rig.adjust_zoom(-0.08)
+	if event is InputEventMouseButton:
+		var mouse_button := event as InputEventMouseButton
+		if mouse_button.button_index == MOUSE_BUTTON_LEFT:
+			if mouse_button.pressed:
+				_begin_planning_drag()
+				get_viewport().set_input_as_handled()
+			elif _planning_drag_active:
+				_end_planning_drag()
+				get_viewport().set_input_as_handled()
+			return
+		if mouse_button.pressed and mouse_button.button_index == MOUSE_BUTTON_WHEEL_UP:
+			zoom_planning(1.0)
 			get_viewport().set_input_as_handled()
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_camera_rig.adjust_zoom(0.08)
+			return
+		if mouse_button.pressed and mouse_button.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			zoom_planning(-1.0)
 			get_viewport().set_input_as_handled()
+			return
+	if event is InputEventMouseMotion and _planning_drag_active:
+		var mouse_motion := event as InputEventMouseMotion
+		if mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
+			orbit_planning(mouse_motion.relative)
+		else:
+			_end_planning_drag()
+		get_viewport().set_input_as_handled()
+		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	match event.keycode:
 		KEY_TAB:
 			if toggle_shot_camera():
 				get_viewport().set_input_as_handled()
-		KEY_SPACE:
-			fire()
 		KEY_1:
 			set_planning_view(&"oblique")
 		KEY_2:
@@ -189,6 +233,7 @@ func fire(follow_new_shot: bool = true) -> bool:
 
 
 func reset_course() -> void:
+	_end_planning_drag()
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
 	_load_course(course_index)
@@ -208,6 +253,7 @@ func retry_attempt() -> bool:
 
 
 func toggle_pause() -> void:
+	_end_planning_drag()
 	if launch_state == LaunchState.CLEARED:
 		return
 	if get_tree().paused:
@@ -263,7 +309,45 @@ func return_to_planning_view() -> bool:
 
 
 func pan_planning(screen_direction: Vector2) -> void:
+	_activate_planning_camera()
 	_camera_rig.pan(screen_direction)
+
+
+func orbit_planning(relative: Vector2) -> bool:
+	_activate_planning_camera()
+	return _camera_rig.orbit(relative)
+
+
+func zoom_planning(wheel_steps: float) -> bool:
+	_activate_planning_camera()
+	return _camera_rig.zoom_by_steps(wheel_steps)
+
+
+func reset_planning_camera() -> void:
+	_end_planning_drag()
+	_camera_rig.reset_planning_view()
+	_hud.set_view(_camera_rig.view_mode)
+	_hud.set_camera_mode(&"planning")
+
+
+func _activate_planning_camera() -> void:
+	if _camera_rig.camera_mode != &"follow":
+		return
+	_camera_rig.return_to_planning()
+	_hud.set_camera_mode(&"planning")
+
+
+func _begin_planning_drag() -> void:
+	_activate_planning_camera()
+	_planning_drag_active = true
+	Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+
+
+func _end_planning_drag() -> void:
+	if not _planning_drag_active:
+		return
+	_planning_drag_active = false
+	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
 func _load_course(index: int) -> void:

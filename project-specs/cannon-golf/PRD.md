@@ -203,7 +203,12 @@ than the inherited frontal cannon composition.
   drama or local aim, but must not be the only or automatically dominant view.
   Firing temporarily follows the newest ball. `Tab`, the compact follow action,
   overview, or side view must immediately restore the stored planning pose while
-  balls remain live. Launch controls remain editable in either camera mode.
+  balls remain live. Direct planning interaction uses left-drag to orbit around
+  the current fixed course focus, the mouse wheel or compact zoom actions to
+  change distance, arrow keys to pan, and `Home` or the compact reset action to
+  restore the authored high-oblique pose. A click without drag must not refocus
+  the camera. Starting any direct course exploration during Shot Follow first
+  returns to planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
 - Reason: height, depth, goal position, and pad orientation are difficult to
@@ -215,9 +220,9 @@ than the inherited frontal cannon composition.
   a full post-launch trajectory, or a separate UI label for the prior impact.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power controls, Fire, overview,
-  side view, ball follow, quick retry, and pause. Course prose, progress cards,
-  shortcut legends, feedback panels, and in-game course navigation do not
-  persist over the world.
+  side view, ball follow, quick retry, pause, and one restrained icon-only camera
+  zoom/reset dock. Course prose, progress cards, shortcut legends, feedback
+  panels, and in-game course navigation do not persist over the world.
 - Reason: estimation and learning are the intended challenge.
 
 ### FR-10: Overlay HUD continuity
@@ -347,7 +352,9 @@ than the inherited frontal cannon composition.
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. After
   firing, `Tab` or the follow icon restores that framing without waiting for the
-  ball to resolve, and the launch controls remain usable.
+  ball to resolve, direct drag/wheel exploration also restores planning, and the
+  launch controls remain usable. Orbit keeps a fixed course focus, click-only
+  input does not move it, and camera reset returns to a valid authored frame.
 
 ### AC-6: Repeatability
 

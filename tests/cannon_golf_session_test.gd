@@ -19,7 +19,7 @@ func _run() -> void:
 	game._on_setup_changed(63.0, 47.0, 64.0)
 	game.set_planning_view(&"side")
 	game.pan_planning(Vector2(1.0, -1.0))
-	game._camera_rig.adjust_zoom(0.2)
+	game._camera_rig.zoom_by_steps(-2.0)
 	var stored_pan := game.planning_pan
 	var stored_zoom := game.planning_zoom
 	for index in range(5):

@@ -19,6 +19,7 @@ func _run() -> void:
 	await process_frame
 	_assert(hud.get_node_or_null("Root/AimPanel") is PanelContainer, "Normal play needs one compact aim panel.")
 	_assert(hud.get_node_or_null("Root/ActionDock") is PanelContainer, "Normal play needs one compact action dock.")
+	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
 	for retired_node in [
 		"CoursePanel", "CourseNavigation", "FeedbackPanel", "ShortcutPanel",
 		"ViewPanel", "ResetButton", "ResultBody",
@@ -29,6 +30,9 @@ func _run() -> void:
 		hud.get_node("%HorizontalSlider"),
 		hud.get_node("%ElevationSlider"),
 		hud.get_node("%PowerSlider"),
+		hud.get_node("%ZoomInButton"),
+		hud.get_node("%CameraResetButton"),
+		hud.get_node("%ZoomOutButton"),
 		hud.get_node("%ObliqueButton"),
 		hud.get_node("%SideButton"),
 		hud.get_node("%FollowButton"),
@@ -44,7 +48,10 @@ func _run() -> void:
 			normal_controls[index].focus_next == normal_controls[(index + 1) % normal_controls.size()].get_path(),
 			"Normal controls must expose an explicit task-order focus chain: %s." % normal_controls[index].name
 		)
-	for button_name in ["ObliqueButton", "SideButton", "FollowButton", "RetryButton", "PauseButton"]:
+	for button_name in [
+		"ZoomInButton", "CameraResetButton", "ZoomOutButton", "ObliqueButton",
+		"SideButton", "FollowButton", "RetryButton", "PauseButton",
+	]:
 		var button := hud.get_node("%%%s" % button_name) as Button
 		_assert(not button.tooltip_text.is_empty(), "Icon action needs a tooltip: %s." % button_name)
 		_assert(not String(button.get("accessibility_name")).is_empty(), "Icon action needs an accessible name: %s." % button_name)
@@ -52,6 +59,7 @@ func _run() -> void:
 	var center_seventy := Rect2(Vector2(192.0, 108.0), Vector2(896.0, 504.0))
 	_assert(not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(center_seventy), "Aim panel must not occupy the center 70%.")
 	_assert(not (hud.get_node("Root/ActionDock") as Control).get_global_rect().intersects(center_seventy), "Action dock must not occupy the center 70%.")
+	_assert(not (hud.get_node("Root/CameraDock") as Control).get_global_rect().intersects(center_seventy), "Camera dock must not occupy the center 70%.")
 	_assert(
 		(hud.get_node("Root/AimPanel") as Control).get_global_rect().encloses(
 			(hud.get_node("%PowerValue") as Control).get_global_rect()
@@ -100,6 +108,11 @@ func _run() -> void:
 	for label_name in ["HorizontalLabel", "ElevationLabel", "PowerLabel", "HorizontalValue", "ElevationValue", "PowerValue"]:
 		var label := hud.get_node("%%%s" % label_name) as Label
 		_assert(label.get_minimum_size().x <= label.size.x + 0.5, "HUD label must fit without clipping: %s." % label_name)
+	_assert_hud_edge_fit(hud, Vector2(1280.0, 720.0), "1280x720")
+	root.size = Vector2i(1600, 900)
+	await process_frame
+	await process_frame
+	_assert_hud_edge_fit(hud, Vector2(1600.0, 900.0), "1600x900")
 
 	var main_menu := MAIN_MENU_SCENE.instantiate() as CannonGolfMainMenu
 	root.add_child(main_menu)
@@ -138,6 +151,22 @@ func _all_descendants(parent: Node) -> Array[Node]:
 		descendants.append(child)
 		descendants.append_array(_all_descendants(child))
 	return descendants
+
+
+func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: String) -> void:
+	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
+	for path in ["Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]:
+		var control := hud.get_node(path) as Control
+		_assert(
+			viewport_rect.encloses(control.get_global_rect()),
+			"HUD edge control must remain inside %s: %s at %s." % [label, path, control.get_global_rect()]
+		)
+	_assert(
+		not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(
+			(hud.get_node("Root/ActionDock") as Control).get_global_rect()
+		),
+		"Aim and action docks must not overlap at %s." % label
+	)
 
 
 func _assert(condition: bool, message: String) -> void:

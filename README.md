@@ -11,7 +11,9 @@ inside the goal. Retry is unlimited. High-oblique and side planning views
 preserve the complete launch setup, exploration state, and impact history. A
 shot briefly enters ball follow, but the controls remain available and the
 player can return to planning immediately and launch a second ball. At most two
-unconfirmed balls can be active at once.
+unconfirmed balls can be active at once. In planning, left-drag orbits around a
+fixed course focus, the wheel zooms, and clicks without dragging do not jump the
+camera pivot.
 
 Both courses call Paint Mountain's retained route-graph mountain synthesizer,
 then use its topology and geometry builders for the rendered and colliding
@@ -39,8 +41,10 @@ Controls:
 - `Space`: fire
 - `1` / `2`: high-oblique / side view
 - `Tab`: toggle between the newest live ball and the stored planning view
-- Arrow keys: explore the course
-- Mouse wheel: planning zoom
+- Left-drag terrain: orbit around the fixed planning focus
+- Arrow keys: pan across the course
+- Mouse wheel or the compact `+` / `−` actions: planning zoom
+- `Home` or the compact center camera action: restore the authored planning view
 - `R`: while a shot is active, replace only the newest ball and immediately relaunch
   with the same setup; camera state and impact marks remain
 - `Shift` + `R`: reset the current course and impact history

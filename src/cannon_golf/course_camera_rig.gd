@@ -5,11 +5,19 @@ const FOLLOW_OFFSET := Vector3(10.0, 6.5, 12.0)
 const FRAME_MARGIN := 1.08
 const MODE_PLANNING: StringName = &"planning"
 const MODE_FOLLOW: StringName = &"follow"
+const DEFAULT_ZOOM := 1.05
+const MINIMUM_ZOOM := 0.58
+const MAXIMUM_ZOOM := 1.65
+const ZOOM_FACTOR_PER_STEP := 0.90
+const ORBIT_DEGREES_PER_PIXEL := Vector2(0.18, 0.14)
+const MINIMUM_PITCH_DEGREES := 12.0
+const MAXIMUM_PITCH_DEGREES := 78.0
 
 var view_mode: StringName = &"oblique"
 var camera_mode: StringName = MODE_PLANNING
 var pan_offset := Vector3.ZERO
-var zoom := 1.05
+var zoom := DEFAULT_ZOOM
+var orbit_degrees := Vector2.ZERO
 
 var _camera: Camera3D
 var _course: CannonGolfCourseData
@@ -29,7 +37,8 @@ func configure(camera: Camera3D, course: CannonGolfCourseData) -> void:
 	view_mode = &"oblique"
 	camera_mode = MODE_PLANNING
 	pan_offset = Vector3.ZERO
-	zoom = 1.05
+	zoom = DEFAULT_ZOOM
+	orbit_degrees = Vector2.ZERO
 	_follow_target = null
 	_planning_pose_dirty = true
 	_planning_pose_builds = 0
@@ -40,6 +49,7 @@ func set_view(next_view: StringName) -> bool:
 	if next_view != &"oblique" and next_view != &"side":
 		return false
 	view_mode = next_view
+	orbit_degrees = Vector2.ZERO
 	_planning_pose_dirty = true
 	return_to_planning()
 	return true
@@ -62,9 +72,52 @@ func pan(screen_direction: Vector2) -> void:
 	_planning_pose_dirty = true
 
 
-func adjust_zoom(delta: float) -> void:
-	zoom = clampf(zoom + delta, 1.0, 1.45)
+func zoom_by_steps(wheel_steps: float) -> bool:
+	if _course == null or is_zero_approx(wheel_steps):
+		return false
+	var next_zoom := clampf(
+		zoom * pow(ZOOM_FACTOR_PER_STEP, wheel_steps),
+		MINIMUM_ZOOM,
+		MAXIMUM_ZOOM
+	)
+	if is_equal_approx(next_zoom, zoom):
+		return false
+	zoom = next_zoom
 	_planning_pose_dirty = true
+	return true
+
+
+func orbit(relative: Vector2) -> bool:
+	if _course == null or relative.is_zero_approx():
+		return false
+	var base_offset := _course.side_offset if view_mode == &"side" else _course.oblique_offset
+	var base_pitch := rad_to_deg(asin(clampf(base_offset.normalized().y, -1.0, 1.0)))
+	orbit_degrees.x = wrapf(
+		orbit_degrees.x - relative.x * ORBIT_DEGREES_PER_PIXEL.x,
+		-180.0,
+		180.0
+	)
+	var absolute_pitch := clampf(
+		base_pitch + orbit_degrees.y + relative.y * ORBIT_DEGREES_PER_PIXEL.y,
+		MINIMUM_PITCH_DEGREES,
+		MAXIMUM_PITCH_DEGREES
+	)
+	orbit_degrees.y = absolute_pitch - base_pitch
+	_planning_pose_dirty = true
+	return true
+
+
+func reset_planning_view() -> void:
+	view_mode = &"oblique"
+	pan_offset = Vector3.ZERO
+	zoom = DEFAULT_ZOOM
+	orbit_degrees = Vector2.ZERO
+	_planning_pose_dirty = true
+	return_to_planning()
+
+
+func planning_focus() -> Vector3:
+	return _course.planning_focus + pan_offset if _course != null else Vector3.ZERO
 
 
 func follow(target: Node3D) -> bool:
@@ -145,11 +198,24 @@ func _apply_planning(delta: float) -> void:
 func _resolve_planning_pose(viewport_size: Vector2) -> void:
 	var focus := _course.planning_focus + pan_offset
 	var base_offset := _course.side_offset if view_mode == &"side" else _course.oblique_offset
+	var base_direction := base_offset.normalized()
+	var yaw := atan2(base_direction.x, base_direction.z) + deg_to_rad(orbit_degrees.x)
+	var pitch := clampf(
+		asin(clampf(base_direction.y, -1.0, 1.0)) + deg_to_rad(orbit_degrees.y),
+		deg_to_rad(MINIMUM_PITCH_DEGREES),
+		deg_to_rad(MAXIMUM_PITCH_DEGREES)
+	)
+	var cos_pitch := cos(pitch)
+	var orbit_direction := Vector3(
+		sin(yaw) * cos_pitch,
+		sin(pitch),
+		cos(yaw) * cos_pitch
+	)
 	var aspect := viewport_size.x / maxf(viewport_size.y, 1.0)
 	var framed_pose := TerrainCameraFramer.framed_pose_around(
 		_course.content_bounds,
 		focus,
-		focus + base_offset,
+		focus + orbit_direction * base_offset.length(),
 		focus,
 		_camera.fov,
 		aspect,

@@ -53,11 +53,23 @@ func _run() -> void:
 		rig.planning_pose_build_count() == planning_builds,
 		"Unchanged render frames must not repeat planning-camera framing."
 	)
-	rig.adjust_zoom(0.1)
+	rig.zoom_by_steps(-1.0)
 	rig.update(1.0 / 60.0)
 	_assert_true(
 		rig.planning_pose_build_count() == planning_builds + 1,
 		"A changed planning input must invalidate framing exactly once."
+	)
+	rig.orbit(Vector2(12.0, -6.0))
+	rig.update(1.0 / 60.0)
+	_assert_true(
+		rig.planning_pose_build_count() == planning_builds + 2,
+		"One drag sample must invalidate planning framing exactly once."
+	)
+	for _frame in range(120):
+		rig.update(1.0 / 60.0)
+	_assert_true(
+		rig.planning_pose_build_count() == planning_builds + 2,
+		"A completed drag must not add unchanged-frame camera work."
 	)
 	if not _failed:
 		print("Cannon Golf terrain and planning-camera performance contract passed.")

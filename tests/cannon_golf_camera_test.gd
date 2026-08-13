@@ -21,20 +21,49 @@ func _run() -> void:
 		builder.build(source_course)
 		rig.configure(camera, builder.course)
 		for view in [&"oblique", &"side"]:
+			rig.reset_planning_view()
 			_assert_true(rig.set_view(view), "Planning view must be supported.")
-			rig.adjust_zoom(-999.0)
 			rig.snap_to_planning()
 			_assert_fits(camera, builder.course, rig, "%s %s default" % [source_course.course_id, view])
+			var orbit_focus := rig.planning_focus()
+			var position_before_orbit := camera.global_position
+			_assert_true(rig.orbit(Vector2(72.0, -28.0)), "Planning orbit must accept a real drag delta.")
+			rig.snap_to_planning()
+			_assert_true(
+				camera.global_position.distance_to(position_before_orbit) > 0.1,
+				"Planning orbit must change camera position."
+			)
+			_assert_true(
+				rig.planning_focus().is_equal_approx(orbit_focus),
+				"Planning orbit must retain its fixed course focus."
+			)
+			_assert_fits(camera, builder.course, rig, "%s %s orbited" % [source_course.course_id, view])
 			for _step in range(20):
 				rig.pan(Vector2(1.0, 1.0))
 			rig.snap_to_planning()
 			_assert_fits(camera, builder.course, rig, "%s %s panned" % [source_course.course_id, view])
-			rig.adjust_zoom(999.0)
+			var default_distance := camera.global_position.distance_to(rig.planning_focus())
+			_assert_true(rig.zoom_by_steps(100.0), "Planning zoom must move toward the course.")
 			rig.snap_to_planning()
+			var close_distance := camera.global_position.distance_to(rig.planning_focus())
+			_assert_true(
+				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MINIMUM_ZOOM) \
+						and close_distance < default_distance * 0.7 \
+						and camera.global_position.is_finite(),
+				"Planning zoom-in must be meaningful, bounded, and produce a valid pose."
+			)
+			_assert_true(rig.zoom_by_steps(-100.0), "Planning zoom must move away from the course.")
+			rig.snap_to_planning()
+			_assert_true(
+				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MAXIMUM_ZOOM) \
+						and camera.global_position.distance_to(rig.planning_focus()) > default_distance,
+				"Planning zoom-out must be bounded and visibly increase distance."
+			)
 			_assert_fits(camera, builder.course, rig, "%s %s zoomed" % [source_course.course_id, view])
 		var stored_view := rig.view_mode
 		var stored_pan := rig.pan_offset
 		var stored_zoom := rig.zoom
+		var stored_orbit := rig.orbit_degrees
 		rig.snap_to_planning()
 		var stored_position := camera.global_position
 		var pose_builds := rig.planning_pose_build_count()
@@ -56,12 +85,22 @@ func _run() -> void:
 		_assert_true(rig.view_mode == stored_view, "Camera return must retain overview/side choice.")
 		_assert_true(rig.pan_offset.is_equal_approx(stored_pan), "Camera return must retain planning pan.")
 		_assert_true(is_equal_approx(rig.zoom, stored_zoom), "Camera return must retain planning zoom.")
+		_assert_true(rig.orbit_degrees.is_equal_approx(stored_orbit), "Camera return must retain planning orbit.")
 		_assert_true(camera.global_position.is_equal_approx(stored_position), "Immediate camera return must restore the stored pose.")
 		_assert_true(rig.follow(target), "The same live target may be followed again.")
 		target.queue_free()
 		await process_frame
 		rig.update(1.0 / 60.0)
 		_assert_true(rig.camera_mode == &"planning", "An ended follow target must fall back to planning.")
+		rig.reset_planning_view()
+		rig.snap_to_planning()
+		_assert_true(
+			rig.view_mode == &"oblique" and rig.pan_offset.is_zero_approx() \
+					and is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
+					and rig.orbit_degrees.is_zero_approx(),
+			"Camera reset must restore the authored high-oblique planning view."
+		)
+		_assert_fits(camera, builder.course, rig, "%s reset" % source_course.course_id)
 	if not _failed:
 		print("Cannon Golf generated-content planning and Shot Follow camera contract passed.")
 	quit(1 if _failed else 0)

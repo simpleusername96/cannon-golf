@@ -54,7 +54,8 @@ coefficients, stage data formats, or code ownership.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
   balls, and remaining shots with a compact horizontal aim, vertical angle, and
   power edge panel plus one primary Fire action. Overview, side view, ball
-  follow, quick retry, and pause remain small icon actions with accessible names.
+  follow, quick retry, pause, and a compact zoom/reset dock remain small icon
+  actions with accessible names.
 - The combined board deliberately shows player-placed bounce, damping, airflow,
   and gravity in one frame so their visual roles can be compared. It does not
   set content order or inventory limits.
@@ -67,6 +68,12 @@ coefficients, stage data formats, or code ownership.
 - Use a side or near-profile planning view to explain height, launch elevation,
   ledges, gaps, and rebound direction.
 - Use an oblique three-quarter view when both axes must remain readable.
+- In either planning family, left-drag orbits around the current fixed course
+  focus, the wheel changes distance, and arrow keys pan. A click without drag
+  must not refocus or jump the orbit pivot. Direct exploration during Shot
+  Follow returns to the stored planning context before applying the input.
+- Keep zoom bounded but materially useful in both directions. A compact reset
+  action restores the authored high-oblique view, zero pan, and default distance.
 - A behind-cannon view may be a temporary launch or local-aim view. It must not
   hide the course structure or become the only way to plan.
 - Shot Follow should reveal cause and effect without taking control away. Firing
@@ -161,8 +168,9 @@ coefficients, stage data formats, or code ownership.
   copy, edge alignment, generous padding, and minimal containment.
 - Keep the course center open. Normal play may persist only one compact
   three-control aim panel, Fire, and overview, side-view, ball-follow,
-  quick-retry, and pause icon actions at safe edges. Put full reset, settings,
-  course selection, and main-menu navigation in the pause overlay.
+  quick-retry, pause, and one restrained icon-only camera zoom/reset dock at safe
+  edges. Put full course reset, settings, course selection, and main-menu
+  navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
 - Horizontal aim, vertical angle, power, device stock, and menu are valid only
   when they support a current decision. Do not persist course prose, progress,
