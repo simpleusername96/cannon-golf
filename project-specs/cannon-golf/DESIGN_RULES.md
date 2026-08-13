@@ -89,6 +89,10 @@ coefficients, stage data formats, or code ownership.
 - Whatever exploration controls are selected must not move gameplay objects,
   clear selection, alter aim, or invalidate confirmed goals. Returning to
   planning must restore a readable course framing.
+- For an ordered relay, the default and reset planning frames prioritize the
+  current launcher-to-active-goal leg instead of miniaturizing the whole route.
+  Pan, orbit, and bounded zoom still expose the full course, and the course
+  selection preview frames its full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language
@@ -104,6 +108,11 @@ coefficients, stage data formats, or code ownership.
   extent and must fit inside the real three-parameter launch envelope. Do not
   shrink or clip the mountain to make a shot appear feasible, and do not draw
   the envelope in normal play.
+- `deep_relay` is a depth-first `210 x 320` metre course: a low start shelf, a
+  higher middle goal shelf, and a higher summit goal must read as one continuous
+  terraced mountain. Its playable top has at least `80` metres of relief, and
+  each launcher-to-goal leg rises at least `25` metres. Do not flatten that
+  sequence into a broad frontal silhouette.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,
@@ -126,6 +135,12 @@ coefficients, stage data formats, or code ownership.
   remain visibly unsuccessful.
 - A confirmed goal must show the settled ball clearly from every planning view,
   and the ball must not move when later shots occur.
+- Ordered relay goals use three world states without a persistent goal counter
+  or progress panel: the active goal has the strongest flag height and rim-marker
+  rhythm; future goals are visibly restrained; confirmed goals are led by their
+  retained ball and a completed marker rhythm. Shape, height, spacing, and the
+  confirmed ball must distinguish these states in grayscale; color and contrast
+  are secondary cues.
 - The two-course prototype ball uses one `0.75 m` physical and visual radius so
   it remains readable over the original-scale mountain without becoming a
   non-physical screen-space marker.

@@ -34,7 +34,6 @@ affected code path is designed.
 | Q-07 | Can player-placeable devices be edited only before the first shot, between shots, or while balls are moving? | Changes state machine, undo, simulation determinism, and camera needs | No placement during live simulation unless explicitly approved later |
 | Q-08 | Can a placed device be moved, rotated, removed, or reused after a shot? | Changes interaction model and whether trial history remains comparable | Require explicit placement and orientation state in replays |
 | Q-09 | What surface and empty-air constraints make pad and airflow placement legal? | Determines collision, UI feedback, trivial solutions, and level certification | Keep surface pads flush to valid terrain, restrict damping to fully flat surfaces, and require an explicit unobstructed airflow volume |
-| Q-10 | Are goals attempted in any order or assigned one at a time? | Changes planning, HUD, completion state, and stage solution space | PRD currently allows any order but does not lock it |
 | Q-13 | Is `Cannon Golf` only an internal slug or a candidate public title? | Changes visible copy, package identity, save paths, and export naming | Keep it internal and do not rename runtime identifiers yet |
 | Q-14 | Should a bounce pad use a fixed reflection, authored impulse, controllable strength, or only orientation? | Determines whether placement remains understandable and deterministic | Start comparison with fixed strength plus orientation, but treat it as unapproved |
 | Q-16 | When should damping, airflow, and gravity-zone stages enter after or around the core eleven-stage progression? | Changes teaching order, total content count, and when the device tray expands | Keep the accepted eleven-stage bounce progression intact until an expansion sequence is explicitly set |
@@ -57,12 +56,13 @@ affected code path is designed.
 | Q-02 | High-oblique is the default, side/profile is the alternate, Fire preserves the current camera, and explicit Shot Follow restores the stored planning pose and setup. | `DECISIONS.md` D-018 and D-029 |
 | Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
-| Q-12 | The first slice uses two deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |
+| Q-12 | The initial two-course prototype uses deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |
+| Q-10 | Ordered relay courses assign goals one at a time. Only the active goal may confirm; intermediate confirmation preserves its ball, moves the reusable launcher to the next relay anchor, and does not clear the course. Only the final required goal clears. | `DECISIONS.md` D-030 |
 
 ## Recommendations
 
-- Resolve Q-07 through Q-10 and Q-14 before bounce-pad placement and multi-goal
-  state become an execution contract.
+- Resolve Q-07 through Q-09 and Q-14 before device-assisted multi-goal
+  placement becomes an execution contract.
 - Use the saved screen-direction storyboard as the visual brief for runtime
   composition and compare the implemented high-oblique and side views against
   it before expanding course production.

@@ -225,7 +225,7 @@ Source owners: `project-specs/cannon-golf/PRD.md`,
 `project-specs/cannon-golf/DECISIONS.md`,
 `project-specs/cannon-golf/OPEN_QUESTIONS.md`
 
-- [ ] **1.1** Record the ordered relay course and depth-first terrain behavior.
+- [x] **1.1** Record the ordered relay course and depth-first terrain behavior.
   - Change: update PRD Flow 2, FR-5, FR-8, AC-4, AC-7, and AC-8 for authored
     goal order, intermediate checkpoints, launcher relocation, and final-only
     clear. Add an accepted decision after D-029 for the third longitudinal relay
@@ -236,6 +236,10 @@ Source owners: `project-specs/cannon-golf/PRD.md`,
   - Accept: targeted searches find no active claim that a multi-goal player may
     choose any goal, that any first confirmation clears every course, or that
     the first slice still contains only two implemented courses.
+  - Evidence: PRD Flow 2/FR-5/FR-8/AC-4/AC-7/AC-8, design terrain/camera/goal
+    rules, accepted D-030, and resolved Q-10 now define the ordered relay,
+    extreme relief, current-leg frame, and final-only clear. Targeted
+    contradiction search and `git diff --check` passed.
 
 ### Phase 2: Add longitudinal course data and generation
 
@@ -550,11 +554,12 @@ Rendered-evidence checklist:
   `project-specs/cannon-golf/assets/deep-relay-terrain-direction.png`; locked
   terrain relief to at least `80` metres and each relay-leg rise to at least
   `25` metres with new-course vertical scale `1.35`.
-- [ ] Implementation has not started.
+- [x] Phase 1 specification alignment completed and checked.
+- [ ] Phase 2 data and generation implementation is in progress.
 
-Next action: begin Task 1.1. Resume thereafter at the first unchecked task whose
-preconditions are satisfied. Record acceptance evidence under the corresponding
-checkbox; do not maintain a second progress list.
+Next action: complete Task 2.1. Resume thereafter at the first unchecked task
+whose preconditions are satisfied. Record acceptance evidence under the
+corresponding checkbox; do not maintain a second progress list.
 
 ## Completion and Stop Conditions
 

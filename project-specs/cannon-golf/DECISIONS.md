@@ -309,6 +309,29 @@ in `OPEN_QUESTIONS.md`.
   retarget its replacement only when the removed ball was already the explicit
   follow target.
 
+### D-030 — Add the depth-first ordered longitudinal relay course
+
+- Status: accepted on 2026-08-13.
+- `deep_relay` is the third selectable course. It has two authored, ordered
+  terrain-owned settlement goals on one connected `210 x 320` metre generated
+  terrain body at `1.35` vertical scale. Its playable top has at least `80`
+  metres of relief, and each incoming launcher-to-goal rim separation rises at
+  least `25` metres.
+- Only the active goal may confirm. Confirming goal 1 preserves its settled
+  ball, removes all other unconfirmed balls, relocates the one reusable launcher
+  to a terrain-adjacent relay anchor beside that completed basin and toward goal
+  2, resets only the visible launch controls to `50 / 50 / 50`, and activates
+  goal 2. Retry preserves this checkpoint and the edited current-leg setup;
+  course reset returns to leg 1. Only goal 2 confirmation clears the course.
+- Each relay leg has its own real-physics admission and solution witness. The
+  default planning and reset frame show the current leg; bounded exploration and
+  course selection preview can show the complete route. Active, future, and
+  confirmed goals are distinguished in the world by flag height, rim-marker
+  rhythm, and the retained confirmed ball, with color only as a secondary cue.
+- D-024 remains scoped to the original two `210 x 120` metre courses and their
+  whole-terrain single-launcher admission rule. This decision adds no constraint
+  to those retained courses and preserves their behavior as historical baseline.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
