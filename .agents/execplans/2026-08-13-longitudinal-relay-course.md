@@ -10,6 +10,7 @@ related:
   - project-specs/cannon-golf/OPEN_QUESTIONS.md
   - .agents/execplans/2026-08-13-large-free-aim-course.md
   - .agents/execplans/2026-08-13-fire-camera-independence.md
+  - project-specs/cannon-golf/assets/deep-relay-terrain-direction.png
 ---
 
 # Longitudinal Multi-Goal Relay Course - Execution Contract
@@ -50,9 +51,15 @@ In scope:
 - Add a Cannon Golf-only longitudinal generation contract with an exact
   `210 x 320` metre X/Z extent, `84 x 128` cells, `21,504` maximum top
   triangles, and route stations spanning the depth at the retained
-  approximately `2.5` metre sample spacing. Keep the current `0.45` terrain
-  vertical scale so elevation changes remain readable without turning the
-  mountain into a vertical wall.
+  approximately `2.5` metre sample spacing. The selected visual contract is
+  `project-specs/cannon-golf/assets/deep-relay-terrain-direction.png`: a low
+  start shelf, a much higher middle goal shelf, and a still higher summit goal
+  joined by one continuous terraced mountain.
+- Give the new course a `1.35` terrain vertical scale. Its playable top surface
+  must have at least `80` metres of highest-to-lowest relief. Goal 1's rim must
+  be at least `25` metres above the starting launch anchor, and goal 2's rim
+  must be at least `25` metres above the goal-1 relay launch anchor. These are
+  physical elevation separations, not camera or illustration-only effects.
 - Use Paint Mountain's retained route resolver, route-graph mountain
   synthesizer, topology, and geometry builders. The new course remains one
   connected heightfield-like terrain body with winding lateral movement and
@@ -151,6 +158,11 @@ Constraints and invariants:
   is identified primarily by its protected ball. No state may hide the basin.
 - The new course must keep the center of the screen clear under the existing
   compact HUD at `1280 x 720`, `1600 x 900`, and `1920 x 1080`.
+- The selected direction image is an implementation target for silhouette,
+  depth layering, and relative placement, not a license to add its decorative
+  trees, switchback road, or any unplanned mechanic. Runtime acceptance comes
+  from generated geometry, camera captures, and physics rather than pixel-level
+  reproduction of the concept image.
 
 Destructive or irreversible actions:
 
@@ -172,6 +184,7 @@ Exact actions requiring owner or user approval:
 | Course schema | `course_data.gd` owns one `goal_route_t`, one generated cannon/goal pair, and one direct witness | Add an authored `CannonGolfCourseLegData` and a normalized leg accessor. Empty explicit-leg data adapts the existing singular fields into exactly one legacy leg; the new course authors two explicit legs | 2.1 |
 | Catalog and selection | `course_catalog.gd` preloads two resources; `cannon_golf_course_select.gd/.tscn` hardcode two buttons | Add `deep_relay` as index 2 and generate a keyboard/focus-safe button per catalog item. Keep the existing two names/order and derive restrained English labels from stable course IDs | 2.2, 4.3 |
 | Terrain depth | The shared contract permits only `120..160` metres of Z depth and the two course resources use `210 x 120`; changing it would affect inherited generation | Add an exact Cannon Golf longitudinal contract subclass/resource at `210 x 320`, `84 x 128`, leaving the shared contract and existing profile untouched | 2.2 |
+| Terrain relief | The earlier contract fixed the new course to the old `0.45` vertical scale, which could lengthen the route without producing the very large height differences shown by the selected image | Use `1.35` only for `deep_relay`; require at least `80` metres of playable-top relief plus at least `25` metres of upward separation on each relay leg | 2.2, 2.3, 4.1 |
 | Goal geometry | The factory carves one lower-only `3.5` metre parabolic basin; the goal node owns no collision | Preserve the current lower-only branch for legacy goals. Explicit relay goals use the locked `4.5` metre recess plus `1.5` metre terrain lip and external blend; instantiate no collision under the goal node | 2.3, 3.1 |
 | Generated runtime data | The factory returns a single-goal dictionary and the builder mutates a duplicated course resource with runtime positions | Introduce typed immutable generated-course/generated-leg results. They hold all generated positions, rims, bounds, and admission metrics; authored resources remain data, not runtime state | 2.1, 2.3 |
 | Launcher ownership | The builder creates one launcher and `configure(course)` reads the singular course position/yaw/defaults | Keep one node and add `configure_leg(generated_leg, authored_leg)`. Relocation changes position, hidden shot axis, and `50 / 50 / 50` defaults without rebuilding terrain or spawning another cannon | 3.1 |
@@ -267,7 +280,7 @@ Source owners: `src/cannon_golf/course_data.gd`, new
     both legs, and keep the relay anchor next to goal 1.
   - Accept: the new profile validates without editing the shared contract; the
     catalog order is exactly `first_ridge`, `rising_bend`, `deep_relay`; course
-    3 reports two legs and a `210 x 320` source extent.
+    3 reports two legs, a `210 x 320` source extent, and vertical scale `1.35`.
 
 - [ ] **2.3** Generate both goals, per-leg envelopes, bounds, and cached output.
   - Change: preserve the exact existing one-goal generation path. For explicit
@@ -288,7 +301,9 @@ Source owners: `src/cannon_golf/course_data.gd`, new
   - Accept: old course geometry signatures, positions, range metrics, and
     witnesses match the pre-change baseline; the new topology has one connected
     terrain body, both basin centers are below their lips, both raised lips are
-    present in collision, and every admission guard passes.
+    present in collision, the playable top relief is at least `80` metres, each
+    goal rim clears its incoming launch anchor by at least `25` metres, and every
+    admission guard passes.
 
 ### Phase 3: Implement the relay session state
 
@@ -368,7 +383,9 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
     current meanings.
   - Accept: course 3 starts with launcher 1 and goal 1 readable rather than the
     entire terrain miniaturized; zoom-out plus pan can inspect both goals and the
-    full depth; goal 1 confirmation establishes a valid leg-2 frame; no terrain,
+    full depth; default and side views make the three elevation bands and
+    `80+` metre relief unmistakable; goal 1 confirmation establishes a valid
+    leg-2 frame; no terrain,
     goal, launcher, or confirmed ball is clipped by the world envelope.
 
 - [ ] **4.2** Express active, future, and confirmed states in the world.
@@ -472,7 +489,8 @@ Rendered-evidence checklist:
 - Course-selection capture shows three unclipped buttons, a distinct selected
   state, and the complete long preview without filler copy.
 - Initial gameplay capture reads front-to-back: one cannon, active goal 1, a
-  visibly deeper route, and a restrained future goal 2.
+  visibly deeper route, a minimum `25` metre rise to goal 1, and another minimum
+  `25` metre rise to the restrained future goal 2.
 - Side/high-oblique inspection shows the new raised terrain lip and recessed
   center as physical terrain, not a floating ring or separate cup.
 - Confirmed capture shows ball 1 still inside goal 1, the one launcher moved to
@@ -485,9 +503,11 @@ Rendered-evidence checklist:
 ## Predetermined Contingencies and Change Control
 
 - If the exact `84 x 128` generated profile fails retained slope/footprint
-  acceptance, tune only the new profile's route X offsets, grade signs, seed,
-  and accepted slope ranges. Do not loosen the shared generation contract,
-  reduce the `320` metre depth, split the terrain, or distort old courses.
+  acceptance at vertical scale `1.35`, tune only the new profile's route X
+  offsets, grade signs, nominal peak, seed, and Cannon Golf-specific accepted
+  slope ranges. Do not reduce the `80` metre relief or either `25` metre leg
+  rise, loosen the shared generation contract, reduce the `320` metre depth,
+  split the terrain, or distort old courses.
 - If a new goal lip produces an invalid collision edge, increase local sample
   smoothness inside the locked `10 + 5` metre influence radius or adjust the new
   course's route parameter. Do not add a separate collider or lower the locked
@@ -526,6 +546,10 @@ Rendered-evidence checklist:
 - [x] Existing-course preservation, new extent, new goal profile, two-goal
   count, sequential order, setup reset, retry/reset semantics, camera framing,
   UI restraint, and validation strategy locked.
+- [x] User-selected visual direction persisted at
+  `project-specs/cannon-golf/assets/deep-relay-terrain-direction.png`; locked
+  terrain relief to at least `80` metres and each relay-leg rise to at least
+  `25` metres with new-course vertical scale `1.35`.
 - [ ] Implementation has not started.
 
 Next action: begin Task 1.1. Resume thereafter at the first unchecked task whose
@@ -541,8 +565,9 @@ Complete only when:
 - The original two course resources and observable maps remain unchanged and
   pass their existing default-miss/direct-witness regressions.
 - `deep_relay` is the third selectable course, uses one connected `210 x 320`
-  generated terrain body, has two locked raised-lip goals, and has one real
-  solution witness per leg.
+  generated terrain body with at least `80` metres of playable-top relief and
+  at least `25` metres of rise per leg, has two locked raised-lip goals, and has
+  one real solution witness per leg.
 - Goal 1 confirmation preserves its ball, removes other unconfirmed balls,
   relocates the single launcher beside goal 1, resets only the new leg's setup,
   and permits continued play without a result overlay.
