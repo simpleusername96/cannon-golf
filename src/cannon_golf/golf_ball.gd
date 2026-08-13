@@ -6,18 +6,22 @@ signal launch_ended(ball: CannonGolfBall, reason: StringName)
 
 const RADIUS := CannonGolfBallistics.BALL_RADIUS
 const MAXIMUM_FLIGHT_SECONDS := CannonGolfBallistics.MAXIMUM_FLIGHT_SECONDS
+const ORDINARY_ANGULAR_DAMP := 0.42 * CannonGolfBallistics.MOTION_TIME_SCALE
+const SETTLEMENT_LINEAR_DAMP := 0.60 * CannonGolfBallistics.MOTION_TIME_SCALE
+const SETTLEMENT_ANGULAR_DAMP := 1.20 * CannonGolfBallistics.MOTION_TIME_SCALE
 
 var play_bounds := AABB(Vector3(-50.0, -15.0, -90.0), Vector3(100.0, 70.0, 130.0))
 var _elapsed := 0.0
 var _first_contact_emitted := false
 var _ended := false
+var _settlement_drag_active := false
 
 
 func _ready() -> void:
 	mass = 1.2
 	linear_damp_mode = RigidBody3D.DAMP_MODE_REPLACE
 	linear_damp = CannonGolfBallistics.LINEAR_DAMP
-	angular_damp = 0.42 * CannonGolfBallistics.MOTION_TIME_SCALE
+	angular_damp = ORDINARY_ANGULAR_DAMP
 	gravity_scale = pow(CannonGolfBallistics.MOTION_TIME_SCALE, 2.0)
 	continuous_cd = true
 	contact_monitor = true
@@ -97,7 +101,18 @@ func end_launch(reason: StringName) -> void:
 	launch_ended.emit(self, reason)
 
 
+func set_settlement_drag(enabled: bool) -> void:
+	_settlement_drag_active = enabled
+	linear_damp = SETTLEMENT_LINEAR_DAMP if enabled else CannonGolfBallistics.LINEAR_DAMP
+	angular_damp = SETTLEMENT_ANGULAR_DAMP if enabled else ORDINARY_ANGULAR_DAMP
+
+
+func settlement_drag_is_active() -> bool:
+	return _settlement_drag_active
+
+
 func lock_as_confirmed() -> void:
+	set_settlement_drag(false)
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	freeze = true

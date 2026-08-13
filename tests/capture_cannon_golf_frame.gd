@@ -218,11 +218,38 @@ func _capture() -> void:
 			quit(1)
 			return
 	if game != null and requested_state == "relay_confirmed":
+		var relay_launcher := game._course_builder.launcher
+		var launcher_base := relay_launcher.get_node_or_null("Base") as MeshInstance3D
+		var checkpoint_ball := game.confirmed_ball
+		var checkpoint_mesh := checkpoint_ball.get_node_or_null("GolfBallMesh") as MeshInstance3D \
+				if checkpoint_ball != null else null
+		var launcher_screen_position := game._camera.unproject_position(
+			relay_launcher.global_position + Vector3.UP
+		)
+		var checkpoint_screen_position := game._camera.unproject_position(
+			checkpoint_ball.global_position
+		) if checkpoint_ball != null else Vector2.ZERO
+		var relay_viewport := Rect2(Vector2.ZERO, Vector2(root.size))
+		var relay_fire_button := game._hud.get_node("%FireButton") as Button
 		if game.active_course().course_id != &"deep_relay" \
 				or game.active_leg_index != 1 \
 				or game.confirmed_ball_count() != 1 \
 				or game.launch_state != CannonGolfGame.LaunchState.PLANNING \
-				or game._camera_rig.camera_mode != &"planning":
+				or game._camera_rig.camera_mode != &"planning" \
+				or not game.can_fire() \
+				or relay_fire_button.disabled \
+				or launcher_base == null or not launcher_base.is_visible_in_tree() \
+				or game._camera.is_position_behind(relay_launcher.global_position) \
+				or not relay_viewport.has_point(launcher_screen_position) \
+				or checkpoint_mesh == null or not checkpoint_mesh.is_visible_in_tree() \
+				or game._camera.is_position_behind(checkpoint_ball.global_position) \
+				or not relay_viewport.has_point(checkpoint_screen_position) \
+				or not relay_launcher.global_position.is_equal_approx(
+					game._course_builder.generated_course.leg_at(1).launcher_position
+				) \
+				or relay_launcher.global_position.distance_to(
+					game.confirmed_ball.global_position
+				) <= 2.0:
 			push_error("Confirmed relay capture did not retain checkpoint one in the leg-two planning frame.")
 			quit(1)
 			return

@@ -17,6 +17,69 @@ func _run() -> void:
 	_assert_true(relay._course_builder.get_node_or_null("Launcher") == relay._course_builder.launcher, "Relay must own one launcher.")
 	_assert_true(relay.active_leg_index == 0 and relay._course_builder.goal == relay._course_builder.goals[0], "Relay must begin at goal one.")
 
+	# A visibly captured edge landing must settle promptly, relocate the one
+	# launcher, and make the next leg immediately playable.
+	var first_anchor := relay._course_builder.launcher.global_position
+	_assert_true(relay.fire(), "Relay must permit an edge-settlement probe.")
+	var edge_probe := relay.current_ball
+	var first_goal := relay._course_builder.goal
+	var edge_x := first_goal.global_position.x + first_goal.inner_radius * 0.90
+	var edge_z := first_goal.global_position.z
+	var edge_y := relay._course_builder.terrain_layout.height_at_local(edge_x, edge_z) \
+			+ CannonGolfBall.RADIUS + 0.08
+	edge_probe.global_position = Vector3(edge_x, edge_y, edge_z)
+	edge_probe.linear_velocity = Vector3.ZERO
+	edge_probe.angular_velocity = Vector3.ZERO
+	var edge_settle_frames := 0
+	for frame in range(180):
+		await physics_frame
+		edge_settle_frames = frame + 1
+		if relay.active_leg_index == 1:
+			break
+	var leg_two := relay._course_builder.generated_course.leg_at(1)
+	_assert_true(
+		relay.active_leg_index == 1 and edge_settle_frames <= 180 \
+				and relay.confirmed_ball_count() == 1,
+		"A contained relay edge landing must confirm within three seconds."
+	)
+	_assert_true(
+		relay._course_builder.launcher.global_position.is_equal_approx(leg_two.launcher_position) \
+				and not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor),
+		"Goal one confirmation must place the same launcher at the authored leg-two anchor."
+	)
+	var leg_two_origin := relay._course_builder.launcher.launch_origin()
+	_assert_true(
+		relay.can_fire() and leg_two_origin.is_finite() \
+				and leg_two_origin.distance_to(edge_probe.global_position) > 2.0,
+		"The relocated launcher must expose a safe, immediately usable muzzle origin."
+	)
+	_assert_true(relay.fire(), "The relocated launcher must fire without a course reset.")
+	_assert_true(
+		relay.current_ball.global_position.is_equal_approx(leg_two_origin) \
+				and relay.active_leg_index == 1,
+		"The next ball must originate from the leg-two relay launcher."
+	)
+	relay.reset_course()
+	_assert_true(relay.active_leg_index == 0, "Edge-settlement probe cleanup must restore leg one.")
+
+	# Settlement drag must never capture a fast arrival that can clear the rim.
+	_assert_true(relay.fire(), "Relay must permit a physical bounce-out probe.")
+	var fast_probe := relay.current_ball
+	fast_probe.global_position = relay._course_builder.goal.global_position \
+			+ Vector3.UP * (CannonGolfBall.RADIUS + 0.08)
+	fast_probe.linear_velocity = Vector3(30.0, 16.0, 0.0)
+	fast_probe.angular_velocity = Vector3.ZERO
+	for _frame in range(120):
+		await physics_frame
+		if relay.current_ball == null:
+			break
+	_assert_true(
+		relay.active_leg_index == 0 and relay.confirmed_ball_count() == 0 \
+				and relay.last_launch_outcome == &"bounced_out",
+		"A fast goal arrival must escape and fail instead of entering settlement drag."
+	)
+	relay.reset_course()
+
 	# A late arrival inside the active basin must settle instead of being removed
 	# by the general flight horizon.
 	_assert_true(relay.fire(), "Relay must permit a late-arrival settlement probe.")
@@ -65,7 +128,7 @@ func _run() -> void:
 	_assert_true(relay.confirmed_ball_count() == 0 and relay.active_leg_index == 0, "A future goal must not confirm before it becomes active.")
 
 	# Goal one confirmation locks its ball, removes a competing shot, and relocates the same launcher.
-	var first_anchor := relay._course_builder.launcher.global_position
+	first_anchor = relay._course_builder.launcher.global_position
 	var first_ball := future_probe
 	_assert_true(relay.fire(), "A second unconfirmed shot must coexist before relay confirmation.")
 	var discarded_ball := relay.current_ball

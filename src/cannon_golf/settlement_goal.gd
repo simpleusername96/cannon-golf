@@ -5,6 +5,8 @@ const RIM_SEGMENTS := 16
 const BASE_SETTLE_SECONDS := 1.15
 const BASE_MAXIMUM_LINEAR_SPEED := 0.72
 const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
+const BASE_CAPTURE_ENTRY_LINEAR_SPEED := 2.0
+const BASE_CAPTURE_ENTRY_ANGULAR_SPEED := 8.0
 
 enum VisualState {
 	FUTURE,
@@ -17,6 +19,10 @@ var rim_height := 0.8
 var settle_seconds := BASE_SETTLE_SECONDS / CannonGolfBallistics.MOTION_TIME_SCALE
 var maximum_linear_speed := BASE_MAXIMUM_LINEAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
 var maximum_angular_speed := BASE_MAXIMUM_ANGULAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
+var capture_entry_linear_speed := BASE_CAPTURE_ENTRY_LINEAR_SPEED \
+		* CannonGolfBallistics.MOTION_TIME_SCALE
+var capture_entry_angular_speed := BASE_CAPTURE_ENTRY_ANGULAR_SPEED \
+		* CannonGolfBallistics.MOTION_TIME_SCALE
 var visual_state := VisualState.ACTIVE
 
 var _rim_markers: Array[MeshInstance3D] = []
@@ -58,6 +64,14 @@ func contains_rebound_column(ball_position: Vector3, ball_radius: float) -> bool
 func motion_is_safe(linear_velocity: Vector3, angular_velocity: Vector3) -> bool:
 	return linear_velocity.length() <= maximum_linear_speed \
 			and angular_velocity.length() <= maximum_angular_speed
+
+
+func motion_allows_settlement_drag(
+		linear_velocity: Vector3,
+		angular_velocity: Vector3
+) -> bool:
+	return linear_velocity.length() <= capture_entry_linear_speed \
+			and angular_velocity.length() <= capture_entry_angular_speed
 
 
 func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> bool:

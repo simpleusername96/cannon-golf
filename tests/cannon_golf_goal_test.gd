@@ -16,6 +16,37 @@ func _run() -> void:
 	_assert_true(goal.motion_is_safe(Vector3(1.2, 0.0, 0.0), Vector3.ZERO), "Equivalent time-scaled safe motion must settle.")
 	_assert_true(not goal.motion_is_safe(Vector3(2.5, 0.0, 0.0), Vector3.ZERO), "Fast translation must not settle.")
 	_assert_true(not goal.motion_is_safe(Vector3.ZERO, Vector3(0.0, 5.0, 0.0)), "Fast rotation must not settle.")
+	_assert_true(
+		goal.motion_allows_settlement_drag(Vector3(4.0, 0.0, 0.0), Vector3(0.0, 16.0, 0.0)),
+		"A contained low-energy ball must be admitted to settlement drag."
+	)
+	_assert_true(
+		not goal.motion_allows_settlement_drag(Vector3(4.1, 0.0, 0.0), Vector3.ZERO) \
+				and not goal.motion_allows_settlement_drag(Vector3.ZERO, Vector3(0.0, 16.1, 0.0)),
+		"A fast translating or spinning ball must retain ordinary drag."
+	)
+	var drag_ball := CannonGolfBall.new()
+	root.add_child(drag_ball)
+	_assert_true(
+		is_equal_approx(drag_ball.linear_damp, CannonGolfBallistics.LINEAR_DAMP) \
+				and is_equal_approx(drag_ball.angular_damp, CannonGolfBall.ORDINARY_ANGULAR_DAMP),
+		"A new ball must begin with ordinary drag."
+	)
+	drag_ball.set_settlement_drag(true)
+	_assert_true(
+		drag_ball.settlement_drag_is_active() \
+				and is_equal_approx(drag_ball.linear_damp, 1.2) \
+				and is_equal_approx(drag_ball.angular_damp, 2.4),
+		"Settlement drag must apply the bounded ball-local values."
+	)
+	drag_ball.set_settlement_drag(false)
+	_assert_true(
+		not drag_ball.settlement_drag_is_active() \
+				and is_equal_approx(drag_ball.linear_damp, CannonGolfBallistics.LINEAR_DAMP) \
+				and is_equal_approx(drag_ball.angular_damp, CannonGolfBall.ORDINARY_ANGULAR_DAMP),
+		"Leaving settlement drag must restore ordinary ball motion."
+	)
+	drag_ball.queue_free()
 	_assert_true(_visible_rim_marker_count(goal) == 16, "The active goal must show a continuous rim rhythm.")
 	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.FUTURE)
 	_assert_true(_visible_rim_marker_count(goal) == 8, "A future goal must use an alternating rim rhythm.")

@@ -99,6 +99,12 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 	if inside:
 		shot.entered_goal = true
 		shot.reset_low_speed()
+		if not ball.settlement_drag_is_active() \
+				and goal.motion_allows_settlement_drag(
+					ball.linear_velocity,
+					ball.angular_velocity
+				):
+			ball.set_settlement_drag(true)
 		if goal.motion_is_safe(ball.linear_velocity, ball.angular_velocity):
 			shot.settle_elapsed += delta
 			if shot.settle_elapsed >= goal.settle_seconds:
@@ -106,8 +112,12 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 		else:
 			shot.reset_settlement()
 	elif shot.entered_goal:
+		if ball.settlement_drag_is_active():
+			ball.set_settlement_drag(false)
 		_fail_ball(ball, &"bounced_out")
 	else:
+		if ball.settlement_drag_is_active():
+			ball.set_settlement_drag(false)
 		shot.reset_settlement()
 		var nearly_still := ball.has_reported_first_contact() \
 				and ball.linear_velocity.length() < NEARLY_STILL_LINEAR_SPEED \
@@ -507,6 +517,7 @@ func _fail_ball(ball: CannonGolfBall, reason: StringName) -> void:
 	var shot := _shot_state(ball)
 	if shot == null or shot.ending or launch_state == LaunchState.CLEARED:
 		return
+	ball.set_settlement_drag(false)
 	shot.ending = true
 	if ball == current_ball:
 		launch_state = LaunchState.RECOVERING
@@ -600,6 +611,7 @@ func _remove_live_ball(
 	var was_followed: bool = _camera_rig.camera_mode == &"follow" \
 			and (followed_target == ball if followed_target != null else not ball_is_valid)
 	if ball_is_valid:
+		(ball as CannonGolfBall).set_settlement_drag(false)
 		_live_shots.erase(ball.get_instance_id())
 	for index in range(_active_balls.size() - 1, -1, -1):
 		var active_ball := _active_balls[index]
