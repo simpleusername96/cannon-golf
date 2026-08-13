@@ -148,10 +148,13 @@ Constraints and invariants:
   interface; it must not branch on course IDs.
 - For the existing courses, every terrain admission point remains reachable
   from the one start launcher under D-024. For the relay course, every visible
-  terrain point must pass the envelope of at least one authored leg, and every
-  leg's target and intervening terrain corridor must pass that leg's envelope
-  with the existing `8` metre range, `8` degree yaw, and `8` metre height-margin
-  guards.
+  terrain point outside a later-leg launch-safety footprint must pass the
+  envelope of at least one authored leg. A launch-safety footprint is the
+  horizontal `30` metre radius around a terrain-sited relay anchor; it is local
+  supporting ground, not a flight target. The exemption applies only to the
+  union whole-terrain check. Every leg's goal and intervening terrain corridor
+  must still pass that leg's envelope with the existing `8` metre range, `8`
+  degree yaw, and `8` metre height-margin guards.
 - The new goal state is legible without color alone: the active goal uses the
   full raised flag and continuous rim markers; a future goal uses a visibly
   lowered flag and reduced marker rhythm; a confirmed goal retains its basin and
@@ -291,8 +294,10 @@ Source owners: `src/cannon_golf/course_data.gd`, new
     legs, resolve all goal centers, apply non-overlapping terrain deformation,
     rebuild topology once, resolve each launcher and hidden shot axis, compute
     current-leg frame bounds, validate each leg corridor, validate union
-    admission for the complete visible terrain, and return typed immutable
-    output. Include the explicit leg/profile contract in the cache key.
+    admission for the complete visible terrain outside the exact `30` metre
+    later-leg launch-safety footprints, and return typed immutable output. The
+    footprints do not exempt goals or leg corridors. Include the explicit
+    leg/profile contract in the cache key.
   - Goal profile: set the new center `4.5` metres below the source rim, the lip
     `1.5` metres above it, and blend back over `5` metres. Do not add goal-owned
     collision or a separate wall mesh.
@@ -305,8 +310,10 @@ Source owners: `src/cannon_golf/course_data.gd`, new
   - Accept: old course geometry signatures, positions, range metrics, and
     witnesses match the pre-change baseline; the new topology has one connected
     terrain body, both basin centers are below their lips, both raised lips are
-    present in collision, the playable top relief is at least `80` metres, each
-    goal rim clears its incoming launch anchor by at least `25` metres, and every
+    present in collision, canonical playable-top vertices (not the support
+    shell or base) have at least `80` metres of relief, each goal rim clears its
+    incoming launch anchor by at least `25` metres, each relay anchor clears the
+    previous goal lip and confirmed-ball footprint, and every applicable
     admission guard passes.
 
 ### Phase 3: Implement the relay session state

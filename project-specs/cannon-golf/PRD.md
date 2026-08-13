@@ -337,9 +337,12 @@ than the inherited frontal cannon composition.
   metres above the incoming launch anchor. Goal 1 uses the course-start
   launcher; after it confirms, the same launcher moves to an authored
   terrain-adjacent anchor beside goal 1 and toward goal 2. Each leg requires a
-  separate real-physics admission and solution witness. This longitudinal
-  contract does not change the first two courses' dimensions, launch anchors,
-  terrain outputs, or whole-terrain admission rule.
+  separate real-physics admission and solution witness. The relay course's
+  whole-terrain union admission exempts only the horizontal `30` metre local
+  supporting-ground footprint around each later, terrain-sited relay anchor;
+  goals and intervening leg corridors keep every accepted margin. This
+  longitudinal contract does not change the first two courses' dimensions,
+  launch anchors, terrain outputs, or whole-terrain admission rule.
 - Reason: the course supplies the spatial problem while the player supplies all
   route-changing mechanisms.
 

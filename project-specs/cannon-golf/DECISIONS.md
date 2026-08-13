@@ -328,6 +328,12 @@ in `OPEN_QUESTIONS.md`.
   course selection preview can show the complete route. Active, future, and
   confirmed goals are distinguished in the world by flag height, rim-marker
   rhythm, and the retained confirmed ball, with color only as a secondary cue.
+- Relay union admission excludes only the horizontal `30` metre launch-safety
+  footprint around each later, terrain-sited relay anchor. That local supporting
+  ground is not a flight target. Goals and intervening terrain corridors retain
+  the `8` metre range, `8` degree yaw, and `8` metre height-margin guards, and
+  all visible terrain outside those exact footprints must pass at least one
+  leg's envelope.
 - D-024 remains scoped to the original two `210 x 120` metre courses and their
   whole-terrain single-launcher admission rule. This decision adds no constraint
   to those retained courses and preserves their behavior as historical baseline.
