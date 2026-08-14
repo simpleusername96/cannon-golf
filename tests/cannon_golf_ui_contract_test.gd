@@ -192,9 +192,19 @@ func _run() -> void:
 		"Course select must create ten reusable catalog cards."
 	)
 	_assert(course_select.get_node_or_null("CardsPanel/Margin/Scroll") is ScrollContainer, "Course cards need a scroll owner.")
+	var course_scroll := course_select.get_node("CardsPanel/Margin/Scroll") as ScrollContainer
+	_assert(
+		course_scroll.get_v_scroll_bar().get_combined_minimum_size().x <= 8.0,
+		"The course list scrollbar must remain visually narrow."
+	)
 	for index in range(course_select.course_buttons().size()):
 		var course_button := course_select.course_buttons()[index]
 		_assert(course_button.custom_minimum_size.y >= 44.0, "Course buttons need a stable keyboard target.")
+		_assert(
+			course_button.get_theme_color(&"font_color").a >= 0.9 \
+					and course_button.get_theme_font_size(&"font_size") >= 16,
+			"Course-card text must remain visibly sized and opaque."
+		)
 		_assert(not String(course_button.get("accessibility_name")).is_empty(), "Course buttons need accessible names.")
 		var expected_next: Control = course_select.get_node("%Start") \
 				if index == course_select.course_buttons().size() - 1 \

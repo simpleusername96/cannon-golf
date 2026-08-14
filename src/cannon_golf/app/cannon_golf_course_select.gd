@@ -12,6 +12,7 @@ enum CoursePreparationState {
 }
 
 @onready var _cards: VBoxContainer = $CardsPanel/Margin/Scroll/Cards
+@onready var _scroll: ScrollContainer = $CardsPanel/Margin/Scroll
 @onready var _back: Button = %Back
 @onready var _start: Button = %Start
 
@@ -25,6 +26,7 @@ var _preparation_state := CoursePreparationState.PREPARING
 
 func _ready() -> void:
 	_courses = CannonGolfCourseCatalog.all_courses()
+	_configure_thin_scrollbar()
 	_build_course_buttons()
 	_back.pressed.connect(func() -> void: back_requested.emit())
 	_start.pressed.connect(_on_start_pressed)
@@ -111,12 +113,41 @@ func _build_course_buttons() -> void:
 		button.name = "Course%02d" % (index + 1)
 		button.custom_minimum_size = Vector2(0.0, 68.0)
 		button.theme_type_variation = &"StageCardButton"
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		button.toggle_mode = true
 		button.button_group = _course_button_group
 		button.pressed.connect(select_course.bind(index))
 		_cards.add_child(button)
 		_course_buttons.append(button)
 	_install_course_focus_order()
+
+
+func _configure_thin_scrollbar() -> void:
+	var bar := _scroll.get_v_scroll_bar()
+	bar.custom_minimum_size.x = 7.0
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.09, 0.145, 0.22, 0.08)
+	track.content_margin_left = 3.0
+	track.content_margin_right = 3.0
+	track.corner_radius_top_left = 3
+	track.corner_radius_top_right = 3
+	track.corner_radius_bottom_right = 3
+	track.corner_radius_bottom_left = 3
+	var grabber := StyleBoxFlat.new()
+	grabber.bg_color = Color(0.18, 0.24, 0.33, 0.42)
+	grabber.content_margin_left = 3.0
+	grabber.content_margin_right = 3.0
+	grabber.corner_radius_top_left = 3
+	grabber.corner_radius_top_right = 3
+	grabber.corner_radius_bottom_right = 3
+	grabber.corner_radius_bottom_left = 3
+	var grabber_hover := grabber.duplicate() as StyleBoxFlat
+	grabber_hover.bg_color = Color(0.145, 0.518, 1.0, 0.72)
+	bar.add_theme_stylebox_override(&"scroll", track)
+	bar.add_theme_stylebox_override(&"grabber", grabber)
+	bar.add_theme_stylebox_override(&"grabber_highlight", grabber_hover)
+	bar.add_theme_stylebox_override(&"grabber_pressed", grabber_hover)
 
 
 func _on_start_pressed() -> void:

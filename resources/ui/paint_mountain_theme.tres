@@ -212,6 +212,8 @@ corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StageCardNormal"]
 bg_color = Color(0.968627, 0.972549, 0.980392, 0.62)
+content_margin_left = 16.0
+content_margin_right = 16.0
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -222,6 +224,8 @@ shadow_offset = Vector2(0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StageCardHover"]
 bg_color = Color(0.921569, 0.952941, 1, 0.78)
+content_margin_left = 16.0
+content_margin_right = 16.0
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -229,6 +233,8 @@ corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StageCardSelected"]
 bg_color = Color(0.921569, 0.952941, 1, 0.9)
+content_margin_left = 16.0
+content_margin_right = 16.0
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
@@ -434,13 +440,14 @@ MenuSubtitle/colors/font_color = Color(0.407843, 0.45098, 0.517647, 1)
 MenuSubtitle/fonts/font = SubResource("FontWeight500")
 MenuSubtitle/font_sizes/font_size = 17
 StageCardButton/base_type = &"Button"
-StageCardButton/colors/font_color = Color(0, 0, 0, 0)
-StageCardButton/colors/font_hover_color = Color(0, 0, 0, 0)
-StageCardButton/colors/font_pressed_color = Color(0, 0, 0, 0)
-StageCardButton/colors/font_hover_pressed_color = Color(0, 0, 0, 0)
-StageCardButton/colors/font_focus_color = Color(0, 0, 0, 0)
+StageCardButton/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
+StageCardButton/colors/font_hover_color = Color(0.090196, 0.145098, 0.219608, 1)
+StageCardButton/colors/font_pressed_color = Color(0.145098, 0.517647, 1, 1)
+StageCardButton/colors/font_hover_pressed_color = Color(0.145098, 0.517647, 1, 1)
+StageCardButton/colors/font_focus_color = Color(0.090196, 0.145098, 0.219608, 1)
+StageCardButton/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.9)
 StageCardButton/fonts/font = SubResource("FontWeight600")
-StageCardButton/font_sizes/font_size = 1
+StageCardButton/font_sizes/font_size = 18
 StageCardButton/styles/normal = SubResource("StageCardNormal")
 StageCardButton/styles/hover = SubResource("StageCardHover")
 StageCardButton/styles/pressed = SubResource("StageCardSelected")
