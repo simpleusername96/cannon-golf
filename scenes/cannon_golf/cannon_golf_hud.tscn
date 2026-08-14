@@ -55,6 +55,7 @@ offset_top = 24.0
 offset_right = 140.0
 offset_bottom = 66.0
 mouse_filter = 2
+theme_type_variation = &"HudStagePanel"
 
 [node name="GoalProgressLabel" type="Label" parent="Root/GoalProgress"]
 unique_name_in_owner = true
@@ -65,19 +66,21 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="LauncherSource" type="PanelContainer" parent="Root"]
+visible = false
 layout_mode = 0
-offset_left = 24.0
-offset_top = 74.0
-offset_right = 224.0
-offset_bottom = 126.0
-mouse_filter = 1
+offset_left = 148.0
+offset_top = 24.0
+offset_right = 340.0
+offset_bottom = 68.0
+mouse_filter = 2
+theme_type_variation = &"HudDockPanel"
 
 [node name="Margin" type="MarginContainer" parent="Root/LauncherSource"]
 layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="LauncherSourceButton" type="OptionButton" parent="Root/LauncherSource/Margin"]
 unique_name_in_owner = true
@@ -101,6 +104,7 @@ offset_right = 816.0
 offset_bottom = -12.0
 grow_vertical = 0
 mouse_filter = 1
+theme_type_variation = &"HudStagePanel"
 
 [node name="Margin" type="MarginContainer" parent="Root/AimPanel"]
 layout_mode = 2
@@ -111,7 +115,7 @@ theme_override_constants/margin_bottom = 6
 
 [node name="Controls" type="HBoxContainer" parent="Root/AimPanel/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 16
 
 [node name="Horizontal" type="VBoxContainer" parent="Root/AimPanel/Margin/Controls"]
 custom_minimum_size = Vector2(240, 0)
@@ -182,9 +186,6 @@ expand_icon = true
 tooltip_text = "좌우 조준 증가 (E)"
 accessibility_name = "좌우 조준 증가 (E)"
 
-[node name="SeparatorOne" type="VSeparator" parent="Root/AimPanel/Margin/Controls"]
-layout_mode = 2
-
 [node name="Elevation" type="VBoxContainer" parent="Root/AimPanel/Margin/Controls"]
 custom_minimum_size = Vector2(240, 0)
 layout_mode = 2
@@ -254,9 +255,6 @@ icon = ExtResource("3_plus")
 expand_icon = true
 tooltip_text = "상하 조준 증가 (W)"
 accessibility_name = "상하 조준 증가 (W)"
-
-[node name="SeparatorTwo" type="VSeparator" parent="Root/AimPanel/Margin/Controls"]
-layout_mode = 2
 
 [node name="Power" type="VBoxContainer" parent="Root/AimPanel/Margin/Controls"]
 custom_minimum_size = Vector2(240, 0)
@@ -495,19 +493,20 @@ text = "일시정지"
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -80.0
+offset_left = -68.0
 offset_top = 24.0
 offset_right = -24.0
-offset_bottom = 228.0
+offset_bottom = 212.0
 grow_horizontal = 0
-mouse_filter = 1
+mouse_filter = 2
+theme_type_variation = &"HudDockPanel"
 
 [node name="Margin" type="MarginContainer" parent="Root/CameraDock"]
 layout_mode = 2
-theme_override_constants/margin_left = 6
-theme_override_constants/margin_top = 6
-theme_override_constants/margin_right = 6
-theme_override_constants/margin_bottom = 6
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="Actions" type="VBoxContainer" parent="Root/CameraDock/Margin"]
 layout_mode = 2
@@ -556,20 +555,21 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -440.0
-offset_top = -92.0
+offset_left = -404.0
+offset_top = -72.0
 offset_right = -24.0
 offset_bottom = -24.0
 grow_horizontal = 0
 grow_vertical = 0
-mouse_filter = 1
+mouse_filter = 2
+theme_type_variation = &"HudDockPanel"
 
 [node name="Margin" type="MarginContainer" parent="Root/ActionDock"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="Actions" type="HBoxContainer" parent="Root/ActionDock/Margin"]
 layout_mode = 2

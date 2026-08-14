@@ -22,6 +22,8 @@ func _run() -> void:
 	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
 	_assert(hud.get_node_or_null("Root/GoalProgress") is PanelContainer, "Normal play needs one compact goal tally.")
 	_assert(hud.get_node_or_null("Root/LauncherSource") is PanelContainer, "Normal play needs one compact cannon-source selector.")
+	_assert(not (hud.get_node("Root/LauncherSource") as Control).visible, "A single unavailable source must not occupy HUD space.")
+	_assert(_find_named(hud, "SeparatorOne") == null and _find_named(hud, "SeparatorTwo") == null, "Aim groups must use spacing instead of divider lines.")
 	_assert(hud.get_node_or_null("Root/ShortcutPanel") is PanelContainer, "Normal play needs on-demand shortcut help.")
 	_assert(not hud.is_shortcut_panel_visible(), "Shortcut help must be collapsed by default.")
 	for retired_node in [
@@ -124,6 +126,7 @@ func _run() -> void:
 	hud.set_goal_progress(1, 2)
 	hud.set_launcher_sources([1], -1)
 	var source_button := hud.get_node("%LauncherSourceButton") as OptionButton
+	_assert((hud.get_node("Root/LauncherSource") as Control).visible, "Completed goals must reveal the source selector.")
 	_assert(source_button.item_count == 2, "Start plus one completed goal must be selectable.")
 	_assert(
 		int(source_button.get_item_metadata(0)) == -1 \

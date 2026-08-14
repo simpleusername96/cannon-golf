@@ -48,6 +48,7 @@ signal result_primary_requested
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_primary: Button = %ResultPrimary
 @onready var _goal_progress_label: Label = %GoalProgressLabel
+@onready var _launcher_source_panel: PanelContainer = $Root/LauncherSource
 @onready var _launcher_source_button: OptionButton = %LauncherSourceButton
 
 var _syncing := false
@@ -141,6 +142,7 @@ func set_launch_availability(active_shots: int, maximum_live_shots: int, cleared
 	_pause_retry.disabled = _cleared or _active_shot_count <= 0
 	_follow_button.disabled = _cleared or _active_shot_count <= 0
 	_launcher_source_button.disabled = _cleared or _launcher_sources.size() <= 1
+	_launcher_source_panel.visible = not _cleared and _launcher_sources.size() > 1
 	_refresh_setup_button_states()
 
 
