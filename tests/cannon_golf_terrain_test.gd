@@ -68,8 +68,17 @@ func _assert_prepared_terrain(
 				and prepared.skirt_shape is ConcavePolygonShape3D,
 		"Prepared terrain must retain one render surface and triangle collision."
 	)
+	_assert_prepared_material(prepared, course)
 	for leg_index in range(prepared.legs.size()):
 		_assert_goal_basin(prepared, prepared.legs[leg_index], course.leg_at(leg_index))
+	_assert_rim_bands(prepared)
+	if course.course_id == &"deep_relay":
+		_assert_true(prepared.relief() >= 80.0, "Deep Relay must retain at least 80m relief.")
+		for leg in prepared.legs:
+			_assert_true(
+				leg.goal_rim_y - leg.launcher_position.y >= 25.0,
+				"Every Deep Relay goal rim must rise at least 25m from its launcher."
+			)
 	if CannonGolfCourseCatalog.index_of(course.course_id) >= 4:
 		_assert_true(prepared.relief() >= 80.0, "Late-course playable terrain must have at least 80m relief.")
 	if prepared.legs.size() > 1:
@@ -83,6 +92,50 @@ func _assert_prepared_terrain(
 		prepared.landform_metrics.size() == course.landform_features.size(),
 		"Every authored semantic landform must retain a measured result."
 	)
+	if course.course_id != &"deep_relay" and prepared.legs.size() >= 3:
+		var has_descending_leg := false
+		for leg in prepared.legs:
+			if leg.goal_rim_y < leg.launcher_position.y:
+				has_descending_leg = true
+				break
+		_assert_true(
+			has_descending_leg,
+			"A multi-goal course must retain a descending leg instead of becoming monotonic."
+		)
+
+
+func _assert_prepared_material(
+		prepared: CannonGolfPreparedCourse, course: CannonGolfCourseData
+) -> void:
+	var material := prepared.render_mesh.surface_get_material(0) as ShaderMaterial
+	_assert_true(material != null, "Prepared terrain must retain a shader material.")
+	if material == null:
+		return
+	_assert_true(
+		material.get_shader_parameter(&"rock_color") == course.terrain_color,
+		"Prepared terrain rock color must match its course palette."
+	)
+	_assert_true(
+		material.get_shader_parameter(&"accent_color") == course.terrain_accent_color,
+		"Prepared terrain accent color must match its course palette."
+	)
+
+
+func _assert_rim_bands(prepared: CannonGolfPreparedCourse) -> void:
+	for left_index in range(prepared.legs.size()):
+		for right_index in range(left_index + 1, prepared.legs.size()):
+			var left := prepared.legs[left_index]
+			var right := prepared.legs[right_index]
+			if left.rim_elevation_band < right.rim_elevation_band:
+				_assert_true(
+					right.goal_rim_y - left.goal_rim_y >= 12.0,
+					"Higher authored rim bands must be at least 12m above lower bands."
+				)
+			elif left.rim_elevation_band > right.rim_elevation_band:
+				_assert_true(
+					left.goal_rim_y - right.goal_rim_y >= 12.0,
+					"Higher authored rim bands must be at least 12m above lower bands."
+				)
 
 
 func _assert_goal_basin(

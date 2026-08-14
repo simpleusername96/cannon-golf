@@ -24,8 +24,8 @@ const AUTHORING_CONSTRAINT_RECIPE := 1
 @export_range(0.05, 0.45, 0.01) var goal_route_t := 0.18
 @export_range(0.7, 1.0, 0.01) var cannon_route_t := 1.0
 @export_range(0.3, 5.0, 0.05) var goal_recess_depth := 3.5
-@export var terrain_color := Color("9DA6A3")
-@export var terrain_accent_color := Color("87938F")
+@export var terrain_color := Color("596661")
+@export var terrain_accent_color := Color("47544F")
 
 @export_category("Ordered Relay Legs")
 @export var legs: Array[CannonGolfCourseLegData] = []
