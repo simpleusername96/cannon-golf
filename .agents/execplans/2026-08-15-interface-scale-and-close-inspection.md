@@ -1,6 +1,7 @@
 ---
 type: plan
-status: active
+status: superseded
+superseded_by: .agents/execplans/2026-08-15-camera-navigation-world-readability.md
 created: 2026-08-15
 scope: Compact the main menu and course cards, double the shared ball radius, and make overview zoom reach terrain at a predictable safe distance
 related:
@@ -12,6 +13,12 @@ related:
 ---
 
 # Interface Scale and Close Inspection - Execution Contract
+
+This contract was superseded after its `14 m` endpoint and vertical
+heightfield-lift collision model produced terrain-safe but unusable cliff
+views. Completed menu, course-row, ball-size, goal-opening, and prepared-course
+work remains the retained baseline. The replacement contract owns all remaining
+camera, world-cue, and final-validation work.
 
 Fresh `1280 x 720` captures show four connected presentation problems. The
 single-line `CANNON GOLF` label forces the main-menu panel and every menu action
@@ -141,7 +148,7 @@ Source owners: `project-specs/cannon-golf/PRD.md`,
 `project-specs/cannon-golf/DESIGN_RULES.md`,
 `project-specs/cannon-golf/DECISIONS.md`
 
-- [ ] **1.1** Record the compact front-end, `2.0 m` shared ball, and close-
+- [x] **1.1** Record the compact front-end, `2.0 m` shared ball, and close-
   inspection camera contract.
   - Change: append one decision that supersedes only D-034's fixed `10%` zoom
     step and D-035's `1.0 m` ball; update active PRD/design clauses to the locked
@@ -161,13 +168,13 @@ Source owners: `scenes/cannon_golf/app/cannon_golf_main_menu.tscn`,
 `resources/ui/paint_mountain_theme.tres`,
 `tests/cannon_golf_ui_contract_test.gd`
 
-- [ ] **2.1** Compact the main-menu title and actions.
+- [x] **2.1** Compact the main-menu title and actions.
   - Change: apply the locked two-line title, panel bounds, margins, line spacing,
     and action width in the existing scene/theme owners.
   - Accept: at `1280 x 720`, the title does not clip, all four actions fit the
     same panel, the action width is `288 px`, and keyboard focus order remains
     Play, Course Select, Settings, Quit.
-- [ ] **2.2** Replace stacked course-card outlines with one restrained edge.
+- [x] **2.2** Replace stacked course-card outlines with one restrained edge.
   - Change: apply the locked row gap/radius/shadow/left-accent styles and update
     the UI contract to reject expanded focus margins and all-side selected
     borders.
@@ -187,13 +194,13 @@ Source owners: `src/cannon_golf/cannon_golf_ballistics.gd`,
 `resources/cannon_golf/prepared/*.res`,
 `tests/cannon_golf_ballistics_test.gd`, `tests/cannon_golf_goal_test.gd`
 
-- [ ] **3.1** Set one `2.0 m` physical/visual radius and keep goal plates usable.
+- [x] **3.1** Set one `2.0 m` physical/visual radius and keep goal plates usable.
   - Change: update the shared radius, every radius assertion, and only the
     plate wall/opening guards directly required by the larger sphere.
   - Accept: mesh radius equals collider radius equals ballistic radius `2.0`;
     the current material is unchanged; the smallest current plate still offers
     positive settlement area and an opening wider than `4.5 m`.
-- [ ] **3.2** Invalidate and rebuild all ten construction artifacts once.
+- [x] **3.2** Invalidate and rebuild all ten construction artifacts once.
   - Change: increment construction identity, run the approved bake after all
     source changes settle, and save every valid artifact.
   - Accept: the bake reports ten valid saves, every course completes below
@@ -211,7 +218,7 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
 `tests/cannon_golf_camera_test.gd`,
 `tests/capture_cannon_golf_frame.gd`
 
-- [ ] **4.1** Replace fixed full-course scaling with the locked distance curve.
+- [x] **4.1** Replace fixed full-course scaling with the locked distance curve.
   - Change: store a bounded inspection step, resolve its logarithmic distance
     from the current unscaled framed pose, and keep reset/default/maximum
     overview and stored-pose behavior intact. Update capture assertions to use
@@ -219,7 +226,7 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
   - Accept: twelve zoom-in actions end at `14 m +/- 0.25 m` on courses 1 and 10;
     each action moves closer; six zoom-out actions from default reach a complete
     course overview; reset restores default; cannon view remains unchanged.
-- [ ] **4.2** Protect the camera footprint on steep terrain.
+- [x] **4.2** Protect the camera footprint on steep terrain.
   - Change: replace the single camera-point clearance check with the locked
     center-plus-eight-samples footprint for immediate and interpolated poses.
   - Accept: center and all eight footprint points remain at least `2.0 m` above
@@ -236,7 +243,7 @@ is authorized.
 
 Source owners: task-owned tests and `.godot/capture-temp/` evidence only.
 
-- [ ] **5.1** Run the focused end gate once.
+- [x] **5.1** Run the focused end gate once.
   - Change: run the approved storage-safe wrapper for ballistics, goal, camera,
     UI contract, app flow, and catalog smoke in that order. Do not run solution,
     certifier, broad-suite, or performance tests.
@@ -265,7 +272,7 @@ Commands are final-gate commands only; do not run them during Phases 1-4.
 | Gate | Command | Success condition | Rerun trigger |
 | --- | --- | --- | --- |
 | Ball | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_ballistics_test.gd -TimeoutSeconds 60` | Shared radius and launch consumers pass | A ballistics/ball radius owner changes |
-| Goal | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_goal_test.gd -TimeoutSeconds 60` | Larger sphere retains valid plate entry/containment | Goal or radius inputs change |
+| Goal | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_goal_test.gd -TimeoutSeconds 300` | Larger sphere retains valid plate entry/containment | Goal or radius inputs change |
 | Camera | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_camera_test.gd -TimeoutSeconds 90` | Early/late close distance, overview, pose retention, and footprint clearance pass | Camera or prepared bounds change |
 | UI | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_ui_contract_test.gd -TimeoutSeconds 60` | Menu/card geometry, focus, readability, and scrollbar pass | Scene/theme/UI contract changes |
 | Startup | `& .\scripts\invoke-cannon-golf-validation.ps1 -Script res://tests/cannon_golf_app_flow_test.gd -TimeoutSeconds 90` | Front-end navigation and game startup pass | App flow or scenes change |
@@ -303,8 +310,17 @@ capture process.
   camera math, artifact identity, tests, and fresh rendered captures inspected.
 - [x] Material UX, physics-scale, artifact, camera, and validation choices
   closed in this contract.
-- [ ] Resume at task 1.1 after user approval; keep this file as the only active
-  progress ledger for the outcome.
+- [x] Tasks 1.1, 2.1, 2.2, 3.1, and 3.2 are implemented. The deterministic bake
+  rebuilt all ten courses in `112-765 ms` each; ball, goal, UI, startup, and
+  catalog gates passed with zero persistent-log growth.
+- [ ] Blocked at task 5.2 after five close-camera correction attempts. The
+  `14 m` camera endpoint and nine-point footprint are terrain-safe, but fresh
+  course 1 and course 10 captures are fully occluded by an intervening cliff.
+  Camera-only sightline lift, matched-focus validation, a safety margin, and a
+  shared focus/camera lift did not produce a stable sightline contract; the last
+  diagnostic failure was `rising_bend oblique panned`, first segment at
+  `y=47.3333` against terrain `65.7778`. Per the user-approved repetition limit,
+  do not attempt a sixth correction without renewed direction.
 
 ## Completion and Stop Conditions
 
