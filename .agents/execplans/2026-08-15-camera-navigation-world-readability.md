@@ -2,7 +2,7 @@
 type: plan
 status: active
 created: 2026-08-15
-scope: Rebuild camera navigation around stable overview, true cannon first-person, automatic shot follow, and readable world-space goal and cannon cues
+scope: Rebuild camera navigation, remove white world patches, restore upper-landform goal placement, and add readable goal and cannon cues
 supersedes: .agents/execplans/2026-08-15-interface-scale-and-close-inspection.md
 related:
   - project-specs/cannon-golf/PRD.md
@@ -10,13 +10,19 @@ related:
   - project-specs/cannon-golf/DECISIONS.md
   - project-specs/cannon-golf/CAMERA_AND_WORLD_READABILITY.ko.md
   - .agents/execplans/2026-08-14-camera-navigation-goal-visibility.md
+  - .agents/execplans/2026-08-14-goal-plates-progressive-terrain.md
+  - .agents/execplans/2026-08-14-terrain-contrast-height-contract.md
+  - .agents/execplans/2026-08-13-longitudinal-relay-course.md
 ---
 
 # Camera Navigation and World Readability - Execution Contract
 
-The 2026-08-15 course-4 capture and current runtime agree on the failure. Goal
-plates are pale enough to merge with lit terrain, while their thin unshaded
-cyan stem and diamond lose shape at course scale. Overview zoom resolves an
+The 2026-08-15 course-4 capture and current runtime agree on the failure. The
+large clipped-white circles are not terrain-shader output: they are the
+`E8E1CE` goal-plate cylinders. Because each low plate is fitted directly onto
+the terrain, the player correctly reads them as unexplained white terrain
+patches. Their thin unshaded cyan stem and diamond also lose shape at course
+scale. Overview zoom resolves an
 absolute `14 m` endpoint, then protects only that endpoint by lifting it above
 the heightfield. This prevents a point intersection but does not protect the
 line of sight or produce a useful view: the camera can be lifted beside an
@@ -27,17 +33,20 @@ keeps the current camera unchanged, contrary to the latest request.
 
 This contract replaces the failed close-view correction branch. It retains the
 completed compact menu, quiet course rows, `2.0 m` ball, enlarged plate opening,
-and ten rebuilt prepared artifacts. It does not regenerate terrain or add a
-goal order. All incomplete goals remain equally available, and players still
-choose any unlocked cannon source.
+ten-course extent/relief schedule, non-monotonic goal elevations, and free goal
+order. It also closes a carry-forward gap: authored peaks and ridges exist, but
+the current recipe schema clears `feature_anchor` and therefore does not
+guarantee that goals occupy exposed upper landforms. This contract restores
+that placement guarantee and rebuilds the ten prepared artifacts once.
 
 ## Purpose
 
 - Objective: make every course readable and controllable without camera entry
   into terrain, hidden goal cues, or ambiguous cannon orientation.
 - Deliverable: one stable free overview, one true cannon first-person view, one
-  transient automatic ball-follow state, exact `Tab` return, high-contrast goal
-  plates, thick downward 3D goal arrows, and a visible cannon-direction cue.
+  transient automatic ball-follow state, exact `Tab` return, no white ground
+  patches, upper-landform goal plates, thick downward 3D goal arrows, and a
+  visible cannon-direction cue.
 - Completion state: reset frames the complete course; overview pan/orbit/zoom
   remain responsive without entering terrain; cannon view looks along the real
   launch vector from the launcher; Fire follows the newest ball; `Tab` restores
@@ -50,17 +59,20 @@ In scope:
 
 - Camera state ownership, course framing, pan/orbit/zoom, terrain collision,
   near/far clipping, cannon first-person pose, shot follow, and exact return.
-- Goal plate palette, existing light balance, goal marker geometry and height,
-  full-course presentation bounds, cannon visual scale, and direction cues.
+- Goal plate/base palette, goal marker geometry and height, full-course
+  presentation bounds, cannon visual scale, and direction cues.
+- A bounded goal-placement role in the existing recipe/resolver, catalog-owned
+  upper-landform roles, deterministic support conditioning, and one ten-course
+  prepared-artifact rebuild.
 - Existing camera/help dock semantics and one minimal first-person reticle.
 - Current product/design decisions, focused source contracts, startup smoke,
   and final rendered captures after implementation is complete.
 
 Out of scope:
 
-- Terrain generation, course topology, goal locations, ballistics, settlement
-  rules, device placement, goal order, cannon-source rules, menus, cards, new
-  panels, new prose, or another prepared-course bake.
+- New terrain topology, course count/order, accepted extent/relief schedule,
+  ballistics, settlement rules, device placement, goal order, cannon-source
+  rules, menus, cards, new panels, or new explanatory prose.
 - A performance campaign, solution search, exact-physics certification, broad
   suite, or repeated visual experimentation during implementation.
 
@@ -120,10 +132,16 @@ Locked interaction and state decisions:
 
 Locked world-readability decisions:
 
-- Goal plate floor becomes matte ochre `#D2A853`; segmented wall/rim becomes
-  dark slate `#24394D`. These are semantic runtime materials, independent of
-  each course's terrain palette. Settlement physics and dimensions do not
+- Remove white or near-white ground surfaces. Goal plate floor becomes matte
+  moss `#53634F`; segmented wall/rim becomes dark slate `#24394D`. The plate
+  remains distinguishable by its circular edge, wall, arrow, and material
+  roughness, not by a bright floor. Settlement physics and dimensions do not
   change.
+- Keep the current green-gray terrain shader and course palettes. Do not lower
+  the whole scene's light to hide one bad material. Keep Sun, fill, and ambient
+  energies unchanged. The diorama base must render as muted green-gray rather
+  than white; set its shader base to `#596657`, cap photographic detail mix at
+  `0.10`, and retain full roughness.
 - Replace the cyan unshaded stem, diamond, and redundant decorative flag with
   one thick downward 3D arrow. Use a matte amber `#F2A33A` shaft and cone plus a
   dark `#13243A` collar. The shaft is `1.1 m` thick and `7 m` tall; the conical
@@ -136,14 +154,44 @@ Locked world-readability decisions:
 - Every incomplete goal shows the same full arrow because there is no active or
   next goal. A confirmed goal hides its arrow; the retained ball and sparse rim
   state continue to show completion.
-- Reduce only scene washout: Sun energy becomes `0.88`, fill energy `0.24`, and
-  ambient energy `0.30`. Preserve sky, terrain shader, course palette, shadows,
-  and diorama material. Do not solve readability by darkening each generated
-  terrain resource or rebuilding courses.
+
+Locked carry-forward terrain and goal-placement decisions:
+
+- Preserve the completed horizontal-scale schedule
+  `1.00, 1.00, 1.05, 1.10, 1.15, 1.20, 1.28, 1.35, 1.42, 1.50` and minimum
+  playable relief schedule `60, 65, 80, 90, 100, 112, 124, 136, 148, 160 m`.
+  Relief still belongs to macro peaks, shelves, ridges, and valleys rather than
+  local plate support.
+- Preserve mixed goal elevations. Goals do not have to rise in completion
+  order, and there is still no next goal. “Upper landform” means an exposed
+  crest, summit shoulder, ridge shoulder, terrace, saddle shoulder, basin rim,
+  or plateau edge; it does not mean globally monotonic ascent.
+- Every goal candidate must be evaluated against the unconditioned macro
+  heightfield before plate support is fitted. Its rim must be within `8 m` of
+  the highest terrain inside `24 m`, at or above the `70th` height percentile
+  inside `40 m`, and have at least `210 degrees` of its `12-26 m` annulus no
+  higher than rim plus `4 m`. This puts the plate near the top while avoiding a
+  sharp apex or surrounding wall.
+- Add an explicit recipe placement role and optional landform feature anchor.
+  The resolver may choose only candidates that satisfy both the role and the
+  ballistic envelope. Plate support may flatten only the existing bounded
+  footprint; it may not create the prominence used to pass the placement test.
+- Catalog intent is fixed as follows: courses 1-2 use one open upper shoulder;
+  Summit Saddle uses opposite summit/saddle shoulders; Deep Relay uses a high
+  middle shelf then a higher summit shoulder with both existing `+25 m`
+  incoming-rise guards; Linked Bowls uses exposed bowl rims; Terraced Peak uses
+  distinct upper terraces; U Valley alternates the two upper valley shoulders;
+  Twin Peaks distributes goals across both peak shoulders; Basin Garden uses
+  the basin rim and placement plateau; Alpine Complex uses its ridge, peak, and
+  exposed connecting shoulders.
+- Rebuild all ten prepared artifacts once after schema, resolver, course roles,
+  and visual inputs settle. Each course retains the `60 s` construction limit;
+  no solution search or physics certification is authorized.
 
 Destructive or irreversible actions:
 
-- None. No prepared artifact or authored course resource changes in this work.
+- Authored course roles and reproducible prepared artifacts change. No user
+  save or hand-authored geometry is deleted.
 
 Stop and ask the user before continuing when:
 
@@ -152,7 +200,8 @@ Stop and ask the user before continuing when:
 - Physics sweep cannot distinguish terrain from goal/launcher bodies without a
   new collision layer or changing gameplay collision.
 - True first-person alignment requires changing launch origin or ballistics.
-- Goal readability requires moving a goal or regenerating terrain.
+- Any course construction reaches `60 s` or cannot satisfy upper-landform
+  placement and the existing ballistic envelope within its fixed seed window.
 - A requested correction would add a fourth camera state, another HUD panel,
   or goal-order semantics.
 
@@ -160,7 +209,8 @@ Stop and ask the user before continuing when:
 
 | Concern | Current evidence and cause | Locked correction | Tasks |
 | --- | --- | --- | --- |
-| Goal disappears on bright ground | Capture shows pale plate and lit pale terrain merging; `settlement_goal.gd` uses `E8E1CE`/`D4D0C4` and a thin unshaded cyan marker | Fixed ochre/slate plate plus large matte downward arrow above local skyline | 1.1, 2.1-2.2 |
+| White terrain-like patches | The screenshot circles correspond to `GoalPlateFloor`; terrain palettes are green-gray, but the fitted `E8E1CE` plate reads as part of the ground | Remove white ground materials; moss/slate plate, muted base, unchanged world light | 1.1, 2.1 |
+| Peaks exist but goals are not anchored to them | Done plans require macro peaks/ridges and Deep Relay's summit goal, but current recipe validation requires an empty `feature_anchor`; generic checkpoint roles do not guarantee upper-landform placement | Explicit upper-landform role/anchor plus prominence, percentile, and openness guards; rebuild once | 1.1, 2.4-2.5 |
 | Reset/far view becomes sky or clipped terrain | Rig blends to complete bounds then multiplies distance up to `2.0x`; endpoint-only lift can jump beside a cliff; presentation bounds omit full arrow geometry | One fit distance, presentation bounds, dynamic far plane, collision boom | 1.1, 3.1-3.3 |
 | Drag/zoom feels blocked | `14 m` endpoint is smaller than local cliff scale and pan/orbit responses fight endpoint lifting | `28 m` minimum, restrained response, stable terrain-safe pivot, sweep instead of lift | 3.1-3.3 |
 | Cannon preset is not first-person | Current constants place camera `7 m` behind and `5.5 m` above while looking at a separate focus | Pose eye at launcher and look along exact 3D launch direction | 1.1, 4.1 |
@@ -171,26 +221,38 @@ Stop and ask the user before continuing when:
 Readiness statement:
 
 - Screenshot, current camera rig, input dispatch, launcher geometry, goal
-  geometry/materials, marker skyline calculation, world envelope, HUD camera
+  geometry/materials, terrain/base shaders, marker skyline calculation, world
+  envelope, course recipes, semantic landforms, prior done plans, HUD camera
   controls, and accepted camera/goal decisions were inspected.
 - Every material interaction, visual, ownership, and validation decision is
   closed. The executor must implement this contract, not run another camera
   concept search.
 
+Carry-forward audit:
+
+| Prior accepted plan | Retained requirement | Treatment here |
+| --- | --- | --- |
+| `2026-08-14-goal-plates-progressive-terrain.md` | Physical plates on ordinary terrain, one-second settlement, free goal order, unlocked completed-goal cannon sources, progressive width/relief | Retained unchanged; only plate material/marker and missing placement guard change |
+| `2026-08-14-terrain-contrast-height-contract.md` | Green-gray non-white terrain, semantic peaks/ridges/valleys, fixed relief schedule, mixed goal elevations | Retained; this plan removes the remaining white plate/base surfaces and connects goal placement to upper landforms |
+| `2026-08-13-longitudinal-relay-course.md` | Deep Relay high middle shelf, higher summit goal, and `+25 m` incoming rises | Reasserted as an explicit resolver and final terrain acceptance rule |
+| `2026-08-14-camera-navigation-goal-visibility.md` | Terrain-safe exploration and goal markers above local skyline | Replaced only in mechanism: swept boom and thick 3D arrow supersede endpoint lift and cyan marker |
+| `2026-08-15-interface-scale-and-close-inspection.md` | Compact menu/cards, `2.0 m` ball, usable plate opening | Completed output retained; failed `14 m` camera endpoint is superseded |
+
 ## Tasks
 
-### Phase 1: Make the replacement camera contract authoritative
+### Phase 1: Make the replacement camera and placement contract authoritative
 
 Source owners: `project-specs/cannon-golf/PRD.md`,
 `project-specs/cannon-golf/DESIGN_RULES.md`,
 `project-specs/cannon-golf/DECISIONS.md`
 
-- [ ] **1.1** Record the three-state camera and world-cue contract.
+- [ ] **1.1** Record the three-state camera, surface, and placement contract.
   - Change: add one accepted decision superseding D-029's explicit-only follow,
     D-034's external cannon view and endpoint lift, and D-037's `14 m` close
     endpoint/fire independence. Update matching current PRD/design clauses.
   - Accept: active text defines overview, cannon first-person, automatic follow,
-    exact `Tab` return, all-goals-equal markers, and no side/next-goal view.
+    exact `Tab` return, no white world-ground patches, upper-landform goal
+    placement, all-goals-equal markers, and no side/next-goal view.
 
 ### Phase 2: Make goals and cannon direction readable in the world
 
@@ -201,9 +263,10 @@ Source owners: `src/cannon_golf/settlement_goal.gd`,
 `src/cannon_golf/course_builder.gd`, `scenes/cannon_golf/cannon_golf.tscn`,
 `tests/cannon_golf_goal_test.gd`, `tests/cannon_golf_course_build_test.gd`
 
-- [ ] **2.1** Apply the locked goal plate palette and light balance.
-  - Accept: floor/wall colors and three light energies equal the locked values;
-    goal physics, dimensions, terrain mesh, and prepared resources are unchanged.
+- [ ] **2.1** Remove white ground patches without changing world lighting.
+  - Accept: plate floor/wall and base shader equal the locked values; Sun, fill,
+    ambient, goal physics, goal dimensions, and terrain palettes are unchanged;
+    no visible world ground surface uses the old pale plate materials.
 - [ ] **2.2** Replace flag/diamond marker ownership with the thick 3D arrow.
   - Accept: every incomplete goal has one downward arrow at its actual `x/z`,
     arrow tip clears the computed local skyline, confirmed arrows are hidden,
@@ -212,10 +275,22 @@ Source owners: `src/cannon_golf/settlement_goal.gd`,
   - Accept: visual extents are `1.6x`, cue wedge tracks current yaw after key,
     slider, and source changes, while launch origin/velocity remain byte-for-byte
     equivalent for the same `50 / 50 / 50` input.
+- [ ] **2.4** Restore explicit upper-landform goal placement.
+  - Change: add the locked recipe role/optional feature anchor, make resolver
+    candidate admission enforce prominence/percentile/openness before support
+    fitting, and assign the locked catalog roles without changing goal count or
+    order semantics.
+  - Accept: every resolved goal passes all three numeric guards; Deep Relay
+    retains its high shelf/higher summit and `+25 m` rises; no plate is in a
+    basin/valley bottom or enclosed by adjacent terrain.
+- [ ] **2.5** Rebuild the ten prepared artifacts once.
+  - Accept: all ten identity-checked artifacts save under `60 s` each, retain
+    the accepted extent/relief schedules and mixed elevations, and record the
+    resolved placement role/evidence for every goal.
 
 ### Phase 3: Replace endpoint lift with stable overview navigation
 
-Precondition: Phase 2 source changes are stable.
+Precondition: Phase 2 source changes and the single rebuild are complete.
 
 Source owners: `src/cannon_golf/course_camera_rig.gd`, new responsibility-shaped
 `src/cannon_golf/overview_camera_solver.gd`,
@@ -280,21 +355,26 @@ solution, certification, or rendered tests earlier.
 
 - [ ] **6.1** Run the focused final gate once through
   `scripts/invoke-cannon-golf-validation.ps1`.
-  - Order: camera (`90 s`), input (`90 s`), goal (`300 s`), course build
-    (`120 s`), UI contract (`60 s`), app flow (`90 s`), catalog smoke (`120 s`).
+  - Order: terrain contract (`180 s`), camera (`90 s`), input (`90 s`), goal
+    (`300 s`), course build (`120 s`), UI contract (`60 s`), app flow (`90 s`),
+    catalog smoke (`120 s`).
   - Accept: every process exits zero, persistent-log growth is zero, and no
     task-owned Godot process remains. Stop at first failure; rerun only its
     owner after one material correction.
 - [ ] **6.2** Capture final user-facing states once.
-  - Capture: courses 1, 4, and 10 at `1280 x 720`: reset overview, panned close
-    overview, cannon first-person at `50 / 50 / 50`, and active Shot Follow.
-  - Accept: goals and arrows separate from bright terrain; full course is not
-    sky-clipped; close navigation shows usable terrain; cannon direction is
-    clear; HUD has no new panel or overlap.
+  - Capture: courses 1, Summit Saddle, Deep Relay, Twin Peaks, and Alpine
+    Complex at `1280 x 720`: reset overview; courses 1, 4, and 10 also get a
+    panned close overview, cannon first-person at `50 / 50 / 50`, and active
+    Shot Follow.
+  - Accept: no white terrain-like patch remains; every plate sits on a readable
+    exposed upper landform; goals/arrows separate from terrain; full course is
+    not sky-clipped; close navigation works; cannon direction is clear; HUD has
+    no new panel or overlap.
 - [ ] **6.3** Run the task-scoped quality and hygiene gate.
   - Accept: codebase-quality audit finds no catch-all or competing camera owner;
     `git diff --check` passes; task-owned captures/logs are removed after review;
-    no prepared resource changed; one coherent task commit remains.
+    all prepared changes match the one authorized rebuild; one coherent task
+    commit remains.
 
 ## Verification
 
@@ -307,7 +387,8 @@ solution, certification, or rendered tests earlier.
   a plan change. A sixth correction for the same rendered symptom stops the task
   and asks the user.
 - No individual command may run beyond ten minutes. This plan contains no
-  performance benchmark and no course-generation or physics-certification run.
+  performance benchmark, solution search, or physics-certification run. The one
+  bounded prepared-course rebuild is the only generation run.
 
 ## Risks
 
@@ -322,6 +403,9 @@ solution, certification, or rendered tests earlier.
   chosen solution; screen-space labels or target ordering are not fallbacks.
 - Automatic follow could interrupt repeated aiming. Exact `Tab` return, editable
   controls, and the unchanged two-ball limit are required safeguards.
+- Upper-landform placement reduces the ballistic candidate set. The fixed seed
+  window and `60 s` per-course limit remain hard stops; the resolver must not
+  silently fall back to a valley or enclosed goal.
 
 ### Predetermined Contingencies and Change Control
 
@@ -336,15 +420,16 @@ solution, certification, or rendered tests earlier.
 - If automatic follow motion is uncomfortable, reduce only follow interpolation
   response from `4.2` to `3.2`; do not remove automatic follow or exact `Tab`
   return.
-- Any need to move goals, regenerate terrain, change ballistics/collision layers,
-  add another camera state, or add a HUD panel is a contract change and requires
-  user approval.
+- Any need to change goal count, accepted relief/extent, ballistics/collision
+  layers, add another camera state, or add a HUD panel is a contract change and
+  requires user approval.
 
 ## Progress
 
 - [x] Inspected the current screenshot, runtime camera/input/state code, goal
-  and launcher geometry, skyline marker calculation, world envelope, HUD dock,
-  and accepted product/design decisions.
+  and launcher geometry, terrain/base materials, skyline marker calculation,
+  world envelope, recipe placement data, prior done plans, HUD dock, and
+  accepted product/design decisions.
 - [x] Closed camera-state, collision, visual-cue, input, ownership, and final-
   validation decisions in this contract.
 
