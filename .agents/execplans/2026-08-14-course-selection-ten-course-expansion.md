@@ -1,8 +1,8 @@
 ---
 type: plan
-status: done
+status: active
 created: 2026-08-14
-scope: Course-selection responsiveness and a decision-ready first batch of ten varied multi-goal courses
+scope: Responsive course selection backed by prepared artifacts and a ten-course connected-terrain catalog
 related:
   - project-specs/cannon-golf/PRD.md
   - project-specs/cannon-golf/DESIGN_RULES.md
@@ -15,307 +15,439 @@ related:
   - project-specs/cannon-golf/assets/terrain-progression-late.png
 ---
 
-# Course Selection and Ten-Course Expansion - Research Checklist
+# Responsive Ten-Course Catalog - Execution Contract
+
+Deliver ten selectable connected-mountain courses without blocking the selection
+frame. The app loads an identity-checked prepared course artifact asynchronously,
+uses it for both preview and gameplay, and presents one unambiguous selected card.
+The catalog progresses through `1, 1, 2, 2, 3, 3, 4, 4, 5, 6` ordered goals;
+goal order does not imply continuously increasing elevation.
 
 ## Purpose
 
-- Decision: define a responsive course-selection delivery model and a concrete
-  ten-course terrain/goal progression without pretending the current special
-  two-leg generator can already produce it.
-- Why it matters: the current selection input can show two blue states and
-  blocks the main thread while it generates a new course. Ten larger courses
-  would multiply that problem and would remain visually repetitive without a
-  semantic landform grammar.
-- Decision owner: the user owns the remaining product choices listed below.
-- Final output: one recommended implementation sequence, a ten-course content
-  matrix, visual direction references, acceptance gates, and exact blockers.
+- Objective: remove the apparent double selection and multi-second selection
+  stall, then ship the approved first batch of ten varied terrain/goal courses.
+- Deliverable: prepared-course schema and bake command, asynchronous three-entry
+  repository, ready/loading/error selection states, ten course resources, generic
+  ordered-leg terrain generation, tests, and rendered evidence.
+- Completion state: every task and final gate below passes, the active plan is
+  marked `done`, and the scoped implementation is committed.
 
-## Scope and Evidence Contract
+## Scope and Boundaries
 
-- In scope: selection/focus/loading states, preview preparation, generated
-  terrain delivery, goal-count progression, non-monotonic goal elevation,
-  recognizable connected landforms, camera/range/solution implications, and
-  concept imagery.
-- Out of scope: implementing the fixes, authoring the ten production resources,
-  accepting final bounce-pad physics, disconnected islands, caves, overhangs,
-  and a custom Godot editor plugin.
-- Destructive or irreversible actions: none.
-- Approval required before: changing the accepted eleven-stage target or
-  implementing pad-dependent courses before Q-07 through Q-09 and Q-14 close.
-- Search budget: current Cannon Golf source/spec/test owners, the retained
-  cooperative geometry path, three rendered concept directions, and primary
-  Godot/landform references. Stop when the runtime cause, viable delivery model,
-  course matrix, schema gaps, and owner blockers are known.
-- Conflict rule: current code proves behavior; active PRD/design rules define
-  desired behavior; accepted decisions outrank a plan; the latest explicit user
-  requirement outranks conflicting older guidance once recorded by its owner.
+In scope:
 
-| Evidence category | Primary source | What it must establish | Sufficient evidence |
-| --- | --- | --- | --- |
-| Selection state | `src/cannon_golf/app/cannon_golf_course_select.gd`, theme, capture | Which states look selected and who owns them | Event sequence plus rendered focus/pressed evidence |
-| Stall cause | app, preview, builder, terrain factory, geometry factory | Whether work blocks the input frame | Complete synchronous call path and cache behavior |
-| Delivery option | current generated product and retained progressive job | A safe preparation boundary for ten courses | One architecture that avoids runtime generation on selection |
-| Terrain feasibility | course schema, route profiles, synthesizer, topology | Which natural forms fit connected terrain and what schema is missing | Ten-course matrix plus exact gaps |
-| Visual direction | current runtime capture plus generated concept images | Whether peak, shelf, saddle, valley, cirque, basin, and plateau read clearly | Early, middle, and late overview images |
+- One selection truth, distinct focus styling, immediate selection feedback,
+  latest-request-wins loading, Start readiness, and ten-card scrolling.
+- One immutable prepared artifact per catalog course containing identity,
+  canonical render mesh, collision shapes, sampled surface data, generated leg
+  data, bounds, dressing placements, and validation metrics.
+- A repository-owned offline bake command and a runtime loader with an LRU of
+  three prepared courses.
+- Generic one-to-six ordered goals, route-index/placement/elevation-band inputs,
+  non-monotonic rim sequences, connected semantic landforms, and checkpoint
+  launchers centered on the previous confirmed goal.
+- Ten playable terrain/goal courses. Courses 5-10 include usable broad placement
+  surfaces but do not require an unapproved device.
 
-## Viable Options
+Out of scope:
 
-| Option | Why materially viable | Decision criteria | Disqualifier |
-| --- | --- | --- | --- |
-| Keep synchronous generation and add a loading overlay | Small code change and truthful feedback | Only viable if input-frame work is already short | Still freezes animation/input for seconds; rejected |
-| Defer the same synchronous build to the next frame | Lets the pressed state draw once | Very small transition patch | Moves the freeze by one frame; rejected |
-| Cooperatively build every selected preview at runtime | Reuses `TerrainGeometryBuildJob` and can cap per-frame geometry work | No offline artifacts required | Route synthesis, goal carving, admission, topology, and resource creation still need progressive owners; selection churn wastes work |
-| Bake canonical course artifacts offline and load/swap them asynchronously | Removes generation and certification from the selection path; the same artifact can serve preview and gameplay | Identity checks, bounded cache, explicit loading/error states | Requires a Cannon Golf bake format and build command; selected |
+- Final bounce-pad response, editing rules, inventory, placement legality, or
+  pad-dependent solution certification.
+- Damping, airflow, gravity zones, caves, bridges, overhangs, disconnected
+  islands, a custom Godot editor plugin, public-title changes, and save migration.
+- Reworking retained Paint Mountain stages or generated-stage catalogs.
 
-## Findings
+Constraints and invariants:
 
-### Selection state and freeze
+- `selected_course_index` owns selection; keyboard focus is not selection.
+- A selection callback performs no terrain generation or geometry build and
+  returns within `16,667 us` in the target 60 Hz contract test.
+- Start is disabled until the latest requested course artifact passes identity
+  and payload validation. Obsolete completions cannot change preview or gameplay.
+- Production selection has no synchronous procedural-generation fallback.
+- Preview and gameplay consume the same prepared artifact identity and geometry.
+- Confirmed goals persist; each later launcher is centered horizontally on the
+  previous goal and aligned to its prepared surface.
+- Goal order is checkpoint order. Elevation bands may rise, fall, or alternate.
+- Default setup remains `50 / 50 / 50` and must not equal a certified solution.
+- Terrain remains one connected heightfield-like body and preserves the current
+  pale faceted mountain, sky, ground, cyan marker, and restrained UI direction.
+- Headless tests, bakes, tuners, and capture runs must not write persistent
+  Godot logs under `user://logs`. Diagnostic output is bounded and retained only
+  when it proves a failure.
+- Only one heavyweight Cannon Golf authoring or physics process may run at a
+  time. Every such process has a wall-clock deadline independent of Godot's
+  frame-based `--quit-after` limit.
+- The validation wrapper stops on the first `SCRIPT ERROR`/`ERROR`, an output
+  cap breach, a wall-clock deadline, or an unexpected child-process exit. It
+  must terminate its exact owned process tree and leave no orphan Godot process.
 
-The rendered evidence at
-`project-specs/cannon-golf/assets/course-select-double-state-evidence.png` shows
-two different states, not evidence of two true selections: course 1 retains the
-blue focus border while course 2 owns the blue pressed fill. Both colors come
-from the shared theme, so they read as two selected cards.
+Destructive or irreversible actions:
 
-The blocking path is:
+- None. Prepared resources are reproducible outputs of the repository bake
+  command and can be regenerated from authored course inputs.
 
-`Button.pressed` → `CannonGolfCourseSelect.select_course()` →
-`CannonGolfApp._on_course_selection_changed()` →
-`CannonGolfPreviewWorld.show_course()` → `CannonGolfCourseBuilder.build()` →
-`CannonGolfCourseTerrainFactory.build()` → route/height synthesis, goal carving,
-topology, admission, `TerrainGeometryFactory.build()`, collision, material, and
-dressing construction.
+Exact actions requiring owner or user approval:
 
-`TerrainGeometryFactory.build()` drains an existing cooperative build job in a
-tight loop. The first selection of another course is a cache miss; later
-selection is faster only because the in-memory cache now exists. There is no
-five-second timer. The transition animation itself lasts only 0.16 seconds.
-Cold full-process captures took about 6.1 seconds for the default course, 7.5
-seconds for course 2, and 8.2 seconds for the larger relay on the inspected
-machine. These totals include process startup, so they establish relative cost,
-not an input-callback latency budget.
+- None inside this contract. The user's approval of the research plan locks the
+  prepared-artifact architecture and treats these ten courses as the first batch
+  inside the accepted longer progression. Device rules remain outside scope.
 
-Godot's official [background-loading guide](https://docs.godotengine.org/en/4.7/tutorials/io/background_loading.html)
-confirms that synchronous loading blocks the calling thread and recommends
-polling threaded-load status across frames before retrieving the resource.
+## Discovery Closure
 
-### Current terrain capability
+| Requirement or concern | Verified current owner and behavior | Evidence | Locked decision | Task IDs |
+| --- | --- | --- | --- | --- |
+| Double-looking selection | `cannon_golf_course_select.gd` keeps the default focus outline while another toggle gets the pressed fill | Rendered evidence asset and shared theme styles | ButtonGroup remains exclusive; selected card receives focus; focus style is visually neutral and distinct | 1.1, 1.2 |
+| Five-second stall | selection signal calls preview, builder, terrain synthesis, geometry and dressing synchronously | traced call path; no five-second timer; cold captures are relatively slower on cache misses | selection only requests a prepared artifact; runtime generation is forbidden on this path | 1.3, 2.1, 2.2 |
+| Existing reusable delivery pattern | retained `StageLayoutRepository` already implements threaded load, latest request, identity checks and LRU 3 | `src/app/stage_layout_repository.gd` | implement a Cannon Golf-owned equivalent around its smaller domain contract | 2.1 |
+| Preview/game parity | current factory cache shares generated geometry but still requires first-use generation | builder/performance tests | prepared artifact is the shared source for both consumers | 2.2, 2.3 |
+| Multi-goal specialization | course schema and explicit factory assume route 0, decreasing route positions, two-leg nearest selection and at least 25 m rise per leg | course data, leg data, factory and hard-coded tests | support 1-6 legs, route/placement/elevation-band inputs, N-leg admission, and non-monotonic height | 3.1, 3.2 |
+| Natural terrain variety | synthesizer supplies noise/ridges/basins but lacks authored semantic feature placement | profile, synthesizer and approved concept images | add bounded peak, ridge, saddle, plateau/shelf, valley, basin/cirque and terrace recipe features with measurable acceptance | 3.1, 3.2 |
+| Course count and devices | accepted progression remains longer while the approved plan defines a ten-course first batch; pad rules remain open | D-014, Q-07-Q-09/Q-14, approved research plan | catalog exposes ten now; courses 5-10 reserve surfaces but remain device-free | 4.1, 4.2 |
+| Validation command | Godot 4.7.1 console binary and `scripts/test-cannon-golf.ps1` are present; direct script invocation passed baseline course test | `Godot_v4.7.1-stable_win64_console.exe --version`; baseline test output | use targeted scripts during tasks, focused suite once at final, plus one background rendered/interaction pass | all |
+| Storage incident | Three concurrent `deep_relay` bake attempts left six owned Godot processes running; a skirt assertion repeated into five `user://logs` files totaling 39,820,895,712 bytes and exhausted C: | exact process command lines, five-file manifest, repeated `_step_skirts` backtrace, and 2026-08-14 free-space measurement | disable persistent file logging for this project, replace raw direct checks with a bounded fail-fast wrapper, serialize heavyweight runs, and require pre/post storage/process gates | 0.1-0.3, all validation |
 
-The current heightfield-like topology can represent recognizable connected
-peaks, ridges, saddles, passes, valleys, broad basins, plateaus, and terraces.
-This is consistent with public landform definitions: USGS describes a ridge as
-a narrow elongated crest and recognizes ridge/valley systems, while NPS
-describes a cirque as a bowl-shaped amphitheater cut into a mountain wall.
+Readiness statement:
 
-It cannot represent true caves, overhangs, bridges, or separated islands. Those
-remain outside this batch.
-
-The present multi-goal branch is not generic:
-
-- every goal resolves on route 0;
-- `CourseLegData` has no route index, landform anchor, or intended elevation
-  band;
-- explicit generation requires exactly the deep relay's upward pattern through
-  at least 25 metres of rise per leg and at least 80 metres of overall relief;
-- corridor admission samples a straight launcher-to-goal line, which is weak for
-  switchbacks and curved valleys;
-- tests hard-code three courses and treat `deep_relay` as the only two-leg case.
-
-## Decision and Recommended Architecture
-
-### 1. Make selection immediate and unambiguous
-
-- `selected_course_index` remains the selection truth. ButtonGroup handles
-  exclusivity; refresh code must not create a competing toggle owner.
-- Any mouse, keyboard, or programmatic selection moves focus to the selected
-  card. Focus remains visible for accessibility but must use a neutral/dashed or
-  otherwise distinct treatment from the filled selected state.
-- Exactly one button may be pressed after any selection, language refresh, or
-  screen reopen.
-- Selecting a card updates its state in the same frame, disables Start, changes
-  Start copy to the localized equivalent of `준비 중…`, and requests the
-  artifact. The old preview may remain visible but is visually restrained until
-  the requested preview swaps in atomically.
-- A newer selection cancels or supersedes an older request. A stale completion
-  never replaces the latest preview. Failure enables no Start action and shows
-  one concise local error; retrying the same card requests the canonical
-  artifact again.
-
-### 2. Bake once, reuse for preview and gameplay
-
-Create a Cannon Golf-owned serializable course artifact containing:
-
-- course/profile/seed/schema identity and integrity signature;
-- canonical generated layout/topology data;
-- render mesh and static collision shapes;
-- generated leg positions, rims, launcher poses, frame bounds, and admission
-  metrics;
-- whole-course content/play bounds and certified solution metadata.
-
-An offline repository command generates and validates all artifacts. Shipping
-runtime never synthesizes a catalog course after a selection click. A small
-repository uses `ResourceLoader.load_threaded_request`, polls status across
-frames, validates full identity before acceptance, and keeps a bounded LRU cache
-of three artifacts. Preview uses the render mesh and marker data without static
-collision bodies; gameplay instantiates collision from the same artifact. This
-preserves exact terrain parity without rebuilding it twice.
-
-The current uncached generation path remains an authoring/bake owner and a test
-oracle, not a production selection fallback. Missing, stale, or invalid baked
-data fails closed with the local error state; it must not silently trigger a
-multi-second runtime build.
-
-### 3. Add a semantic connected-landform recipe
-
-Generalize explicit courses from the special longitudinal relay into N ordered
-legs. Add authored fields for route index, feature anchor or placement region,
-and intended goal-rim elevation band. Add a course-level landform recipe with
-bounded features such as:
-
-- summit or rounded peak;
-- ridge/spur and saddle/pass;
-- broad plateau or shelf with a maximum slope/normal-variance contract;
-- valley line or U-shaped valley;
-- broad basin/cirque and local goal recess;
-- terrace bands and switchback route anchors.
-
-Human-authored intended solution and feature anchors define the puzzle.
-Seeded synthesis supplies faceted surface variation around them. Generation must
-reject missing peaks, flat zones, saddles, valley depth, goal clearance, camera
-visibility, or solution witnesses. Goal order constrains state progression, not
-elevation direction.
-
-## Ten-Course Content Matrix
-
-`L/M/H` are relative **goal-rim** bands within a course. They are constraints,
-not exact metre values. Counts increase in steps so terrain and shot planning,
-not goal quantity alone, controls difficulty.
-
-| # | Goals | Rim order | Recognizable terrain | Intended lesson/device boundary |
-| ---: | ---: | --- | --- | --- |
-| 1 | 1 | L | Compact ridge shelf and one rounded peak shoulder | Direct angle/power |
-| 2 | 1 | H | Main summit, lower peak, clear saddle, broad start shelf | Direct shot with stronger vertical read |
-| 3 | 2 | H → L | Stacked quarry shelves descending into a valley | Two direct settlements; introduces downhill relay |
-| 4 | 2 | L → H | Linked crater bowls separated by a saddle | Two direct settlements; current `deep_relay` may be reshaped into this slot rather than deleted |
-| 5 | 3 | H → L → M | Terraced switchback around a dominant peak | First bounce-pad course after pad contract closes |
-| 6 | 3 | L → H → L | U-shaped valley, high cirque rim, low valley bench | One-pad variation; strong non-monotonic height lesson |
-| 7 | 4 | H → L → H → M | Twin peaks, quarry terraces, central saddle | Multi-pad chain and recovery shelf |
-| 8 | 4 | L → M → L → H | Basin garden linked by ridges and valley floors | Multi-pad placement on flat and sloped candidates |
-| 9 | 5 | H → L → M → H → L | Three connected ridge shelves with alternate routes | Route reading and several pad interactions |
-| 10 | 6 | L → H → M → H → L → H | Deep mountain complex: horn, plateau, saddles, cirque, valley, terraces | Final batch course; highest multi-pad complexity |
-
-Courses 1–4 remain device-free. Courses 5–10 reserve broad placement surfaces
-but must not ship as pad-dependent until the bounce behavior and placement rules
-are accepted. If that decision remains open, those six courses can be authored
-and certified only as terrain/goal prototypes, not final gameplay content.
-
-## Visual Direction
-
-The concept images are planning references, not runtime screenshots or approved
-exact layouts:
-
-1. `project-specs/cannon-golf/assets/terrain-progression-early.png` — two peaks,
-   saddle, broad shelves, and two goals at different heights.
-2. `project-specs/cannon-golf/assets/terrain-progression-mid.png` — U-shaped
-   valley, cirque, valley bench, ridge, and three non-monotonic goals.
-3. `project-specs/cannon-golf/assets/terrain-progression-late.png` — horn summit,
-   plateau, multiple ridges/saddles/terraces, central basin, and five goals at
-   alternating elevations.
-
-All three use the current snapshot only as a style reference: pale faceted
-triangulated terrain, soft sky, warm ground, cyan flags, high-oblique course
-reading, no UI, no trajectory, and no preinstalled device.
+- Every material product, architecture, dependency, data, UX, ownership, safety,
+  and validation decision is closed for this scope.
+- Godot 4.7.1 and repository test/capture scripts are available; no dependency
+  installation is required.
+- Remaining unknowns are implementation-local tuning of authored resource values
+  and cannot expand the locked behavior or architecture.
 
 ## Tasks
 
-### Phase 1: Establish current truth
+### Phase 0: Storage-safe validation containment
 
-- [x] Trace selection state, focus, preview build, cache, and transition owners.
-- [x] Capture the apparent double-selection state and distinguish focus from
-  pressed state.
-- [x] Trace the synchronous cold-build path and measure bounded comparative
-  cold capture totals.
-- [x] Map the current one-goal and special two-leg schemas, generator, camera,
-  range, solution, and test assumptions.
+Goal: no test, bake, tuner, or capture can silently consume unbounded disk or
+continue emitting the same failure after its result is already known.
 
-### Phase 2: Gather decisive evidence
+Incident baseline:
 
-- [x] Compare overlay-only, deferred synchronous, progressive runtime, and
-  offline baked-artifact delivery.
-- [x] Select the baked-artifact path and its fail-closed runtime boundary.
-- [x] Define a connected semantic landform vocabulary that fits current topology.
-- [x] Generate and inspect early, middle, and late concept directions from the
-  current game snapshot.
-- [x] Define a ten-course goal/elevation/terrain matrix.
+- On 2026-08-14, three duplicate `deep_relay` bake commands remained active
+  concurrently as six Godot console/engine processes.
+- `TerrainGeometryBuildJob._step_skirts` emitted the same failed assertion into
+  five Godot log files totaling 39,820,895,712 logical bytes (37.086 GiB).
+- The five approved log contents were cleared after their exact paths, owner
+  processes, exclusive access and size were verified. C: free space recovered
+  from 0 GiB to 37.086 GiB; the five zero-byte file shells are harmless.
 
-### Phase 3: Decide and record
+Preconditions:
 
-- [x] Record the selected UI/preparation architecture and rejected alternatives.
-- [x] Record the exact generator/schema/test changes a later execution contract
-  must own.
-- [x] Record the remaining user decisions that block implementation readiness.
+- No Cannon Golf Godot process is running.
+- The storage incident manifest remains outside the repository at
+  `D:\disk-inspection\2026-08-14-114444-wiztree-cannon-golf`.
 
-## Validation Required by a Later Execution Contract
+Source owners: `project.godot`, new bounded validation wrapper under `scripts/`,
+`scripts/test-cannon-golf.ps1`, `scripts/bake_cannon_golf_courses.gd`,
+`scripts/tune_cannon_golf_solutions.gd`,
+`src/terrain/terrain_geometry_build_job.gd`, and focused wrapper/failure tests
 
-- Selection callback returns inside one frame budget on the target Windows
-  release build; the exact release budget must be locked before implementation.
-- After mouse, keyboard, programmatic selection, localization refresh, and screen
-  reopen, exactly one card is pressed and focus identifies the same card.
-- Start stays disabled until the latest requested artifact is identity-valid;
-  stale completions cannot swap the preview or start the wrong course.
-- First and cached selection timing, cancellation, bounded LRU behavior, invalid
-  artifact error, and preview/gameplay geometry identity have automated tests.
-- Every catalog artifact is produced by the repository bake command and passes
-  schema/signature, finite-data, range, camera, and real-physics solution gates.
-- Each terrain family proves its named peak/valley/basin/saddle/flat-zone
-  measurements rather than relying on visual naming alone.
-- Each course checks its authored goal-rim band sequence, goal non-overlap,
-  N-leg transition, checkpoint persistence, complete-course exploration, and
-  default setup miss.
-- Rendered evidence covers course selection in default, focused-selected,
-  loading, ready, error, and ten-course overflow/scroll states, plus default and
-  overview frames for every terrain family.
+- [ ] **0.1** Disable unbounded persistent diagnostics.
+  - Change: disable project file logging; route headless output through one
+    repository wrapper that retains only a bounded tail, caps captured output at
+    4 MiB, and keeps no success log.
+  - Accept: a deliberately failing fixture exits nonzero after the first error,
+    produces at most the bounded diagnostic tail, and leaves `user://logs` at a
+    zero-byte delta.
+- [ ] **0.2** Make geometry generation fail closed once.
+  - Change: replace the repeated skirt-loop assertion with one structured job
+    failure that stops geometry construction; propagate null/failure through the
+    factory and bake command without retrying the same invalid input.
+  - Accept: an invalid skirt fixture reports one failure, creates no artifact,
+    and exits without further geometry steps; valid course bakes remain valid.
+- [ ] **0.3** Serialize and supervise heavyweight Godot runs.
+  - Change: give the wrapper a cross-process single-run guard, an exact owned
+    process-tree cleanup path, per-command wall-clock deadlines, a 10 GiB C:
+    free-space preflight floor, and post-run checks for orphan Godot processes
+    and `user://logs` growth above 1 MiB.
+  - Accept: a second simultaneous heavy run is refused, a timeout fixture has
+    its exact child tree stopped, and pre/post probes show no persistent process
+    or material log growth.
+
+Batch gate:
+
+- Run only the bounded wrapper's failure, timeout, concurrency and valid-smoke
+  fixtures. Do not resume course tuning or the broad suite until all four pass.
+
+### Phase 1: Immediate and unambiguous selection
+
+Goal: a course click changes one selected state immediately, keeps focus aligned,
+and exposes loading/ready/failure truth without blocking.
+
+Preconditions:
+
+- Current course-select scene, theme variation, app signal path and UI tests are
+  unchanged from discovery.
+
+Source owners: `src/cannon_golf/app/cannon_golf_course_select.gd`,
+`scenes/cannon_golf/app/cannon_golf_course_select.tscn`,
+`resources/ui/paint_mountain_theme.tres`, `tests/cannon_golf_ui_contract_test.gd`
+
+- [ ] **1.1** Exactly one course card reads as selected.
+  - Change: make ButtonGroup the only toggle owner, align focus after mouse,
+    keyboard and programmatic selection, and add a distinct course-card focus
+    style.
+  - Accept: the UI contract asserts one pressed card, matching focus owner and
+    a different focus/pressed style after selecting non-default cards.
+- [ ] **1.2** Ten cards remain usable without clipping.
+  - Change: put the reusable course-card list in a keyboard/mouse-wheel scroll
+    owner and keep Back/Start fixed inside the 1280x720 frame.
+  - Accept: the UI contract finds ten targets of at least 44 px, valid focus
+    order, a scrolling list and no viewport overflow at supported desktop sizes.
+- [ ] **1.3** Loading, ready and failure states are truthful.
+  - Change: add `set_course_preparation_state`; disable Start and use localized
+    `준비 중…`/`PREPARING…` while pending, enable only on ready, and expose one
+    concise disabled failure label while a same-card selection can retry.
+  - Accept: a targeted selection-state test reaches all states and never emits
+    `start_requested` while not ready.
+
+Batch gate:
+
+- Run `cannon_golf_ui_contract_test.gd` and the new selection-state test once.
+
+### Phase 2: Prepared artifact delivery
+
+Goal: selection and gameplay reuse one identity-checked artifact without runtime
+terrain generation.
+
+Preconditions:
+
+- Phase 1 state API passes its targeted checks.
+
+Source owners: `src/cannon_golf/course_catalog.gd`, new prepared-course resources
+and codec/repository, `src/cannon_golf/course_builder.gd`,
+`src/cannon_golf/app/cannon_golf_preview_world.gd`,
+`src/cannon_golf/app/cannon_golf_app.gd`, `src/cannon_golf/cannon_golf_game.gd`,
+new `scripts/bake_cannon_golf_courses.gd`
+
+- [ ] **2.1** Prepared resources are reproducible and fail closed.
+  - Change: add a schema-versioned prepared-course/leg payload and codec; save
+    mesh, collision, sampled surface, generated legs, bounds, dressing and
+    validation metrics; verify course identity and payload SHA-256 on load.
+  - Accept: codec round-trip and malformed/stale resource tests pass; the bake
+    command produces ten resources and a second bake leaves the same semantic
+    payload hashes.
+- [ ] **2.2** Selection loads latest artifact asynchronously with LRU 3.
+  - Change: adapt the retained repository pattern using
+    `ResourceLoader.load_threaded_request`, latest-request-wins publication,
+    identity checks, explicit failure and an LRU of three.
+  - Accept: repository tests cover cached, selected, obsolete, failed and
+    eviction paths; selection callback timing stays below `16,667 us` and does
+    not increment terrain generation count.
+- [ ] **2.3** Preview and gameplay share the prepared artifact.
+  - Change: builder consumes a prepared course; preview prepares a replacement
+    builder before atomic swap; App gates Start and injects the ready artifact
+    into the game before it enters the tree; direct gameplay loads the same
+    baked resource rather than generating.
+  - Accept: app-flow/performance tests prove preview/gameplay identity and mesh
+    parity, stale preview protection, ready-only start and no selection-path
+    factory build.
+
+Batch gate:
+
+- Run codec/repository, `cannon_golf_course_build_test.gd`,
+  `cannon_golf_performance_test.gd`, and `cannon_golf_app_flow_test.gd` once.
+
+### Phase 3: Generic ordered legs and semantic landforms
+
+Goal: authored data can express one-to-six ordered goals with non-monotonic
+elevation on recognizably structured connected terrain.
+
+Preconditions:
+
+- Prepared artifact schema can serialize arbitrary leg counts and metrics.
+
+Source owners: `src/cannon_golf/course_data.gd`,
+`src/cannon_golf/course_leg_data.gd`, new landform recipe/feature resources,
+`src/cannon_golf/course_terrain_factory.gd`, generated course owners, terrain,
+range, relay, camera and course tests
+
+- [ ] **3.1** Ordered-leg data is generic and explicit.
+  - Change: add route index, goal placement offset/region and relative rim band;
+    remove upward-only and two-leg assumptions; make nearest-leg admission work
+    for N legs while retaining centered checkpoint launchers and full corridor
+    guards.
+  - Accept: data/factory tests cover counts 1-6, repeated rise/fall sequences,
+    non-overlap, finite data, exact launcher centering and fail-closed malformed
+    inputs.
+- [ ] **3.2** Named landforms have authored, measurable shape.
+  - Change: apply bounded semantic feature recipes before goal carving and store
+    per-feature metrics for peaks/ridges/saddles/plateaus/valleys/basins/
+    terraces; reject a feature that misses its metric.
+  - Accept: terrain tests prove required feature kinds and their height/flatness
+    measures, at least 80 m late-course relief, connected topology and goal
+    recess/lip containment.
+- [ ] **3.3** Runtime checkpoint behavior supports every leg count.
+  - Change: replace two-leg-specific builder/game/test branches with N-leg
+    iteration while keeping confirmed balls, impact history, retry state, compact
+    goal tally and final-only clear.
+  - Accept: relay/session tests complete synthetic 1-, 3- and 6-leg transitions,
+    prove future goals cannot confirm and retain all confirmed checkpoint balls.
+
+Batch gate:
+
+- Run course, terrain, range, build, camera, goal, relay and session tests once.
+
+### Phase 4: Author and bake the ten-course batch
+
+Goal: the catalog exposes ten distinct connected courses matching the approved
+goal/elevation/terrain matrix.
+
+Preconditions:
+
+- Phase 3 generation and Phase 2 bake path pass.
+
+Source owners: `resources/cannon_golf/courses/`,
+`resources/cannon_golf/prepared/`, `src/cannon_golf/course_catalog.gd`,
+course/solution/camera/range tests
+
+- [ ] **4.1** Ten authored course inputs match the progression.
+  - Change: preserve First Ridge and Rising Bend, retain and reposition Deep
+    Relay in the two-goal tier, and add resources so counts are
+    `1,1,2,2,3,3,4,4,5,6`; use rim sequences `L`, `H`, `H→L`, `L→H`,
+    `H→L→M`, `L→H→L`, `H→L→H→M`, `L→M→L→H`,
+    `H→L→M→H→L`, and `L→H→M→H→L→H`.
+  - Accept: catalog tests assert exact order, unique IDs, goal counts, rim-band
+    sequences, valid default/solution metadata and distinct terrain recipes.
+- [ ] **4.2** Terrain families visibly and physically match their role.
+  - Change: author compact ridge, summit/saddle, descending shelves, linked
+    bowls, terraced peak, U-valley/cirque, twin peaks, basin garden, three
+    ridges and alpine complex recipes; include broad low-variance surfaces in
+    courses 5-10 without preinstalling devices.
+  - Accept: baked artifacts pass identity, feature, bounds, camera, union range
+    and placement-surface metrics; the catalog has no `Mechanisms` node.
+- [ ] **4.3** Every course has a real-physics completion witness.
+  - Change: tune each authored leg solution while keeping `50/50/50` as a miss.
+  - Accept: `cannon_golf_solution_test.gd` replays all legs sequentially and
+    clears all ten; default setup does not advance any tested leg.
+
+Batch gate:
+
+- Run the bake command once after tuning, then course, range and solution tests.
+
+### Phase 5: Rendered flow and production-path evidence
+
+Goal: real pixels and interaction confirm the fixed selection flow and terrain
+variety without desktop residue.
+
+Preconditions:
+
+- Phases 1-4 and their targeted checks pass.
+
+Source owners: capture harness, app scenes, fastrun canonical project entry
+
+- [ ] **5.1** Course selection renders each reachable state correctly.
+  - Change: extend the background capture harness for default, non-default
+    selected, preparing, ready, failure and scrolled-late-course states.
+  - Accept: inspected 1280x720 captures show one selected card, distinct focus,
+    no overlap/clipping, fixed actions and truthful Start state.
+- [ ] **5.2** Representative terrain reads as designed.
+  - Change: capture early, middle and late prepared courses from the real runtime.
+  - Accept: inspected frames show connected faceted terrain and the authored
+    peak/shelf/saddle, valley/cirque and alpine-complex families with correct
+    goal counts/elevation variation.
+- [ ] **5.3** Canonical app launch and native interaction remain responsive.
+  - Change: use the registered fastrun project entry; click multiple course cards,
+    scroll to course ten, start the latest ready course and return once.
+  - Accept: the selected state paints immediately, animation/input continues
+    during preparation, only the latest preview appears, and gameplay uses that
+    course. Stop the task-owned process after evidence capture.
+
+## Validation and Rework Controls
+
+| Cadence | Exact check | Run when | Do not rerun until |
+| --- | --- | --- | --- |
+| Inner loop | bounded wrapper for `res://tests/<target>.gd`, one process, 180 s wall-clock cap, 4 MiB output cap, no persistent Godot log | After the target's implementation changes | Its owned input changes |
+| Authoring bake | bounded wrapper for one course, 180 s wall-clock cap, never in parallel | After that course input or generator changes | That course or generator input changes |
+| Physics tuner | bounded wrapper for one course, one process, 10 min wall-clock cap, no automatic retry | After an authored surface or witness hypothesis changes | A new hypothesis or owned input changes |
+| Phase gate | The exact targeted scripts listed under that phase | All task-local checks in the phase pass | A phase-owned input changes |
+| Final gate | `powershell -ExecutionPolicy Bypass -File scripts/test-cannon-golf.ps1` | All phases and rendered checks pass | A final-gate input changes |
+| Text hygiene | `git diff --check` | Before each scoped commit | A touched text file changes |
+
+Validation rules:
+
+- Direct raw Godot invocations are forbidden for headless tests, bakes, tuners
+  and captures after Phase 0. Use the bounded wrapper even for a single check.
+- Check C: free space, the Cannon Golf `user://logs` byte total and owned Godot
+  processes before and after every heavyweight run. Stop the task if free space
+  falls below 10 GiB, logs grow by more than 1 MiB, or an owned process remains.
+- Never run duplicate course bakes or tuners concurrently. Parallel agent work
+  must partition source inspection or lightweight tests, not Godot generation.
+- Preserve only the last 200 diagnostic lines for a failed check. Do not retain
+  complete repeated stdout/stderr streams or successful run logs.
+- Run the narrowest check that proves the current task.
+- Run each phase gate once after its tasks pass.
+- Run the focused suite once at the end because catalog-wide parser, runtime and
+  solution compatibility is not fully covered by any one task.
+- Rerun a failed check only after a relevant implementation change or a new
+  hypothesis can produce new evidence.
+- Record known non-blocking warnings once instead of rediscovering them.
+
+## Predetermined Contingencies and Change Control
+
+| Trigger | Required response | Boundary or escalation point |
+| --- | --- | --- |
+| A verified material fact contradicts this contract | Stop the affected branch, update the contract, and obtain any required approval before resuming | Do not select a different product, dependency, topology or device contract silently |
+| A semantic feature cannot pass its measure without breaking admission | Reduce that feature's bounded authored amplitude or move its anchor, preserving the named family and rim sequence | Do not weaken finite, connected, range, corridor, goal or camera gates |
+| A prepared artifact fails identity/payload validation | Keep Start disabled, publish local failure and regenerate from authored inputs | Never fall back to runtime generation |
+| A solution is numerically fragile | Retune the authored feature/goal/witness for a wider settlement route | Do not copy the solution into default setup or weaken settlement rules |
+| Full all-course solution replay exceeds the practical final budget | Keep targeted leg physics witnesses for every new course and record exact unfinished exhaustive evidence | Do not claim full completion or mark the plan done until the named gate runs or the contract is revised with user approval |
+| A check emits its first script/runtime error | Stop its exact owned process tree immediately, keep only the bounded tail, fix the cause, then rerun once | Never allow an already-known failure to continue for more evidence |
+| A Godot run reaches its wall-clock or output cap | Stop the exact owned process tree, classify it as a failed check, and revise the implementation or hypothesis | Never increase the cap merely to let an unchanged failure continue |
+| C: free space is below 10 GiB, `user://logs` grows over 1 MiB, or an owned Godot process remains | Stop all further Godot validation, report the incident, and reclaim only explicitly authorized task-owned output | Do not start another check until preflight is healthy |
+
+Implementation-local discoveries may be handled inside the locked contract when
+they cannot change scope, visible behavior, ownership, architecture, safety, or
+acceptance.
+
+## Anti-Rework Execution Rules
+
+- On start or resume, read this contract and inspect the worktree only enough to
+  confirm checkpoint inputs, then continue from the first satisfiable unchecked
+  task.
+- Treat checked tasks and recorded passing evidence as complete unless a relevant
+  input changed, evidence is missing, or the final gate is scheduled.
+- Run each check at its declared cadence; do not repeat a passing check merely to
+  regain confidence.
+- Mark a task complete only after its acceptance check passes, and update this
+  file's checkbox and progress pointer together.
+- If reality contradicts a material decision, stop that branch and revise this
+  contract. Resolve implementation-local mechanics without reopening planning.
 
 ## Progress and Next Steps
 
-- Canonical progress: the task checkboxes in this checklist.
-- Current phase: research complete; implementation contract blocked.
-- Next task: obtain the four owner decisions below, then create one Mode 3
-  contract in this order: selection/artifact delivery, generic N-leg terrain
-  grammar, courses 1–4, bounce-pad vertical slice, courses 5–10.
-- Update rule: do not repeat the completed search unless the code, accepted
-  product decision, engine version, or target course count changes.
-
-## Owner Decisions Required
-
-1. Confirm whether ten courses replace the accepted eleven-stage target or are
-   the first authored batch within it. Until then, Q-23 preserves the eleven
-   target and treats this matrix as the first ten.
-2. Accept offline baked course artifacts as mandatory shipping inputs, with no
-   synchronous procedural-generation fallback in course selection.
-3. Set the maximum release-build selection callback/frame time, or authorize a
-   prototype-derived budget measured on the target Windows machine.
-4. Close the bounce-pad response and placement rules before courses 5–10 become
-   final pad-dependent gameplay rather than terrain/goal prototypes.
+- Canonical progress: task checkboxes in this contract.
+- Current phase: Phase 0 incident containment. Previously implemented course
+  work is preserved but no further Godot generation runs before this gate.
+- Next task: 0.1, disable persistent logs and add the bounded fail-fast wrapper.
+- Last completed gate: Discovery Closure Gate; baseline
+  `cannon_golf_course_test.gd` passed on Godot 4.7.1 for the original three
+  courses.
+- Update rule: after each checkpoint passes, record concise evidence, check the
+  task and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions
 
-This research checklist is complete: the runtime cause, selected delivery
-architecture, terrain direction, content matrix, schema gaps, test gates, and
-exact owner blockers are recorded. It does not authorize implementation.
+Complete when:
 
-Stop and revise before implementation if the owner chooses runtime-only course
-generation, disconnected topology, unordered independent goals, a different
-course count, or a different device teaching sequence. After the four decisions
-close, invoke the planning skill again in Mode 3; do not implement from this
-research artifact directly.
+- Every task acceptance check, guard, phase gate and final gate passes.
+- The final validation leaves at least 10 GiB free on C:, zero owned Godot
+  processes, and no material `user://logs` growth.
+- The ten catalog artifacts are reproducible and the real app renders and starts
+  the selected latest ready course without a selection-frame stall.
+- The plan has no unresolved placeholder and its frontmatter status is `done`.
+- Durable accepted behavior is recorded in `DECISIONS.md`, resolved questions are
+  moved out of the open table, and task-owned changes are committed.
 
-## Image Prompt Record
+Replan when:
 
-- Early: current screenshot style; connected low-poly miniature mountain with
-  main/secondary peaks, saddle, broad shelves, two recessed goals, and no device.
-- Middle: same style; U-shaped valley, high cirque, ridge/saddle, low flat bench,
-  and three goals ordered high → low → medium.
-- Late: same style; connected horn summit, plateau, ridges, saddles, basin,
-  valley, terraces, and five goals at alternating elevations. A second edit pass
-  changed only the unflagged central basin into the missing fifth goal.
+- A material discovery invalidates the prepared-artifact, connected-terrain,
+  ordered-goal or ten-course batch contract.
+
+Do not replan or stop for:
+
+- Local schema encoding, resource syntax, tuning values, capture parameters or a
+  passing check whose relevant inputs did not change.
