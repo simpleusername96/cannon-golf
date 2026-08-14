@@ -1,5 +1,7 @@
 extends SceneTree
 
+const FAST_GENERATOR := preload("res://src/cannon_golf/trajectory_course_generator.gd")
+
 var _failed := false
 
 
@@ -70,7 +72,7 @@ func _assert_prepared_terrain(
 	)
 	_assert_prepared_material(prepared, course)
 	for leg_index in range(prepared.legs.size()):
-		_assert_goal_basin(prepared, prepared.legs[leg_index], course.leg_at(leg_index))
+		_assert_goal_plate_support(prepared, prepared.legs[leg_index], course.leg_at(leg_index))
 	_assert_rim_bands(prepared)
 	if course.course_id == &"deep_relay":
 		_assert_true(prepared.relief() >= 80.0, "Deep Relay must retain at least 80m relief.")
@@ -79,8 +81,13 @@ func _assert_prepared_terrain(
 				leg.goal_rim_y - leg.launcher_position.y >= 25.0,
 				"Every Deep Relay goal rim must rise at least 25m from its launcher."
 			)
-	if CannonGolfCourseCatalog.index_of(course.course_id) >= 4:
-		_assert_true(prepared.relief() >= 80.0, "Late-course playable terrain must have at least 80m relief.")
+	var course_index := CannonGolfCourseCatalog.index_of(course.course_id)
+	_assert_true(
+		prepared.relief() + 0.01 >= FAST_GENERATOR._minimum_required_relief(
+			course, course_index
+		),
+		"Prepared terrain must meet its catalog-indexed relief target."
+	)
 	if prepared.legs.size() > 1:
 		_assert_relay_launchers(prepared)
 		_assert_true(
@@ -138,25 +145,28 @@ func _assert_rim_bands(prepared: CannonGolfPreparedCourse) -> void:
 				)
 
 
-func _assert_goal_basin(
+func _assert_goal_plate_support(
 		prepared: CannonGolfPreparedCourse,
 		leg: CannonGolfPreparedCourseLeg,
 		authored_leg: CannonGolfCourseLegData
 ) -> void:
+	var support_y := leg.goal_position.y - FAST_GENERATOR.PLATE_SUPPORT_DEPTH
 	_assert_true(
-		absf(prepared.height_at_local(leg.goal_position.x, leg.goal_position.z) - leg.goal_position.y) <= 0.08,
-		"Prepared sampled surface must reproduce the sealed goal center."
+		absf(prepared.height_at_local(leg.goal_position.x, leg.goal_position.z) - support_y) <= 0.08,
+		"Prepared terrain must support the plate at the sealed shallow offset."
 	)
 	_assert_true(
 		leg.goal_radius >= authored_leg.bowl_radius_range.x and leg.goal_radius <= authored_leg.bowl_radius_range.y,
 		"Prepared goal radius must stay inside the authored recipe range."
 	)
 	_assert_true(
-		leg.goal_lip_y - leg.goal_position.y >= authored_leg.bowl_recess_depth_range.x \
-				+ authored_leg.bowl_lip_height_range.x - 0.35,
-		"Prepared goal center must remain substantially below its sealed retaining lip."
+		is_equal_approx(leg.goal_rim_y, leg.goal_position.y) \
+				and leg.goal_lip_y - leg.goal_position.y >= 0.89 \
+				and leg.goal_lip_y - leg.goal_position.y <= 1.31,
+		"Prepared plate must seal its floor and low wall height."
 	)
-	var nearest_sample_height := INF
+	var minimum_sample_height := INF
+	var maximum_sample_height := -INF
 	var samples_inside := 0
 	for z_index in range(prepared.cell_count.y + 1):
 		var z := lerpf(prepared.local_bounds.position.y, prepared.local_bounds.end.y, float(z_index) / prepared.cell_count.y)
@@ -165,14 +175,28 @@ func _assert_goal_basin(
 			if Vector2(x, z).distance_to(Vector2(leg.goal_position.x, leg.goal_position.z)) > leg.goal_radius:
 				continue
 			var height := prepared.heights[z_index * (prepared.cell_count.x + 1) + x_index]
-			nearest_sample_height = minf(nearest_sample_height, height)
+			minimum_sample_height = minf(minimum_sample_height, height)
+			maximum_sample_height = maxf(maximum_sample_height, height)
 			samples_inside += 1
-			_assert_true(height <= leg.goal_lip_y + 0.001, "Goal basin samples must stay at or below the retaining lip.")
-	_assert_true(samples_inside >= 8, "Goal basin must contain enough sampled terrain.")
+			_assert_true(
+				absf(height - support_y) <= 0.08,
+				"Terrain below a goal plate must remain flat and shallow."
+			)
+	_assert_true(samples_inside >= 8, "Goal plate support must contain enough sampled terrain.")
 	_assert_true(
-		leg.goal_position.y <= nearest_sample_height + 0.3,
-		"Goal center must remain the lowest stable region of its basin."
+		maximum_sample_height - minimum_sample_height <= 0.08,
+		"Terrain must not create a retaining wall inside the physical plate."
 	)
+	var shoulder_directions: Array[Vector2] = [
+		Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN,
+	]
+	for direction: Vector2 in shoulder_directions:
+		var shoulder_point: Vector2 = Vector2(leg.goal_position.x, leg.goal_position.z) \
+				+ direction * (leg.goal_radius + FAST_GENERATOR.PLATE_TERRAIN_SHOULDER * 0.75)
+		_assert_true(
+			absf(prepared.height_at_local(shoulder_point.x, shoulder_point.y) - support_y) <= 0.12,
+			"Every goal plate must have a broad visible terrain shoulder outside its wall."
+		)
 
 
 func _assert_relay_launchers(prepared: CannonGolfPreparedCourse) -> void:

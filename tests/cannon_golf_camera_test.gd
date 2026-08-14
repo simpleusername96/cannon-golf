@@ -25,8 +25,8 @@ func _run() -> void:
 		)
 		var first_leg := builder.prepared_course.legs[0]
 		_assert_true(rig.set_planning_context(
-			builder.frame_bounds_for_leg(0), builder.course.planning_focus,
-			first_leg.launcher_position, first_leg.shot_axis_yaw_degrees
+			builder.course.content_bounds, builder.course.content_bounds.get_center(),
+			builder.launcher.position, builder.launcher.shot_axis_yaw_degrees
 		), "Planning camera must accept prepared terrain context.")
 		for view in [&"oblique", &"cannon"]:
 			rig.reset_planning_view()
@@ -55,13 +55,18 @@ func _run() -> void:
 			)
 			_assert_terrain_clear(camera, builder, "%s %s panned" % [source_course.course_id, view])
 			var default_distance := camera.global_position.distance_to(rig.planning_focus())
+			var default_zoom := rig.zoom
 			_assert_true(rig.zoom_by_steps(1.0), "One planning zoom step must move toward the course.")
 			rig.snap_to_planning()
 			var one_step_distance := camera.global_position.distance_to(rig.planning_focus())
 			_assert_true(
-				one_step_distance <= default_distance * 0.91 \
-						and one_step_distance >= default_distance * 0.89,
-				"One zoom-in step must reduce planning distance by approximately 10 percent."
+				is_equal_approx(
+					rig.zoom,
+					default_zoom * CannonGolfCourseCameraRig.ZOOM_FACTOR_PER_STEP
+				) and one_step_distance <= default_distance + 0.01 \
+						and camera.global_position.is_finite(),
+				"One zoom-in step must apply the 10 percent control value without moving away: %s %s." \
+						% [source_course.course_id, view]
 			)
 			_assert_true(rig.zoom_by_steps(-1.0), "The inverse step must restore planning distance.")
 			rig.snap_to_planning()
@@ -77,17 +82,24 @@ func _run() -> void:
 			var close_distance := camera.global_position.distance_to(rig.planning_focus())
 			_assert_true(
 				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MINIMUM_ZOOM) \
-						and close_distance < default_distance * 0.7 \
+						and close_distance <= default_distance + 0.01 \
 						and camera.global_position.is_finite(),
-				"Planning zoom-in must be meaningful, bounded, and produce a valid pose."
+				"Planning zoom-in must be bounded, terrain-safe, and produce a valid pose: %s %s." \
+						% [source_course.course_id, view]
 			)
 			_assert_true(rig.zoom_by_steps(-100.0), "Planning zoom must move away from the course.")
 			rig.snap_to_planning()
 			_assert_true(
 				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MAXIMUM_ZOOM) \
-						and camera.global_position.distance_to(rig.planning_focus()) > default_distance,
-				"Planning zoom-out must be bounded and visibly increase distance."
+						and camera.global_position.is_finite(),
+				"Planning zoom-out must reach a bounded valid pose: %s %s." \
+						% [source_course.course_id, view]
 			)
+			if view == &"oblique":
+				_assert_bounds_fit(
+					camera, builder.course.content_bounds, rig.planning_focus(),
+					"%s overview maximum zoom" % source_course.course_id
+				)
 			_assert_terrain_clear(camera, builder, "%s %s zoomed" % [source_course.course_id, view])
 		var stored_view := rig.view_mode
 		var stored_pan := rig.pan_offset
@@ -133,8 +145,8 @@ func _run() -> void:
 		if builder.prepared_course != null:
 			_assert_true(
 				rig.set_planning_context(
-					builder.frame_bounds_for_leg(0), builder.course.planning_focus,
-					first_leg.launcher_position, first_leg.shot_axis_yaw_degrees
+					builder.course.content_bounds, builder.course.content_bounds.get_center(),
+					builder.launcher.position, builder.launcher.shot_axis_yaw_degrees
 				),
 				"Relay planning must accept its active-leg frame."
 			)

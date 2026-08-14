@@ -3,7 +3,7 @@ extends Node
 
 const FOLLOW_OFFSET := Vector3(10.0, 6.5, 12.0)
 const CONFIRMED_FOLLOW_OFFSET := Vector3(11.0, 20.0, 16.0)
-const FRAME_MARGIN := 1.08
+const FRAME_MARGIN := 1.18
 const MODE_PLANNING: StringName = &"planning"
 const MODE_FOLLOW: StringName = &"follow"
 const DEFAULT_ZOOM := 1.05
@@ -18,15 +18,12 @@ const MAXIMUM_PAN_EVENT_SPAN_RATIO := 0.02
 const ARROW_PAN_SPAN_RATIO := 0.01
 const FOCUS_TERRAIN_CLEARANCE := 1.5
 const CAMERA_TERRAIN_CLEARANCE := 2.0
-const CANNON_TERRAIN_CLEARANCE := 6.0
-const CANNON_REAR_OFFSET := 18.0
-const CANNON_HEIGHT_OFFSET := 14.0
-const CANNON_FOCUS_FORWARD := 8.0
-const CANNON_FOCUS_HEIGHT := 3.0
-const CANNON_FIELD_OF_VIEW := 60.0
-const CANNON_SKYLINE_RADIUS := 24.0
-const CANNON_SKYLINE_STEP := 6.0
-const CANNON_SKYLINE_CLEARANCE := 8.0
+const CANNON_TERRAIN_CLEARANCE := 2.5
+const CANNON_REAR_OFFSET := 7.0
+const CANNON_HEIGHT_OFFSET := 5.5
+const CANNON_FOCUS_FORWARD := 12.0
+const CANNON_FOCUS_HEIGHT := 3.5
+const CANNON_FIELD_OF_VIEW := 64.0
 
 var view_mode: StringName = &"oblique"
 var camera_mode: StringName = MODE_PLANNING
@@ -206,6 +203,15 @@ func planning_focus() -> Vector3:
 	return _effective_planning_focus() if _course != null else Vector3.ZERO
 
 
+## Keeps the local cannon view aligned with the player's current horizontal aim.
+func set_cannon_yaw(world_yaw_degrees: float) -> bool:
+	if not is_finite(world_yaw_degrees):
+		return false
+	_cannon_yaw_degrees = world_yaw_degrees
+	_planning_pose_dirty = true
+	return true
+
+
 func follow(target: Node3D) -> bool:
 	return _begin_follow(target, FOLLOW_OFFSET, false)
 
@@ -355,6 +361,8 @@ func _resolve_planning_pose(viewport_size: Vector2) -> void:
 
 func _zoom_adjusted_frame_bounds() -> AABB:
 	var shifted_frame := AABB(_frame_bounds.position + pan_offset, _frame_bounds.size)
+	if view_mode == &"cannon":
+		return shifted_frame
 	# Panning translates the local inspection window. Zooming out blends that
 	# window back to the complete course, so the maximum overview remains a
 	# reliable way to recover context without discarding the stored pan.
@@ -387,6 +395,8 @@ func _clamp_pan_to_exploration() -> void:
 func _effective_planning_focus() -> Vector3:
 	var base_focus := _cannon_focus() if view_mode == &"cannon" else _base_planning_focus
 	var user_focus := base_focus + pan_offset
+	if view_mode == &"cannon":
+		return user_focus
 	return user_focus.lerp(_exploration_bounds.get_center(), _exploration_blend())
 
 
@@ -398,24 +408,11 @@ func _base_offset_for_view() -> Vector3:
 
 func _cannon_camera_position() -> Vector3:
 	var position := _cannon_launcher_position - _shot_forward() * CANNON_REAR_OFFSET
-	var local_skyline := _cannon_launcher_position.y
-	var sample_count := ceili(CANNON_SKYLINE_RADIUS / CANNON_SKYLINE_STEP)
-	for z_index in range(-sample_count, sample_count + 1):
-		for x_index in range(-sample_count, sample_count + 1):
-			var offset := Vector2(float(x_index), float(z_index)) * CANNON_SKYLINE_STEP
-			if offset.length() > CANNON_SKYLINE_RADIUS:
-				continue
-			var surface_y := _terrain_height(Vector3(
-				_cannon_launcher_position.x + offset.x,
-				0.0,
-				_cannon_launcher_position.z + offset.y
-			))
-			if is_finite(surface_y):
-				local_skyline = maxf(local_skyline, surface_y)
-	position.y = maxf(
-		_cannon_launcher_position.y + CANNON_HEIGHT_OFFSET,
-		local_skyline + CANNON_SKYLINE_CLEARANCE
-	)
+	# The launcher and every unlocked source have a prepared support shoulder.
+	# Sampling the whole nearby skyline lifted this view above unrelated peaks and
+	# turned it into another overview. Keep the camera on that local shoulder;
+	# the final terrain-clearance pass still prevents clipping.
+	position.y = _cannon_launcher_position.y + CANNON_HEIGHT_OFFSET
 	return position
 
 

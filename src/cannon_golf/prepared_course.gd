@@ -5,7 +5,7 @@ extends Resource
 
 const SCHEMA_VERSION := 3
 const PHYSICS_BACKEND_ID := "GodotPhysics3D"
-const CONSTRUCTION_VERSION := 2
+const CONSTRUCTION_VERSION := 3
 
 @export_storage var schema_version := SCHEMA_VERSION
 @export_storage var course_id: StringName

@@ -67,9 +67,9 @@ coefficients, stage data formats, or code ownership.
 - Do not treat the inherited frontal Aim View as the default composition.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
-- Use a per-leg behind-cannon planning view to explain the active launcher's
-  direction, local height, and immediate route. It is derived from the active
-  launcher and updates when a relay advances.
+- Use a local behind-cannon planning view to explain the selected cannon
+  source, its `50 / 50 / 50` base direction, and nearby terrain. It must not
+  auto-frame or imply a next goal.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In either planning family, left-drag orbits around the current fixed course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -86,15 +86,15 @@ coefficients, stage data formats, or code ownership.
   compact follow action explicitly follows the newest live ball; `Tab`, that
   action, overview, or cannon view returns immediately to the exact stored
   planning pose. Aim and Fire remain usable while an earlier ball is still live.
-- Camera changes must preserve stage identity, selected goal, selected device,
-  and launch parameters.
+- Camera changes must preserve stage identity, selected cannon source, selected
+  device, and launch parameters.
 - Whatever exploration controls are selected must not move gameplay objects,
   clear selection, alter aim, or invalidate confirmed goals. Returning to
   planning must restore a readable course framing.
-- For an ordered relay, the default and reset planning frames prioritize the
-  current launcher-to-active-goal leg instead of miniaturizing the whole route.
-  Pan, orbit, and bounded zoom still expose the full course, and the course
-  selection preview frames its full depth.
+- The high-oblique reset frames the complete course. The cannon reset returns
+  to the selected source's local base direction. Pan, orbit, and bounded zoom
+  still expose the full course, and the course selection preview frames its
+  full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language
@@ -110,11 +110,10 @@ coefficients, stage data formats, or code ownership.
   extent and must fit inside the real three-parameter launch envelope. Do not
   shrink or clip the mountain to make a shot appear feasible, and do not draw
   the envelope in normal play.
-- `deep_relay` is a depth-first `210 x 320` metre course: a low start shelf, a
-  higher middle goal shelf, and a higher summit goal must read as one continuous
-  terraced mountain. Its playable top has at least `80` metres of relief, and
-  each launcher-to-goal leg rises at least `25` metres. Do not flatten that
-  sequence into a broad frontal silhouette.
+- Later courses expand progressively from the early `210 x 120` metre teaching
+  scale to approximately `315 x 480` metres and `160` metres of relief. Their
+  height must read as distinct peaks, broad shelves, ridges, and natural valleys,
+  not repeated local pits. Ordered legs may rise or descend.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,
@@ -122,31 +121,32 @@ coefficients, stage data formats, or code ownership.
 
 ### Settlement goals and settled balls
 
-- A hole goal is a real cup or recessed basin with visible inner depth, not a
-  floating ring, target decal, or waypoint icon.
-- A recessed goal may be flat or concave. Its interior must not rise toward the
-  center. For the first two courses, use a terrain-owned basin whose center is
-  lowest and whose height increases toward the rim; do not add a separate cup
-  collider or freeze an unconfirmed ball.
-- A landing-zone goal is a small physical surface with a clear perimeter,
-  containment shape, or material boundary. It must not be an invisible trigger
-  or a broad arbitrary patch of terrain.
-- Hole rims may use restrained material contrast, but the depression and shadow
-  must carry the primary meaning.
+- A goal is a shallow physical landing plate placed on ordinary connected
+  terrain, not a deep hole, crater, floating ring, target decal, or invisible
+  trigger. Its complete floor must be visible from the authored overview.
+- The plate has a flat or barely concave floor, a low retaining wall, and one
+  broad lowered opening facing the incoming route. The wall catches low-energy
+  roll without looking like a cup or blocking the plate from view.
+- Terrain may fit a shallow support below the plate and blend back gradually,
+  but it must not supply the goal wall or create a surrounding excavation.
 - Entering a goal is not enough: a ball that bounces out before settlement must
   remain visibly unsuccessful.
 - A confirmed goal must show the settled ball clearly from every planning view,
   and the ball must not move when later shots occur.
-- Ordered relay goals use three world states: the active goal has the strongest
-  flag height and rim-marker rhythm; future goals are visibly restrained;
-  confirmed goals are led by their retained ball and a completed marker rhythm.
+- All incomplete goals share the strongest available-goal flag and marker
+  rhythm. Confirmed goals are led by their retained ball and a completed marker
+  rhythm; there is no future or next-goal state in normal play.
   One small edge-aligned tally may show completed goals over total goals, such as
   `1 / 2`; it must not become a progress card or central status panel. Shape,
   height, spacing, and the confirmed ball must distinguish the world states in
   grayscale; color and contrast are secondary cues.
-- The two-course prototype ball uses one `0.75 m` physical and visual radius so
-  it remains readable over the original-scale mountain without becoming a
-  non-physical screen-space marker.
+- A compact edge-aligned cannon-source selector lists `Start` plus completed
+  goal numbers only. It is a location choice, not a target selector. Selecting
+  a completed goal moves the cannon to that plate center and resets that source
+  to `50 / 50 / 50`; confirmation never selects it automatically.
+- The current-catalog ball uses one `1.0 m` physical and visual radius plus a
+  dark navy, low-gloss material so it remains readable over the enlarged pale
+  terrain without becoming a non-physical screen-space marker.
 - A completed state must not rely on color alone.
 
 ### Impact-history marks

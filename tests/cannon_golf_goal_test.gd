@@ -7,11 +7,14 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var goal := CannonGolfSettlementGoal.new()
-	goal.configure(Vector3(3.0, 2.0, -8.0), 10.0, 5.5)
+	goal.configure(Vector3(3.0, 2.0, -8.0), 10.0, 3.1, 24.0, 0.0)
 	root.add_child(goal)
-	_assert_true(goal.find_children("*", "StaticBody3D", true, false).is_empty(), "Goal must remain a non-colliding marker over its physical terrain basin.")
-	_assert_true(goal.contains_ball(Vector3(3.0, 2.7, -8.0), CannonGolfBall.RADIUS), "Centered ball must be inside.")
-	_assert_true(not goal.contains_ball(Vector3(14.0, 2.7, -8.0), CannonGolfBall.RADIUS), "Outside ball must not be contained.")
+	_assert_true(goal.find_children("*", "StaticBody3D", true, false).size() == 1, "Goal must own one physical plate body.")
+	_assert_true(goal.find_children("GoalPlateFloorCollision", "CollisionShape3D", true, false).size() == 1, "Goal plate must own one floor collision.")
+	_assert_true(goal.find_children("GoalPlateWallCollision*", "CollisionShape3D", true, false).size() == 13, "Goal plate must leave a three-segment incoming opening.")
+	_assert_true(goal.contains_ball(Vector3(3.0, 3.0, -8.0), CannonGolfBall.RADIUS), "Centered ball must be inside.")
+	_assert_true(not goal.contains_ball(Vector3(14.0, 3.0, -8.0), CannonGolfBall.RADIUS), "Outside ball must not be contained.")
+	_assert_true(is_equal_approx(goal.settle_seconds, 1.0), "Goal dwell must be one continuous second.")
 	_assert_true(goal.motion_is_safe(Vector3(0.2, 0.1, 0.2), Vector3(0.0, 0.8, 0.0)), "Slow motion must be safe.")
 	_assert_true(goal.motion_is_safe(Vector3(1.2, 0.0, 0.0), Vector3.ZERO), "Equivalent time-scaled safe motion must settle.")
 	_assert_true(not goal.motion_is_safe(Vector3(2.5, 0.0, 0.0), Vector3.ZERO), "Fast translation must not settle.")
@@ -47,21 +50,21 @@ func _run() -> void:
 		"Leaving settlement drag must restore ordinary ball motion."
 	)
 	drag_ball.queue_free()
-	_assert_true(_visible_rim_marker_count(goal) == 16, "The active goal must show a continuous rim rhythm.")
+	_assert_true(_visible_rim_marker_count(goal) == 13, "The active plate must show every wall segment outside its entry.")
 	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.FUTURE)
-	_assert_true(_visible_rim_marker_count(goal) == 8, "A future goal must use an alternating rim rhythm.")
+	_assert_true(_visible_rim_marker_count(goal) == 7, "A future goal must use an alternating wall rhythm.")
 	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.CONFIRMED)
 	_assert_true(_visible_rim_marker_count(goal) == 4, "A confirmed goal must defer to its retained ball.")
 	goal.set_visual_state(CannonGolfSettlementGoal.VisualState.ACTIVE)
 	goal.queue_free()
 	await process_frame
 	for course in CannonGolfCourseCatalog.all_courses():
-		await _assert_physical_basin(course)
+		await _assert_physical_plate(course)
 	print("Cannon Golf settlement-goal contract passed.")
 	quit(0)
 
 
-func _assert_physical_basin(course: CannonGolfCourseData) -> void:
+func _assert_physical_plate(course: CannonGolfCourseData) -> void:
 	var builder := CannonGolfCourseBuilder.new()
 	root.add_child(builder)
 	builder.build(course)
@@ -74,11 +77,10 @@ func _assert_physical_basin(course: CannonGolfCourseData) -> void:
 	for raw_offset in start_offsets:
 		var offset: Vector2 = raw_offset
 		var xz: Vector2 = Vector2(center.x, center.z) + offset
-		var surface_y := builder.height_at_local(xz.x, xz.y)
 		var ball := CannonGolfBall.new()
 		ball.configure(
 			builder.course.play_bounds,
-			Vector3(xz.x, surface_y + CannonGolfBall.RADIUS + 0.08, xz.y),
+			Vector3(xz.x, center.y + CannonGolfBall.RADIUS + 0.08, xz.y),
 			Vector3.ZERO
 		)
 		builder.add_child(ball)
@@ -88,13 +90,15 @@ func _assert_physical_basin(course: CannonGolfCourseData) -> void:
 			if not builder.goal.contains_rebound_column(ball.global_position, CannonGolfBall.RADIUS):
 				remained_contained = false
 				break
-		_assert_true(remained_contained, "%s low-speed basin start must remain contained." % course.course_id)
+		_assert_true(remained_contained, "%s low-speed plate start must remain contained." % course.course_id)
 		ball.queue_free()
 		await process_frame
 	var fast_ball := CannonGolfBall.new()
 	fast_ball.configure(
 		builder.course.play_bounds,
-		center + Vector3.UP * (CannonGolfBall.RADIUS + 0.08),
+		center + Vector3.UP * (
+			builder.goal.rim_height + CannonGolfBall.RADIUS + 0.20
+		),
 		Vector3(96.0, 24.0, 0.0)
 	)
 	builder.add_child(fast_ball)
@@ -119,7 +123,7 @@ func _assert_true(condition: bool, message: String) -> void:
 
 func _visible_rim_marker_count(goal: CannonGolfSettlementGoal) -> int:
 	var count := 0
-	for child in goal.get_children():
+	for child in goal.find_children("GoalRimMarker*", "MeshInstance3D", true, false):
 		if child is MeshInstance3D and String(child.name).begins_with("GoalRimMarker") \
 				and child.visible:
 			count += 1

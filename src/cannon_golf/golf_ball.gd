@@ -45,9 +45,9 @@ func _ready() -> void:
 	sphere.radial_segments = 20
 	sphere.rings = 10
 	var material := StandardMaterial3D.new()
-	material.albedo_color = Color("2584FF")
-	material.metallic = 0.16
-	material.roughness = 0.24
+	material.albedo_color = Color("0B2D5C")
+	material.metallic = 0.04
+	material.roughness = 0.58
 	sphere.material = material
 	var mesh := MeshInstance3D.new()
 	mesh.name = "GolfBallMesh"

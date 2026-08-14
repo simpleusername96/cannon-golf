@@ -17,7 +17,7 @@ func _initialize() -> void:
 		)
 		_assert_true(not payloads.has(prepared.payload_sha256), "Every prepared course needs a distinct semantic payload.")
 		payloads[prepared.payload_sha256] = true
-		_assert_true(prepared.legs.size() == course.leg_count(), "Prepared artifact must retain every ordered goal.")
+		_assert_true(prepared.legs.size() == course.leg_count(), "Prepared artifact must retain every authored goal.")
 		_assert_true(prepared.render_mesh != null and prepared.top_shape != null and prepared.skirt_shape != null, "Prepared artifact must retain render and collision resources.")
 		for leg in prepared.legs:
 			_assert_true(

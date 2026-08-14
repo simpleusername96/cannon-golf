@@ -11,240 +11,75 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var relay_index := CannonGolfCourseCatalog.index_of(&"deep_relay")
-	_assert_true(relay_index >= 0, "Deep Relay must remain in the ten-course catalog.")
-	var relay := await _new_game(relay_index)
-	_assert_true(relay.active_course().course_id == &"deep_relay", "Relay test must load Deep Relay by identity.")
-	_assert_true(
-		relay._course_builder.prepared_course.has_complete_certificate() \
-				or relay._course_builder.prepared_course.has_complete_construction_for(
-					relay.active_course()
-				),
-		"Deep Relay integration must use a valid certified or trajectory-built artifact."
-	)
-	_assert_true(relay._course_builder.terrain_body_count() == 1, "Relay must build one terrain body.")
-	_assert_true(relay._course_builder.goals.size() == 2, "Relay must build two ordered goals.")
-	_assert_true(relay._course_builder.get_node_or_null("Launcher") == relay._course_builder.launcher, "Relay must own one launcher.")
-	_assert_true(relay.active_leg_index == 0 and relay._course_builder.goal == relay._course_builder.goals[0], "Relay must begin at goal one.")
-
-	# A visibly captured edge landing must settle promptly, relocate the one
-	# launcher, and make the next leg immediately playable.
-	var first_anchor := relay._course_builder.launcher.global_position
-	_assert_true(relay.fire(), "Relay must permit an edge-settlement probe.")
-	var edge_probe := relay.current_ball
-	var first_goal := relay._course_builder.goal
-	var edge_x := first_goal.global_position.x + first_goal.inner_radius * 0.90
-	var edge_z := first_goal.global_position.z
-	var edge_y := relay._course_builder.height_at_local(edge_x, edge_z) \
-			+ CannonGolfBall.RADIUS + 0.08
-	edge_probe.global_position = Vector3(edge_x, edge_y, edge_z)
-	edge_probe.linear_velocity = Vector3.ZERO
-	edge_probe.angular_velocity = Vector3.ZERO
-	var edge_settle_frames := 0
-	for frame in range(180):
-		await physics_frame
-		edge_settle_frames = frame + 1
-		if relay.active_leg_index == 1:
-			break
-	var leg_two := relay._course_builder.prepared_course.legs[1]
-	_assert_true(
-		relay.active_leg_index == 1 and edge_settle_frames <= 180 \
-				and relay.confirmed_ball_count() == 1,
-		"A contained relay edge landing must confirm within three seconds."
-	)
-	_assert_true(
-		relay._course_builder.launcher.global_position.is_equal_approx(leg_two.launcher_position) \
-				and not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor) \
-				and Vector2(
-					relay._course_builder.launcher.global_position.x,
-					relay._course_builder.launcher.global_position.z
-				).is_equal_approx(Vector2(first_goal.global_position.x, first_goal.global_position.z)),
-		"Goal one confirmation must center the same launcher in the completed goal."
-	)
-	var leg_two_origin := relay._course_builder.launcher.launch_origin()
-	_assert_true(
-		relay.can_fire() and leg_two_origin.is_finite() \
-				and leg_two_origin.distance_to(edge_probe.global_position) > 2.0,
-		"The relocated launcher must expose a safe, immediately usable muzzle origin."
-	)
-	_assert_true(relay.fire(), "The relocated launcher must fire without a course reset.")
-	_assert_true(
-		relay.current_ball.global_position.is_equal_approx(leg_two_origin) \
-				and relay.active_leg_index == 1,
-		"The next ball must originate from the leg-two relay launcher."
-	)
-	relay.reset_course()
-	_assert_true(relay.active_leg_index == 0, "Edge-settlement probe cleanup must restore leg one.")
-
-	# A late arrival inside the active basin must settle instead of being removed
-	# by the general flight horizon.
-	_assert_true(relay.fire(), "Relay must permit a late-arrival settlement probe.")
-	var timeout_probe := relay.current_ball
-	timeout_probe.global_position = relay._course_builder.goal.global_position \
-			+ Vector3.UP * CannonGolfBall.RADIUS
-	timeout_probe.linear_velocity = Vector3.ZERO
-	timeout_probe.angular_velocity = Vector3.ZERO
-	relay._update_live_ball(timeout_probe, 0.01)
-	timeout_probe.end_launch(&"timeout")
-	await process_frame
-	_assert_true(
-		relay.active_ball_count() == 1 and relay.active_leg_index == 0,
-		"An active-goal timeout must defer to settlement instead of deleting the ball."
-	)
-	relay._update_live_ball(timeout_probe, relay._course_builder.goal.settle_seconds + 0.1)
-	_assert_true(
-		relay.active_leg_index == 1 and relay.confirmed_ball_count() == 1,
-		"A late safe arrival must confirm relay goal one."
-	)
-	relay.reset_course()
-	_assert_true(relay.active_leg_index == 0, "Timeout regression setup must restore relay leg one.")
-	_assert_true(relay.fire(), "Relay must permit a post-timeout bounce-out probe.")
-	var bounce_probe := relay.current_ball
-	bounce_probe.global_position = relay._course_builder.goal.global_position \
-			+ Vector3.UP * CannonGolfBall.RADIUS
-	relay._update_live_ball(bounce_probe, 0.01)
-	bounce_probe.end_launch(&"timeout")
-	bounce_probe.global_position += Vector3.RIGHT \
-			* (relay._course_builder.goal.inner_radius + CannonGolfBall.RADIUS)
-	relay._update_live_ball(bounce_probe, 0.01)
-	await process_frame
-	_assert_true(
-		relay.confirmed_ball_count() == 0 and relay.active_leg_index == 0 \
-				and relay.last_launch_outcome == &"bounced_out",
-		"A timed-out ball that leaves the active goal must still fail as bounced out."
-	)
-
-	# A ball resting in the future basin is still evaluated only against goal one.
-	_assert_true(relay.fire(), "Relay must permit the first shot.")
-	var future_probe := relay.current_ball
-	future_probe.global_position = relay._course_builder.goals[1].global_position
-	future_probe.linear_velocity = Vector3.ZERO
-	future_probe.angular_velocity = Vector3.ZERO
-	relay._update_live_ball(future_probe, relay._course_builder.goal.settle_seconds + 0.1)
-	_assert_true(relay.confirmed_ball_count() == 0 and relay.active_leg_index == 0, "A future goal must not confirm before it becomes active.")
-
-	# Goal one confirmation locks its ball, removes a competing shot, and relocates the same launcher.
-	first_anchor = relay._course_builder.launcher.global_position
-	var first_ball := future_probe
-	_assert_true(relay.fire(), "A second unconfirmed shot must coexist before relay confirmation.")
-	var discarded_ball := relay.current_ball
-	first_ball.global_position = relay._course_builder.goals[0].global_position + Vector3.UP * CannonGolfBall.RADIUS
-	relay._confirm_goal(first_ball)
-	_assert_true(relay.launch_state == CannonGolfGame.LaunchState.PLANNING, "Goal one must not clear a two-leg relay.")
-	_assert_true(relay.confirmed_ball_count() == 1 and relay.confirmed_ball == first_ball and first_ball.freeze, "Goal one ball must remain protected.")
-	_assert_true(discarded_ball.is_queued_for_deletion(), "Goal one confirmation must remove other unconfirmed balls.")
-	_assert_true(relay.active_leg_index == 1 and relay._course_builder.goal == relay._course_builder.goals[1], "Goal one confirmation must activate leg two.")
-	_assert_true(not relay._course_builder.launcher.global_position.is_equal_approx(first_anchor), "Goal one confirmation must relocate the launcher.")
-	_assert_true(
-		Vector2(
-			relay._course_builder.launcher.global_position.x,
-			relay._course_builder.launcher.global_position.z
-		).is_equal_approx(Vector2(
-			relay._course_builder.goals[0].global_position.x,
-			relay._course_builder.goals[0].global_position.z
-		)),
-		"The next-leg launcher must remain centered in confirmed goal one."
-	)
-	_assert_defaults(relay, "A new relay leg")
-	await process_frame
-	_assert_true(is_instance_valid(first_ball) and first_ball.is_inside_tree(), "Goal one ball must survive deferred cleanup.")
-
-	# Current-leg retry keeps the checkpoint, edited setup, and impact-history identities.
-	relay._on_setup_changed(64.0, 52.0, 71.0)
-	for index in range(3):
-		relay._impact_history.stamp(Vector3(float(index), 6.0, -18.0), Vector3.UP)
-	var mark_ids := relay._impact_history.mark_instance_ids()
-	_assert_true(relay.fire(), "Leg two must accept a live attempt.")
-	var retry_ball := relay.current_ball
-	_assert_true(relay.retry_attempt(), "Relay quick retry must replace only the newest current-leg ball.")
-	_assert_true(relay.active_leg_index == 1, "Quick retry must not return to an earlier relay anchor.")
-	_assert_true(relay.current_ball != retry_ball and relay.active_ball_count() == 1, "Quick retry must replace, not duplicate, the current ball.")
-	_assert_true(relay.confirmed_ball_count() == 1 and is_instance_valid(first_ball), "Quick retry must preserve the confirmed checkpoint ball.")
-	_assert_true(relay._impact_history.mark_instance_ids() == mark_ids, "Quick retry must preserve impact history.")
-	_assert_true(relay._course_builder.launcher.horizontal_aim == 64.0 and relay._course_builder.launcher.elevation_degrees == 52.0 and relay._course_builder.launcher.power_percent == 71.0, "Quick retry must preserve the edited current-leg setup.")
-
-	# Only the final goal clears, retaining both confirmed balls.
-	var final_ball := relay.current_ball
-	final_ball.global_position = relay._course_builder.goal.global_position + Vector3.UP * CannonGolfBall.RADIUS
-	relay._confirm_goal(final_ball)
-	_assert_true(relay.launch_state == CannonGolfGame.LaunchState.CLEARED, "The final relay goal alone must clear the course.")
-	_assert_true(relay.confirmed_ball_count() == 2 and final_ball.freeze, "Final clear must retain both protected balls.")
-	_assert_true(is_instance_valid(first_ball) and is_instance_valid(final_ball), "Both relay checkpoint balls must remain valid after final clear.")
-
-	relay.reset_course()
-	_assert_true(relay.active_leg_index == 0 and relay.confirmed_ball_count() == 0, "Full reset must restore relay leg one and clear checkpoints.")
-	_assert_true(relay._course_builder.goal == relay._course_builder.goals[0], "Full reset must restore goal one as active.")
-	_assert_defaults(relay, "Relay reset")
-	relay.queue_free()
-	await process_frame
-
-	var single_goal := await _new_game(0)
-	_assert_true(single_goal._course_builder.leg_count() == 1, "Legacy courses must normalize to one leg.")
-	_assert_true(single_goal.fire(), "Legacy course must still fire.")
-	var single_ball := single_goal.current_ball
-	single_goal._confirm_goal(single_ball)
-	_assert_true(single_goal.launch_state == CannonGolfGame.LaunchState.CLEARED and single_goal.confirmed_ball_count() == 1, "One-goal confirmation must still clear immediately.")
-	single_goal.queue_free()
-	await process_frame
-
-	if relay._course_builder.prepared_course.has_complete_certificate():
-		await _assert_certified_relay_sequence(relay_index)
-	if not _failed:
-		print("Cannon Golf ordered relay runtime contract passed.")
-	quit(1 if _failed else 0)
-
-
-func _new_game(course_index: int) -> CannonGolfGame:
-	var course := CannonGolfCourseCatalog.course_at(course_index)
-	var prepared := ResourceLoader.load(
-		CannonGolfCourseCatalog.prepared_path_for(course)
-	) as CannonGolfPreparedCourse
-	_assert_true(
-		prepared != null and prepared.is_valid_for(course),
-		"Relay integration requires a matching prepared artifact for %s." % course.course_id
-	)
 	var game := GAME_SCENE.instantiate() as CannonGolfGame
-	game.initial_course_index = course_index
-	game.initial_prepared_course = prepared
+	game.initial_course_index = relay_index
 	root.add_child(game)
 	await process_frame
 	await process_frame
-	return game
-
-
-func _assert_certified_relay_sequence(course_index: int) -> void:
-	var relay := await _new_game(course_index)
-	var prepared := relay._course_builder.prepared_course
-	for leg_index in range(prepared.legs.size()):
-		var setup := prepared.legs[leg_index].certified_setup
-		relay._course_builder.launcher.set_setup(setup.x, setup.y, setup.z)
-		_assert_true(relay.fire(), "Certified relay setup must fire leg %d." % [leg_index + 1])
-		for _frame in range(60 * 18):
-			await physics_frame
-			if relay.launch_state == CannonGolfGame.LaunchState.CLEARED \
-					or relay.launch_state == CannonGolfGame.LaunchState.PLANNING:
-				break
-		if leg_index + 1 < prepared.legs.size():
-			_assert_true(
-				relay.launch_state == CannonGolfGame.LaunchState.PLANNING \
-						and relay.active_leg_index == leg_index + 1 \
-						and relay.confirmed_ball_count() == leg_index + 1,
-				"Certified relay setup must advance exactly one ordered checkpoint at leg %d." % [leg_index + 1]
-			)
-	_assert_true(
-		relay.launch_state == CannonGolfGame.LaunchState.CLEARED \
-				and relay.confirmed_ball_count() == prepared.legs.size(),
-		"Certified Deep Relay setups must clear only after every ordered checkpoint."
+	var original_position := game._course_builder.launcher.position
+	var second_goal := game._course_builder.goal_at(1)
+	_assert(game.fire(), "The free-goal course must permit its first shot.")
+	var confirmed := game.current_ball
+	confirmed.global_position = second_goal.global_position + Vector3.UP * CannonGolfBall.RADIUS
+	confirmed.linear_velocity = Vector3.ZERO
+	confirmed.angular_velocity = Vector3.ZERO
+	game._update_live_ball(confirmed, second_goal.settle_seconds + 0.1)
+	_assert(
+		game.completed_goal_indices == [1] \
+				and game.launch_state == CannonGolfGame.LaunchState.PLANNING,
+		"Goal 2 may confirm before Goal 1 without clearing the course."
 	)
-	relay.queue_free()
+	_assert(
+		game._course_builder.launcher.position.is_equal_approx(original_position),
+		"Confirmation must leave the currently selected Start source unchanged."
+	)
+	_assert(not game.select_launcher_source(0), "Goal 1 must remain locked until completed.")
+	_assert(game.select_launcher_source(1), "Completed Goal 2 must be selectable.")
+	_assert(
+		Vector2(
+			game._course_builder.launcher.position.x,
+			game._course_builder.launcher.position.z
+		).is_equal_approx(Vector2(second_goal.position.x, second_goal.position.z)),
+		"The selected goal source must use the exact plate center."
+	)
+	game._on_setup_changed(64.0, 52.0, 71.0)
+	_assert(game.fire(), "The selected completed-goal source must fire.")
+	var first_origin := game.current_ball.global_position
+	var first_velocity := game.current_ball.linear_velocity
+	_assert(game.select_launcher_source(-1), "Start must remain selectable during flight.")
+	_assert(game.retry_attempt(), "Retry must remain available after a source change.")
+	_assert(
+		game.selected_launcher_goal_index == 1 \
+				and game.current_ball.global_position.is_equal_approx(first_origin) \
+				and game.current_ball.linear_velocity.is_equal_approx(first_velocity),
+		"Retry must restore the live shot's recorded source and setup exactly."
+	)
+	var first_goal := game._course_builder.goal_at(0)
+	game.current_ball.global_position = first_goal.global_position + Vector3.UP * CannonGolfBall.RADIUS
+	game.current_ball.linear_velocity = Vector3.ZERO
+	game.current_ball.angular_velocity = Vector3.ZERO
+	game._update_live_ball(game.current_ball, first_goal.settle_seconds + 0.1)
+	_assert(
+		game.launch_state == CannonGolfGame.LaunchState.CLEARED \
+				and game.completed_goal_indices == [0, 1] \
+				and game.confirmed_ball_count() == 2,
+		"Completing the remaining goal must clear and retain both balls."
+	)
+	game.reset_course()
+	_assert(
+		game.completed_goal_indices.is_empty() \
+				and game.selected_launcher_goal_index == -1 \
+				and game._course_builder.launcher.position.is_equal_approx(original_position),
+		"Course reset must clear progress and restore Start."
+	)
+	game.queue_free()
 	await process_frame
+	if not _failed:
+		print("Cannon Golf free-goal launcher-source contract passed.")
+	quit(1 if _failed else 0)
 
 
-func _assert_defaults(game: CannonGolfGame, context: String) -> void:
-	var launcher := game._course_builder.launcher
-	_assert_true(launcher.horizontal_aim == 50.0 and launcher.elevation_degrees == 50.0 and launcher.power_percent == 50.0, "%s must show 50 / 50 / 50 defaults." % context)
-
-
-func _assert_true(condition: bool, message: String) -> void:
+func _assert(condition: bool, message: String) -> void:
 	if condition:
 		return
 	_failed = true

@@ -8,6 +8,7 @@ signal fire_requested
 signal retry_requested
 signal setup_changed(horizontal_aim: float, elevation_degrees: float, power_percent: float)
 signal view_requested(view_mode: StringName)
+signal launcher_source_requested(goal_index: int)
 signal follow_requested
 signal camera_zoom_requested(wheel_steps: float)
 signal camera_reset_requested
@@ -47,6 +48,7 @@ signal result_primary_requested
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_primary: Button = %ResultPrimary
 @onready var _goal_progress_label: Label = %GoalProgressLabel
+@onready var _launcher_source_button: OptionButton = %LauncherSourceButton
 
 var _syncing := false
 var _pause_suspended := false
@@ -58,6 +60,9 @@ var _camera_mode: StringName = &"planning"
 var _language := "ko"
 var _completed_goal_count := 0
 var _total_goal_count := 1
+var _launcher_sources: Array[int] = [-1]
+var _selected_launcher_source := -1
+var _syncing_launcher_sources := false
 var _held_slider: HSlider
 var _held_direction := 0.0
 var _hold_elapsed := 0.0
@@ -75,6 +80,7 @@ func _ready() -> void:
 	_connect_step_button(_power_decrease, _power_slider, -1.0)
 	_connect_step_button(_power_increase, _power_slider, 1.0)
 	_oblique_button.pressed.connect(func() -> void: view_requested.emit(&"oblique"))
+	_launcher_source_button.item_selected.connect(_on_launcher_source_selected)
 	_cannon_button.pressed.connect(func() -> void: view_requested.emit(&"cannon"))
 	_follow_button.pressed.connect(func() -> void: follow_requested.emit())
 	_zoom_in_button.pressed.connect(func() -> void: camera_zoom_requested.emit(1.0))
@@ -134,6 +140,7 @@ func set_launch_availability(active_shots: int, maximum_live_shots: int, cleared
 	_retry_button.disabled = _cleared or _active_shot_count <= 0
 	_pause_retry.disabled = _cleared or _active_shot_count <= 0
 	_follow_button.disabled = _cleared or _active_shot_count <= 0
+	_launcher_source_button.disabled = _cleared or _launcher_sources.size() <= 1
 	_refresh_setup_button_states()
 
 
@@ -141,6 +148,20 @@ func set_goal_progress(completed_goal_count: int, total_goal_count: int) -> void
 	_total_goal_count = maxi(total_goal_count, 1)
 	_completed_goal_count = clampi(completed_goal_count, 0, _total_goal_count)
 	_update_goal_progress_copy()
+
+
+func set_launcher_sources(completed_goal_indices: Array[int], selected_goal_index: int) -> void:
+	_launcher_sources.clear()
+	_launcher_sources.append(-1)
+	for goal_index in completed_goal_indices:
+		if goal_index >= 0 and not _launcher_sources.has(goal_index):
+			_launcher_sources.append(goal_index)
+	_launcher_sources.sort()
+	# Sorting places Start (-1) first and keeps stable goal numbering.
+	_selected_launcher_source = selected_goal_index \
+			if _launcher_sources.has(selected_goal_index) else -1
+	_rebuild_launcher_source_items()
+	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
 
 
 func set_view(view_mode: StringName) -> void:
@@ -244,6 +265,7 @@ func apply_language(language: String) -> void:
 	%PauseStages.text = "COURSE SELECT" if english else "코스 선택"
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
 	_update_goal_progress_copy()
+	_rebuild_launcher_source_items()
 	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
 	_refresh_camera_buttons()
 
@@ -270,6 +292,15 @@ func _on_setup_control_changed(_value: float) -> void:
 		)
 
 
+func _on_launcher_source_selected(item_index: int) -> void:
+	if _syncing_launcher_sources or item_index < 0 \
+			or item_index >= _launcher_source_button.item_count:
+		return
+	var source: Variant = _launcher_source_button.get_item_metadata(item_index)
+	if source is int:
+		launcher_source_requested.emit(int(source))
+
+
 func _update_setup_labels() -> void:
 	_horizontal_value.text = "%d" % int(roundf(_horizontal_slider.value))
 	_elevation_value.text = "%d°" % int(roundf(_elevation_slider.value))
@@ -281,6 +312,30 @@ func _update_goal_progress_copy() -> void:
 		_completed_goal_count,
 		_total_goal_count,
 	]
+
+
+func _rebuild_launcher_source_items() -> void:
+	if _launcher_source_button == null:
+		return
+	_syncing_launcher_sources = true
+	_launcher_source_button.clear()
+	var english := _language == "en"
+	var selected_item := 0
+	for source_index in range(_launcher_sources.size()):
+		var goal_index := _launcher_sources[source_index]
+		var label := ("CANNON · START" if english else "대포 · 시작점") \
+				if goal_index < 0 else (
+					("CANNON · GOAL %d" if english else "대포 · 골 %d") % (goal_index + 1)
+				)
+		_launcher_source_button.add_item(label)
+		_launcher_source_button.set_item_metadata(source_index, goal_index)
+		if goal_index == _selected_launcher_source:
+			selected_item = source_index
+	_launcher_source_button.select(selected_item)
+	_launcher_source_button.tooltip_text = "Choose cannon position" if english \
+			else "대포 위치 선택"
+	_launcher_source_button.set("accessibility_name", _launcher_source_button.tooltip_text)
+	_syncing_launcher_sources = false
 
 
 func _connect_step_button(button: Button, slider: HSlider, direction: float) -> void:
@@ -369,6 +424,7 @@ func _set_icon_copy(button: Button, accessible_copy: String) -> void:
 
 func _install_focus_order() -> void:
 	var controls: Array[Control] = [
+		_launcher_source_button,
 		_horizontal_decrease,
 		_horizontal_slider,
 		_horizontal_increase,

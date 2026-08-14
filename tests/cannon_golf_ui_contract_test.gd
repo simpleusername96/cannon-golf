@@ -21,6 +21,7 @@ func _run() -> void:
 	_assert(hud.get_node_or_null("Root/ActionDock") is PanelContainer, "Normal play needs one compact action dock.")
 	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
 	_assert(hud.get_node_or_null("Root/GoalProgress") is PanelContainer, "Normal play needs one compact goal tally.")
+	_assert(hud.get_node_or_null("Root/LauncherSource") is PanelContainer, "Normal play needs one compact cannon-source selector.")
 	_assert(hud.get_node_or_null("Root/ShortcutPanel") is PanelContainer, "Normal play needs on-demand shortcut help.")
 	_assert(not hud.is_shortcut_panel_visible(), "Shortcut help must be collapsed by default.")
 	for retired_node in [
@@ -30,6 +31,7 @@ func _run() -> void:
 		_assert(_find_named(hud, retired_node) == null, "Retired HUD owner must be absent: %s." % retired_node)
 
 	var normal_controls: Array[Control] = [
+		hud.get_node("%LauncherSourceButton"),
 		hud.get_node("%HorizontalDecrease"),
 		hud.get_node("%HorizontalSlider"),
 		hud.get_node("%HorizontalIncrease"),
@@ -120,8 +122,25 @@ func _run() -> void:
 	_assert(fire_button.disabled, "Two live balls must visibly disable Fire at capacity.")
 
 	hud.set_goal_progress(1, 2)
+	hud.set_launcher_sources([1], -1)
+	var source_button := hud.get_node("%LauncherSourceButton") as OptionButton
+	_assert(source_button.item_count == 2, "Start plus one completed goal must be selectable.")
+	_assert(
+		int(source_button.get_item_metadata(0)) == -1 \
+				and int(source_button.get_item_metadata(1)) == 1,
+		"The source selector must expose Start and completed goals only."
+	)
+	var requested_sources: Array[int] = []
+	hud.launcher_source_requested.connect(
+		func(goal_index: int) -> void: requested_sources.append(goal_index)
+	)
+	source_button.item_selected.emit(1)
+	_assert(
+		requested_sources == [1],
+		"Choosing a completed goal must emit its stable source identity."
+	)
 	var korean_copy := _visible_copy(hud)
-	for required in ["좌우", "상하", "파워", "발사", "골 1 / 2"]:
+	for required in ["좌우", "상하", "파워", "발사", "골 1 / 2", "대포 · 시작점"]:
 		_assert(korean_copy.contains(required), "Normal Korean HUD must expose %s." % required)
 	hud.set_shortcut_panel_visible(true)
 	await process_frame
@@ -132,7 +151,7 @@ func _run() -> void:
 	hud.apply_language("en")
 	await process_frame
 	var english_copy := _visible_copy(hud)
-	for required in ["H", "V", "PWR", "FIRE", "GOALS 1 / 2"]:
+	for required in ["H", "V", "PWR", "FIRE", "GOALS 1 / 2", "CANNON · START"]:
 		_assert(english_copy.contains(required), "Normal English HUD must expose %s." % required)
 	for label_name in ["HorizontalLabel", "ElevationLabel", "PowerLabel", "HorizontalValue", "ElevationValue", "PowerValue"]:
 		var label := hud.get_node("%%%s" % label_name) as Label
@@ -224,7 +243,10 @@ func _all_descendants(parent: Node) -> Array[Node]:
 
 func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: String) -> void:
 	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
-	var paths := ["Root/GoalProgress", "Root/AimPanel", "Root/ActionDock", "Root/CameraDock"]
+	var paths := [
+		"Root/GoalProgress", "Root/LauncherSource", "Root/AimPanel",
+		"Root/ActionDock", "Root/CameraDock",
+	]
 	if hud.is_shortcut_panel_visible():
 		paths.append("Root/ShortcutPanel")
 	for path in paths:

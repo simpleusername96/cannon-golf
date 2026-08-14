@@ -81,6 +81,7 @@ short_brief="여섯 개의 연결된 고산 목표입니다."
 generation_profile=ExtResource("3")
 authoring_mode=1
 terrain_seed_window=Vector2i(1764827018,1764827022)
+terrain_horizontal_scale=1.50
 terrain_vertical_scale=1.35
 terrain_origin=Vector3(0,-4,0)
 landform_features=Array[ExtResource("4")]([SubResource("AlpineRidge"),SubResource("AlpinePeak")])

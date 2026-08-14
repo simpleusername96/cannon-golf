@@ -1,14 +1,14 @@
 class_name CannonGolfCourseLegData
 extends Resource
 
-## Authored input for one ordered launcher-to-goal segment.
+## Authored input for one stable goal identity and its construction segment.
 
 ## Legacy exact fields below remain migration inputs. Constraint recipes use only
 ## the bounded fields in the Constraint Recipe section.
 
 @export_range(0.01, 0.99, 0.01) var goal_route_t := 0.20
-## Route and local lateral/longitudinal placement are explicit so ordered goals
-## need not be monotonically arranged along the inherited route.
+## Route and local lateral/longitudinal placement are explicit so goals need not
+## be monotonically arranged. Array order does not impose completion order.
 @export_range(0, 7, 1) var route_index := 0
 @export var goal_placement_offset := Vector2.ZERO
 ## Low / middle / high authored rim band. The factory records the generated rim.

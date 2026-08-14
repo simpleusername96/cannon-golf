@@ -2,7 +2,10 @@ class_name CannonGolfSettlementGoal
 extends Node3D
 
 const RIM_SEGMENTS := 16
-const BASE_SETTLE_SECONDS := 1.15
+const ENTRY_GAP_SEGMENTS := 3
+const PLATE_THICKNESS := 0.22
+const WALL_THICKNESS := 0.34
+const BASE_SETTLE_SECONDS := 1.0
 const BASE_MAXIMUM_LINEAR_SPEED := 0.72
 const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
 const BASE_CAPTURE_ENTRY_LINEAR_SPEED := 2.0
@@ -19,7 +22,7 @@ enum VisualState {
 
 var inner_radius := 5.5
 var rim_height := 0.8
-var settle_seconds := BASE_SETTLE_SECONDS / CannonGolfBallistics.MOTION_TIME_SCALE
+var settle_seconds := BASE_SETTLE_SECONDS
 var maximum_linear_speed := BASE_MAXIMUM_LINEAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
 var maximum_angular_speed := BASE_MAXIMUM_ANGULAR_SPEED * CannonGolfBallistics.MOTION_TIME_SCALE
 var capture_entry_linear_speed := BASE_CAPTURE_ENTRY_LINEAR_SPEED \
@@ -29,22 +32,28 @@ var capture_entry_angular_speed := BASE_CAPTURE_ENTRY_ANGULAR_SPEED \
 var visual_state := VisualState.ACTIVE
 
 var _rim_markers: Array[MeshInstance3D] = []
+var _plate_body: StaticBody3D
+var _plate_floor: MeshInstance3D
 var _flag_pole: MeshInstance3D
 var _flag: MeshInstance3D
 var _air_marker_stem: MeshInstance3D
 var _air_marker_faces: Array[MeshInstance3D] = []
 var _marker_top_height := 18.0
+var _incoming_yaw_degrees := 0.0
 
 
 func configure(
 		world_position: Vector3,
 		radius: float,
-		world_rim_y: float = INF,
-		world_marker_top_y: float = INF
+		world_wall_top_y: float = INF,
+		world_marker_top_y: float = INF,
+		incoming_yaw_degrees: float = 0.0
 ) -> void:
 	position = world_position
 	inner_radius = radius
-	rim_height = maxf(0.0, world_rim_y - world_position.y) if is_finite(world_rim_y) else 0.8
+	rim_height = maxf(0.4, world_wall_top_y - world_position.y) \
+			if is_finite(world_wall_top_y) else 0.8
+	_incoming_yaw_degrees = incoming_yaw_degrees
 	_marker_top_height = maxf(
 		rim_height + 18.0,
 		world_marker_top_y - world_position.y
@@ -52,7 +61,7 @@ func configure(
 
 
 func _ready() -> void:
-	_build_rim()
+	_build_plate()
 	_build_flag()
 	_build_air_marker()
 	_apply_visual_state()
@@ -67,14 +76,14 @@ func contains_ball(ball_position: Vector3, ball_radius: float) -> bool:
 	var origin := global_position if is_inside_tree() else position
 	var local := ball_position - origin
 	return _local_horizontal_contains(local, ball_radius) \
-			and local.y >= -ball_radius * 0.8 \
+			and local.y >= -ball_radius * 0.15 \
 			and local.y <= rim_height + ball_radius * 1.5
 
 
 func contains_rebound_column(ball_position: Vector3, ball_radius: float) -> bool:
 	var origin := global_position if is_inside_tree() else position
 	var local := ball_position - origin
-	return _local_horizontal_contains(local, ball_radius) and local.y >= -ball_radius * 0.8
+	return _local_horizontal_contains(local, ball_radius) and local.y >= -ball_radius * 0.15
 
 
 func motion_is_safe(linear_velocity: Vector3, angular_velocity: Vector3) -> bool:
@@ -100,25 +109,71 @@ func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> 
 			<= inner_radius - ball_radius * 0.35
 
 
-func _build_rim() -> void:
-	var rim_material := _material(Color("F6F2E7"), 0.04, 0.72)
+func _build_plate() -> void:
+	var floor_material := _material(Color("E8E1CE"), 0.02, 0.84)
+	var wall_material := _material(Color("D4D0C4"), 0.03, 0.78)
+	var body := StaticBody3D.new()
+	body.name = "GoalPlateBody"
+	body.collision_layer = 1
+	body.collision_mask = 0
+	body.add_to_group(&"impact_mark_surface")
+	var physics := PhysicsMaterial.new()
+	physics.bounce = 0.08
+	physics.friction = 0.94
+	body.physics_material_override = physics
+	add_child(body)
+	_plate_body = body
+	var floor_mesh := MeshInstance3D.new()
+	floor_mesh.name = "GoalPlateFloor"
+	var floor_data := CylinderMesh.new()
+	floor_data.top_radius = inner_radius
+	floor_data.bottom_radius = inner_radius
+	floor_data.height = PLATE_THICKNESS
+	floor_data.radial_segments = 32
+	floor_data.material = floor_material
+	floor_mesh.mesh = floor_data
+	floor_mesh.position.y = -PLATE_THICKNESS * 0.5
+	body.add_child(floor_mesh)
+	_plate_floor = floor_mesh
+	var floor_collision := CollisionShape3D.new()
+	floor_collision.name = "GoalPlateFloorCollision"
+	var floor_shape := CylinderShape3D.new()
+	floor_shape.radius = inner_radius
+	floor_shape.height = PLATE_THICKNESS
+	floor_collision.shape = floor_shape
+	floor_collision.position.y = -PLATE_THICKNESS * 0.5
+	body.add_child(floor_collision)
+	var opening_angle := -deg_to_rad(_incoming_yaw_degrees)
+	var segment_angle := TAU / float(RIM_SEGMENTS)
+	var opening_half_angle := segment_angle * float(ENTRY_GAP_SEGMENTS) * 0.5
+	var wall_radius := inner_radius + WALL_THICKNESS * 0.5
 	var segment_length := TAU * (inner_radius + 0.25) / float(RIM_SEGMENTS) * 1.08
 	for index in range(RIM_SEGMENTS):
 		var angle := TAU * float(index) / float(RIM_SEGMENTS)
+		if absf(wrapf(angle - opening_angle, -PI, PI)) <= opening_half_angle:
+			continue
 		var marker := MeshInstance3D.new()
 		marker.name = "GoalRimMarker%02d" % (index + 1)
 		marker.position = Vector3(
-			sin(angle) * (inner_radius + 0.28),
-			rim_height + 0.055,
-			cos(angle) * (inner_radius + 0.28)
+			sin(angle) * wall_radius,
+			rim_height * 0.5,
+			cos(angle) * wall_radius
 		)
 		marker.rotation.y = angle + PI * 0.5
 		var mesh_data := BoxMesh.new()
-		mesh_data.size = Vector3(0.22, 0.10, segment_length)
-		mesh_data.material = rim_material
+		mesh_data.size = Vector3(WALL_THICKNESS, rim_height, segment_length)
+		mesh_data.material = wall_material
 		marker.mesh = mesh_data
-		add_child(marker)
+		body.add_child(marker)
 		_rim_markers.append(marker)
+		var collision := CollisionShape3D.new()
+		collision.name = "GoalPlateWallCollision%02d" % (index + 1)
+		var wall_shape := BoxShape3D.new()
+		wall_shape.size = mesh_data.size
+		collision.shape = wall_shape
+		collision.position = marker.position
+		collision.rotation = marker.rotation
+		body.add_child(collision)
 
 
 func _build_flag() -> void:

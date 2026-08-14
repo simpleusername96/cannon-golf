@@ -86,8 +86,8 @@ func _build(
 	launcher.name = "Launcher"
 	add_child(launcher)
 	_build_goals()
-	if not activate_leg(0):
-		push_error("Prepared course could not activate its first leg.")
+	if not select_launcher_source(-1):
+		push_error("Prepared course could not activate its original launcher.")
 		clear_course()
 		return false
 	_add_dressing()
@@ -149,6 +149,49 @@ func activate_leg(index: int) -> bool:
 	return true
 
 
+## Places the one runtime cannon without selecting a target. Goal indices are
+## stable source identities; -1 denotes the original course start.
+func select_launcher_source(goal_index: int) -> bool:
+	if prepared_course == null or launcher == null \
+			or goal_index < -1 or goal_index >= goals.size():
+		return false
+	var source_position := prepared_course.legs[0].launcher_position
+	if goal_index >= 0:
+		source_position = goals[goal_index].position + Vector3.UP * 0.05
+	launcher.position = source_position
+	launcher.shot_axis_yaw_degrees = _map_center_yaw(source_position)
+	launcher.set_setup(50.0, 50.0, 50.0)
+	course.cannon_position = source_position
+	course.shot_axis_yaw_degrees = launcher.shot_axis_yaw_degrees
+	course.planning_focus = course.content_bounds.get_center()
+	goal = goals[0] if not goals.is_empty() else null
+	return true
+
+
+func set_goal_completed(index: int, completed: bool) -> bool:
+	var settlement_goal := goal_at(index)
+	if settlement_goal == null:
+		return false
+	settlement_goal.set_visual_state(
+		CannonGolfSettlementGoal.VisualState.CONFIRMED if completed \
+		else CannonGolfSettlementGoal.VisualState.ACTIVE
+	)
+	return true
+
+
+func set_all_goals_available() -> void:
+	for settlement_goal in goals:
+		settlement_goal.set_visual_state(CannonGolfSettlementGoal.VisualState.ACTIVE)
+
+
+func _map_center_yaw(source_position: Vector3) -> float:
+	var center := course.content_bounds.get_center()
+	var delta := Vector2(center.x - source_position.x, center.z - source_position.z)
+	if delta.length_squared() <= 0.01:
+		return prepared_course.legs[0].shot_axis_yaw_degrees
+	return rad_to_deg(atan2(delta.x, -delta.y))
+
+
 func leg_count() -> int:
 	return prepared_course.legs.size() if prepared_course != null else 0
 
@@ -196,10 +239,10 @@ func _build_goals() -> void:
 			prepared.goal_position,
 			prepared.goal_radius,
 			prepared.goal_lip_y,
-			_goal_marker_top_y(prepared.goal_position, prepared.goal_lip_y)
+			_goal_marker_top_y(prepared.goal_position, prepared.goal_lip_y),
+			prepared.shot_axis_yaw_degrees
 		)
-		settlement_goal.visual_state = CannonGolfSettlementGoal.VisualState.ACTIVE \
-				if index == 0 else CannonGolfSettlementGoal.VisualState.FUTURE
+		settlement_goal.visual_state = CannonGolfSettlementGoal.VisualState.ACTIVE
 		add_child(settlement_goal)
 		goals.append(settlement_goal)
 

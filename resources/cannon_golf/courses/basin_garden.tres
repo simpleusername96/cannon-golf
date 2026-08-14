@@ -72,6 +72,7 @@ short_brief="다섯 개의 연결된 분지 목표입니다."
 generation_profile=ExtResource("3")
 authoring_mode=1
 terrain_seed_window=Vector2i(1764827017,1764827021)
+terrain_horizontal_scale=1.42
 terrain_vertical_scale=1.35
 terrain_origin=Vector3(0,-4,0)
 landform_features=Array[ExtResource("4")]([SubResource("Basin"),SubResource("Plateau")])

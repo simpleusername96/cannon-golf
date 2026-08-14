@@ -24,7 +24,7 @@ func _initialize() -> void:
 		"Canonical launch-speed endpoints must be the accepted doubled 28..120 m/s range."
 	)
 	_assert_true(
-		is_equal_approx(CannonGolfBallistics.BALL_RADIUS, 0.75) \
+		is_equal_approx(CannonGolfBallistics.BALL_RADIUS, 1.0) \
 				and is_equal_approx(CannonGolfBallistics.BALL_RADIUS, CannonGolfBall.RADIUS),
 		"Ballistics and the live rigid body must share the accepted 0.75 m radius."
 	)

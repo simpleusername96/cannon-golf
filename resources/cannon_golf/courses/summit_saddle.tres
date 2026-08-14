@@ -37,6 +37,7 @@ short_brief = "정상과 안부를 잇는 두 개의 목표입니다."
 generation_profile = ExtResource("4")
 authoring_mode = 1
 terrain_seed_window = Vector2i(1764827012, 1764827016)
+terrain_horizontal_scale = 1.05
 terrain_vertical_scale = 0.85
 terrain_origin = Vector3(0, -4, 0)
 landform_features = Array[ExtResource("3")]([SubResource("Feature")])

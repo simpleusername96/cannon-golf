@@ -21,8 +21,9 @@ related:
 Define the current product direction for a new Windows desktop 3D physics
 puzzle. The copied Paint Mountain runtime is reusable technical material only.
 This specification replaces surface coverage as the product goal. The isolated
-`cannon_golf` runtime now implements two direct-shot courses and one two-leg
-ordered relay. Later device requirements remain specified but unimplemented.
+`cannon_golf` runtime now implements a ten-course prepared catalog with
+player-chosen multi-goal routes. Later device requirements remain specified but
+unimplemented.
 
 ## Summary
 
@@ -114,16 +115,17 @@ cannon composition.
 
 - Trigger: the player starts a later stage with several goals at different
   heights, depths, or branches.
-- Main steps: inspect the current launcher-to-goal leg from planning views,
+- Main steps: inspect the complete goal field from planning views, choose a
+  useful incomplete goal, choose the original start or a completed goal as the
+  cannon location,
   compare prior impact marks, place and orient a limited bounce pad when the
-  natural route is insufficient, then fire and observe. An authored relay course
-  activates its goals in order; confirming an intermediate goal preserves its
-  ball, moves the reusable launcher to the exact horizontal center of that
-  goal, and begins the next leg.
+  natural route is insufficient, then fire and observe. Confirming a goal
+  preserves its ball and unlocks that plate as an optional cannon location; it
+  does not choose the next goal or move the cannon automatically.
 - Expected outcome: each required goal contains a confirmed settled ball. A
   confirmed ball remains visible and cannot be displaced from its completed
-  goal by later shots. Only confirmation of the final required goal clears an
-  ordered relay course.
+  goal by later shots. Confirming every required goal clears the course,
+  regardless of order.
 
 ### Flow 3: Learn from a miss
 
@@ -166,28 +168,27 @@ cannon composition.
 
 ### FR-4: Settlement goals
 
-- Requirement: a goal must be either a physical recess or cup, or a small
-  bounded landing zone with a readable physical footprint. A ball counts only
-  after it remains inside the goal under the stage's position, speed, and
-  settle-duration tolerances. Entering and then bouncing out is an unsuccessful
-  launch. A recessed goal may have a flat or concave floor, but its interior
-  must not rise toward the center and eject a safely arriving ball. The first
-  two courses use a terrain-owned concave basin with no separate physical cup.
+- Requirement: every current-catalog goal is a shallow physical landing plate
+  installed on connected terrain. It has a readable floor, a low retaining
+  wall, and a broad lowered opening facing the incoming leg. The terrain below
+  it provides support only; it must not be excavated into a cup or deep basin.
+  A ball counts only after it remains inside the plate under the stage's
+  position and safe-motion tolerances for one continuous second. Entering and
+  then bouncing out is an unsuccessful launch.
 - Reason: success is controlled settlement, not brief trigger contact or target
   shooting.
 
 ### FR-5: Multi-goal completion
 
 - Requirement: a stage may require one or more goals. A course may author an
-  ordered goal sequence; only its active goal may confirm, and future-goal
-  contact cannot advance the course. Once a goal confirms a settled ball, that
-  ball remains visibly present and protected from later displacement. On an
-  intermediate relay confirmation, the course preserves that ball, removes other
-  unconfirmed balls, relocates the single reusable launcher to the completed
-  goal's exact horizontal center and aligns it to that goal's terrain surface,
-  resets only the three visible launch controls to `50 / 50 / 50`, and activates
-  the next goal. Stage completion depends on confirming every required goal;
-  only final-goal confirmation clears an ordered relay course.
+  stable goal numbering for authoring and UI, but gameplay order is free. Any
+  incomplete goal may confirm. Once a goal confirms a settled ball, that ball
+  remains visibly present and protected from later displacement, and that
+  plate becomes an optional cannon source. The cannon never relocates
+  automatically. The player may select the original start or any completed
+  goal; selecting a source centers the reusable cannon on that source, aligns
+  it to the plate floor when applicable, and starts that source at
+  `50 / 50 / 50`. Stage completion depends only on confirming every goal.
 - Reason: persistent goal occupancy makes progress legible and prevents later
   shots from invalidating an already completed route.
 
@@ -212,8 +213,9 @@ cannon composition.
 ### FR-8: Planning cameras
 
 - Requirement: planning must support a terrain-reading top/high-oblique view
-  and a per-leg behind-cannon view derived from the active launcher and shot
-  axis. The cannon view supports local aim but is never the only or
+  and a local behind-cannon view derived only from the currently selected
+  cannon source and its stable map-facing shot axis. It does not track, frame,
+  or imply a next goal. The cannon view supports local aim but is never the only or
   automatically dominant view.
   Firing never changes the current camera mode, planning pose, or existing
   follow target. The compact follow action explicitly enters or leaves Shot
@@ -232,10 +234,9 @@ cannon composition.
   returns to planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  An ordered relay's authored planning frame and reset action must frame its
-  current launcher-to-active-goal leg; bounded pan, orbit, and zoom must still
-  permit inspection of the complete course, while course selection previews the
-  whole course.
+  The high-oblique reset frames the complete course. The cannon preset resets
+  to its local `50 / 50 / 50` context at the selected source; bounded pan,
+  orbit, and zoom still permit inspection of the complete course.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
@@ -246,8 +247,8 @@ cannon composition.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power modules with direct
   decrement, slider, and increment input; Fire; overview; cannon view; ball
-  follow; quick retry; pause; one compact completed-goals/total-goals tally; and
-  one restrained camera/help dock. A single shortcut panel may open on demand
+  follow; quick retry; pause; one compact completed-goals/total-goals tally; a
+  compact cannon-source selector; and one restrained camera/help dock. A single shortcut panel may open on demand
   from that dock and must be collapsed by default. Course prose, progress cards,
   permanently expanded shortcut legends, feedback panels, and in-game course
   navigation do not persist over the world.
@@ -268,19 +269,18 @@ cannon composition.
   or shot-count game over. Aim controls become available immediately after a
   launch, and the prototype permits up to two unconfirmed balls in active
   simulation so an obviously failed attempt does not block the next launch.
-  Each ball resolves settlement and failure independently. On a one-goal course,
-  the first confirmed settlement clears the course; on an ordered relay,
-  intermediate confirmation removes other unconfirmed balls and advances only
-  to the next authored checkpoint, while final confirmation clears the course.
+  Each ball resolves settlement and failure independently. A confirmation
+  completes whichever incomplete goal contains that ball; the course clears
+  only when no incomplete goals remain.
   Identical launch/device state must produce materially similar first impacts.
   During a live launch,
   quick retry removes only the newest active unconfirmed ball and
   immediately relaunches with the exact horizontal aim, vertical angle, and
   power. It preserves impact history, camera view, exploration state, placed
-  devices, and confirmed goals. Quick retry on a relay leg preserves its current
-  checkpoint, relay launcher, and edited current-leg setup. Course reset remains
-  a separate pause-menu action, clears course-local attempt state, and returns a
-  relay to its first leg.
+  devices, and confirmed goals. Every live ball remembers its launch source and
+  setup so quick retry remains exact even if the player has since selected a
+  different cannon source. Course reset remains a separate pause-menu action,
+  clears course-local attempt state, and restores the original start.
 - Reason: iterative correction becomes frustrating when setup is slow or the
   physics result is noisy.
 
@@ -288,10 +288,11 @@ cannon composition.
 
 - Requirement: the standard ball must have a visible, predictable baseline
   rebound on ordinary hard terrain, with energy loss sufficient for eventual
-  rest. The two-course prototype uses one shared `0.75 m` radius for its visible
+  rest. The current catalog uses one shared `1.0 m` radius for its visible
   sphere, collision sphere, muzzle clearance, goal containment, and range
-  admission. It must neither stick dead on ordinary impact nor gain unstable
-  energy.
+  admission. It uses a dark low-gloss material that remains readable against
+  the pale terrain. It must neither stick dead on ordinary impact nor gain
+  unstable energy.
 - Reason: bounce is part of the aiming challenge and makes safe settlement a
   meaningful success condition.
 
@@ -322,37 +323,23 @@ cannon composition.
   zones must not be preinstalled. A stage may still store non-world metadata
   such as play bounds, camera bookmarks, goal tolerances, per-device stock,
   placement legality, and certified solution witnesses.
-- Prototype baseline: the first two courses must use Paint Mountain's retained
-  route-graph mountain height synthesis, topology, and geometry pipeline at its
-  original `210 x 120` metre horizontal extent. A course may select deterministic
-  generation inputs, use `0.45` vertical scale, place the cannon `75` metres
-  behind the route start, then lower only the samples around a route-adjacent
-  high point to form its goal. The complete playable terrain top and visible
-  support-shell boundary must fit in front of the cannon within its legal yaw,
-  range, and reachable-height envelope with the accepted margins. That depressed
-  terrain remains the sole physical goal floor and wall; goal rings and flags
-  are non-colliding markers. The launch envelope is an internal admission rule,
-  never a visible trajectory or range overlay.
-- Third-course contract: `deep_relay` is the third selectable course. It uses
-  one connected generated `210 x 320` metre terrain body at `1.35` vertical
-  scale, with at least `80` metres of playable-top relief. Its two ordered
-  terrain-owned goals form two upward legs: each goal rim is at least `25`
-  metres above the incoming launch anchor. Goal 1 uses the course-start
-  launcher; after it confirms, the same launcher moves to an authored
-  terrain-adjacent anchor beside goal 1 and toward goal 2. Each leg requires a
-  separate real-physics admission and solution witness. The relay course's
-  whole-terrain union admission exempts only the horizontal `30` metre local
-  supporting-ground footprint around each later, terrain-sited relay anchor;
-  goals and intervening leg corridors keep every accepted margin. This
-  longitudinal contract does not change the first two courses' dimensions,
-  launch anchors, terrain outputs, or whole-terrain admission rule.
+- Current catalog baseline: deterministic generation retains the connected
+  triangulated mountain topology, but goals are separate physical plates over a
+  shallow fitted support footprint. The first two teaching courses remain at
+  the `210 x 120` metre baseline. Later course horizontal scale increases by
+  catalog position up to approximately `315 x 480` metres for course 10, while
+  minimum playable relief increases from `60` to `160` metres. That relief must
+  read as macro peaks, shelves, ridges, and valleys rather than local goal
+  excavation. Goal elevations may rise or descend across the authored layout. The launch
+  envelope remains an internal admission rule, never a visible trajectory or
+  range overlay.
 - Reason: the course supplies the spatial problem while the player supplies all
   route-changing mechanisms.
 
 ### FR-16: Stage solvability evidence [assumption]
 
 - Requirement: [assumption] every shipped stage must include at least one certified solution
-  witness containing the relevant launch parameters, ordered goal attempts, and
+  witness containing the relevant launch parameters, goal attempts, and
   player device placements. Certification must replay the real physics and pass
   safe-settlement, bounds, placement, and state-persistence rules. It must not
   rely only on geometric reachability or an analytical trajectory estimate.
@@ -387,11 +374,11 @@ cannon composition.
 
 - Applies to: FR-5, FR-7.
 - Conditions for done: the third selectable course, `deep_relay`, contains two
-  authored ordered goals on one connected `210 x 320` metre terrain body with at
-  least `80` metres of playable-top relief and at least `25` metres of upward
-  rise on each leg. Goal 1 confirmation preserves its ball and relocates the
-  single launcher to goal 1's exact horizontal center; only goal 2 confirmation
-  clears. The compact HUD reads `1 / 2` after that transition. The
+  numbered goals on one connected progressively scaled terrain body with at
+  least `80` metres of playable-top relief. Either goal may confirm first. Its
+  ball remains visible and its plate becomes selectable beside the original
+  start; the cannon does not move until the player chooses it. The compact HUD
+  reads `1 / 2` after either first confirmation. The
   later eleven-stage device progression remains a content target, and every
   pad-dependent goal has no certified direct solution from permitted cannon
   states.
@@ -400,7 +387,7 @@ cannon composition.
 
 - Applies to: FR-8, FR-10.
 - Conditions for done: planning provides at least one top/oblique view and one
-  per-leg cannon view in which goals, settled balls, retained marks, and the
+  local cannon view in which the selected cannon, settled balls, retained marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. Firing
@@ -422,12 +409,11 @@ cannon composition.
 - Applies to: FR-4, FR-5, FR-12.
 - Conditions for done: entering a goal at excessive speed and bouncing out does
   not complete it; remaining within its tolerances for the required settle time
-  does. On `deep_relay`, only the active goal can confirm, future-goal contact
-  does not advance the course, and the first confirmation activates the next
-  leg without clearing. After confirmation, the ball stays visible in that goal
-  and cannot be knocked out by later shots. The launcher moves to that goal's
-  exact horizontal center, and the compact goal tally advances from `0 / 2` to
-  `1 / 2`.
+  does. On `deep_relay`, either goal may confirm first without clearing the
+  course. After confirmation, the ball stays visible in that goal and cannot be
+  knocked out by later shots. The original start and that goal appear in the
+  cannon-source selector; choosing the goal centers the cannon on its plate.
+  The compact goal tally advances from `0 / 2` to `1 / 2`.
 
 ### AC-8: Unlimited recovery from misses
 
@@ -436,11 +422,11 @@ cannon composition.
   shots. The player can adjust and fire a second shot while the first remains
   unresolved; a third simultaneous shot is blocked. Each ball resolves without
   corrupting the others. A first confirmation clears only a one-goal course;
-  `deep_relay` advances at goal 1 and clears only at goal 2. Quick retry during
+  a multi-goal course clears only after every goal confirms. Quick retry during
   flight replaces only the newest active ball with identical launch origin and
   velocity while retaining all prior impact marks and planning context; at a
-  relay checkpoint it retains the current launcher and edited current-leg setup.
-  Course reset clears that attempt history and returns the relay to leg 1.
+  a source change it restores the retried ball's recorded cannon source and
+  setup. Course reset clears that attempt history and restores the original start.
 
 ### AC-9: Predictable baseline rebound
 
@@ -465,10 +451,10 @@ cannon composition.
 - Applies to: FR-15.
 - Conditions for done: loading a fresh stage creates no route-changing mechanism
   in the course; only terrain, cannon, and goals are visible gameplay objects.
-  For the first two courses, the terrain and goal collision must come from the
-  retained generated-mountain topology rather than an authored shelf mesh or a
-  separate physical cup. Their generated top and support shell pass the accepted
-  whole-terrain launch-envelope admission and margin checks.
+  Every goal supplies its own shallow plate floor and low retaining wall, while
+  the connected generated terrain supplies only its fitted support. Generated
+  top and support-shell geometry remain inside their accepted construction and
+  triangle contracts.
 
 ### AC-12: Certified solution [assumption]
 

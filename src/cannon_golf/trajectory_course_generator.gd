@@ -5,22 +5,27 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 3
+const ALGORITHM_VERSION := 6
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
-const GOAL_VISIBILITY_APRON := 14.0
-const GOAL_APRON_MAXIMUM_RISE_PER_METRE := 0.45
+const PLATE_SUPPORT_DEPTH := 0.18
+const PLATE_TERRAIN_SHOULDER := 16.0
+const PLATE_SUPPORT_BLEND := 44.0
+const PLATE_INCOMING_BLEND := 56.0
+const PLATE_INCOMING_HALF_ANGLE := deg_to_rad(42.0)
 const CORRIDOR_HALF_WIDTH := 18.0
 const CORRIDOR_CLEARANCE := 3.0
 const LANDING_CENTER_CLEARANCE := 0.35
-const START_SUPPORT_RADIUS := 9.0
+const START_SUPPORT_INNER_RADIUS := 12.0
+const START_SUPPORT_RADIUS := 42.0
 const COURSE_DEADLINE_MSEC := 60000
 const SETUP_ELEVATIONS := [25.0, 28.0, 31.0, 34.0, 37.0, 40.0, 43.0, 46.0, 49.0, 52.0, 55.0]
 const SETUP_POWERS := [50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0]
 const DELTA_TARGETS := [-16.0, 8.0, 20.0, -10.0, 14.0, 2.0]
 const DEEP_RELAY_MINIMUM_RELIEF := 80.0
 const DEEP_RELAY_MINIMUM_RIM_RISE := 25.0
-const LATE_COURSE_MINIMUM_RELIEF := 80.0
 const RELIEF_BUILD_MARGIN := 12.0
+const RELIEF_SUPPORT_RESERVE_PER_GOAL := 10.0
+const COURSE_MINIMUM_RELIEF := [60.0, 65.0, 80.0, 90.0, 100.0, 112.0, 124.0, 136.0, 148.0, 160.0]
 
 
 static func build(course: CannonGolfCourseData, deadline_msec: int = 0) -> Dictionary:
@@ -115,10 +120,12 @@ static func _plan_legs(
 		var goal_z := start_z - float(leg_index + 1) * z_step
 		var distance := Vector2(launcher.x, launcher.z).distance_to(Vector2(goal_x, goal_z))
 		var goal_radius := (authored_leg.bowl_radius_range.x + authored_leg.bowl_radius_range.y) * 0.5
-		var goal_recess := (authored_leg.bowl_recess_depth_range.x \
-				+ authored_leg.bowl_recess_depth_range.y) * 0.5
-		var goal_lip_height := (authored_leg.bowl_lip_height_range.x \
-				+ authored_leg.bowl_lip_height_range.y) * 0.5
+		var goal_recess := PLATE_SUPPORT_DEPTH
+		var goal_lip_height := clampf(
+			(authored_leg.bowl_lip_height_range.x + authored_leg.bowl_lip_height_range.y) * 0.5,
+			0.9,
+			1.3
+		)
 		var desired_landing_delta := _desired_landing_delta(
 			course, authored_leg, launcher.y, initial_launcher_y, course_index, leg_index,
 			goal_recess
@@ -138,8 +145,8 @@ static func _plan_legs(
 			"launcher": launcher,
 			"goal": goal,
 			"goal_radius": goal_radius,
-			"rim_y": goal_floor_y + goal_recess,
-			"lip_y": goal_floor_y + goal_recess + goal_lip_height,
+			"rim_y": goal_floor_y,
+			"lip_y": goal_floor_y + goal_lip_height,
 			"goal_recess": goal_recess,
 			"goal_lip_height": goal_lip_height,
 			"rim_band": authored_leg.relative_rim_band,
@@ -282,7 +289,12 @@ static func _build_heights(
 	if natural_relief <= 0.0:
 		return PackedFloat32Array()
 	var required_relief := _minimum_required_relief(course, course_index)
-	var relief_scale := maxf(1.0, (required_relief + RELIEF_BUILD_MARGIN) / natural_relief)
+	# Broad, readable goal shoulders replace part of the raw macro relief. Build
+	# that bounded loss into the source landform instead of steepening the goal
+	# neighborhoods after they have been flattened.
+	var relief_reserve := RELIEF_BUILD_MARGIN \
+			+ float(plan.size()) * RELIEF_SUPPORT_RESERVE_PER_GOAL
+	var relief_scale := maxf(1.0, (required_relief + relief_reserve) / natural_relief)
 	var heights := natural_heights.duplicate()
 	var start_surface_y := float(plan[0].launcher.y) - 0.05
 	for sample_z in range(sample_size.y):
@@ -306,31 +318,27 @@ static func _build_heights(
 			var start_xz := Vector2(plan[0].launcher.x, plan[0].launcher.z)
 			var start_distance := point.distance_to(start_xz)
 			if start_distance < START_SUPPORT_RADIUS:
-				var support_inner := START_SUPPORT_RADIUS * 0.45
-				height = start_surface_y if start_distance <= support_inner else lerpf(
+				height = start_surface_y if start_distance <= START_SUPPORT_INNER_RADIUS else lerpf(
 					start_surface_y,
 					height,
 					_smoothstep(
-						(start_distance - support_inner)
-						/ (START_SUPPORT_RADIUS - support_inner)
+						(start_distance - START_SUPPORT_INNER_RADIUS)
+						/ (START_SUPPORT_RADIUS - START_SUPPORT_INNER_RADIUS)
 					)
 				)
 			for leg_data in plan:
-				height = _carve_goal(height, point, leg_data)
+				height = _fit_goal_plate_support(height, point, leg_data)
 			heights[sample_index] = height
 	return heights
 
 
 static func _minimum_required_relief(course: CannonGolfCourseData, course_index: int) -> float:
-	var profile_minimum := float(course.generation_profile.accepted_height_range.x)
-	var vertical_progress := clampf(
-		(course.terrain_vertical_scale - 0.45) / (1.35 - 0.45), 0.0, 1.0
+	if course_index < 0 or course_index >= COURSE_MINIMUM_RELIEF.size():
+		return float(course.generation_profile.accepted_height_range.x)
+	return maxf(
+		float(course.generation_profile.accepted_height_range.x),
+		float(COURSE_MINIMUM_RELIEF[course_index])
 	)
-	var scale_minimum := lerpf(60.0, 80.0, vertical_progress)
-	var required := maxf(profile_minimum, scale_minimum)
-	if course.course_id == &"deep_relay" or course_index >= 4:
-		required = maxf(required, LATE_COURSE_MINIMUM_RELIEF)
-	return required
 
 
 static func _height_contracts_pass(
@@ -461,27 +469,27 @@ static func _protect_flight_corridor(
 	return minf(height, corridor_cap)
 
 
-static func _carve_goal(height: float, point: Vector2, leg_data: Dictionary) -> float:
+static func _fit_goal_plate_support(
+	height: float, point: Vector2, leg_data: Dictionary
+) -> float:
 	var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
 	var radius := float(leg_data.goal_radius)
-	var distance := point.distance_to(goal)
-	if distance >= radius + GOAL_VISIBILITY_APRON:
+	var offset := point - goal
+	var distance := offset.length()
+	var launcher := Vector2(leg_data.launcher.x, leg_data.launcher.z)
+	var incoming := (launcher - goal).normalized()
+	var direction := offset.normalized() if distance > 0.001 else incoming
+	var incoming_angle := acos(clampf(direction.dot(incoming), -1.0, 1.0))
+	var blend_distance := PLATE_INCOMING_BLEND \
+			if incoming_angle <= PLATE_INCOMING_HALF_ANGLE else PLATE_SUPPORT_BLEND
+	var shoulder_edge := radius + PLATE_TERRAIN_SHOULDER
+	if distance >= shoulder_edge + blend_distance:
 		return height
-	var floor_y := float(leg_data.goal.y)
-	var lip_y := float(leg_data.lip_y)
-	if distance <= radius:
-		var inner_radius := radius * 0.35
-		if distance <= inner_radius:
-			return floor_y
-		return lerpf(
-			floor_y,
-			lip_y,
-			_smoothstep((distance - inner_radius) / (radius - inner_radius))
-		)
-	var apron_distance := distance - radius
-	var outer_t := _smoothstep(apron_distance / GOAL_VISIBILITY_APRON)
-	var apron_cap := lip_y + apron_distance * GOAL_APRON_MAXIMUM_RISE_PER_METRE
-	return lerpf(lip_y, minf(height, apron_cap), outer_t)
+	var support_y := float(leg_data.goal.y) - PLATE_SUPPORT_DEPTH
+	if distance <= shoulder_edge:
+		return support_y
+	var blend_t := _smoothstep((distance - shoulder_edge) / blend_distance)
+	return lerpf(support_y, height, blend_t)
 
 
 static func _build_route_graph(course_id: StringName, plan: Array[Dictionary]) -> GeneratedRouteGraph:

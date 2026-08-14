@@ -150,14 +150,21 @@ func _capture() -> void:
 		game.current_ball.global_position = game._course_builder.goal.global_position \
 				+ Vector3.UP * CannonGolfBall.RADIUS
 		game._confirm_goal()
-	elif requested_state == "relay_confirmed":
+	elif requested_state in ["relay_confirmed", "launcher_source"]:
 		if not game.fire():
-			push_error("Relay capture could not launch its checkpoint ball.")
+			push_error("Cannon-source capture could not launch its settlement ball.")
 			quit(1)
 			return
-		game.current_ball.global_position = game._course_builder.goal.global_position \
+		var source_goal_index := 0 if requested_state == "relay_confirmed" \
+				else mini(2, game._course_builder.goals.size() - 1)
+		game.current_ball.global_position = game._course_builder.goals[source_goal_index].global_position \
 				+ Vector3.UP * CannonGolfBall.RADIUS
-		game._confirm_goal()
+		game._confirm_goal(game.current_ball, source_goal_index)
+		if not game.select_launcher_source(source_goal_index):
+			push_error("Cannon-source capture could not select its completed goal.")
+			quit(1)
+			return
+		game.set_planning_view(&"cannon")
 	elif requested_state == "relay_overview":
 		game.zoom_planning(-100.0)
 	for _frame in range(36):
@@ -253,50 +260,48 @@ func _capture() -> void:
 			return
 	if game != null and requested_state == "relay_initial":
 		if game.active_course().course_id != &"deep_relay" \
-				or game.active_leg_index != 0 \
-				or game._course_builder.goals.size() != 2:
-			push_error("Initial relay capture did not show the ordered two-goal course at leg one.")
+				or not game.completed_goal_indices.is_empty() \
+				or game.selected_launcher_goal_index != -1 \
+				or game._course_builder.goals.size() != 2 \
+				or game._course_builder.goals[0].visual_state != CannonGolfSettlementGoal.VisualState.ACTIVE \
+				or game._course_builder.goals[1].visual_state != CannonGolfSettlementGoal.VisualState.ACTIVE:
+			push_error("Initial multi-goal capture did not expose both free goals from Start.")
 			quit(1)
 			return
 	if game != null and requested_state == "relay_confirmed":
 		var relay_launcher := game._course_builder.launcher
-		var launcher_base := relay_launcher.get_node_or_null("Base") as MeshInstance3D
-		var checkpoint_ball := game.confirmed_ball
-		var checkpoint_mesh := checkpoint_ball.get_node_or_null("GolfBallMesh") as MeshInstance3D \
-				if checkpoint_ball != null else null
-		var launcher_screen_position := game._camera.unproject_position(
-			relay_launcher.global_position + Vector3.UP
-		)
-		var checkpoint_screen_position := game._camera.unproject_position(
-			checkpoint_ball.global_position
-		) if checkpoint_ball != null else Vector2.ZERO
-		var relay_viewport := Rect2(Vector2.ZERO, Vector2(root.size))
 		var relay_fire_button := game._hud.get_node("%FireButton") as Button
 		var relay_progress := game._hud.get_node("%GoalProgressLabel") as Label
+		var source_selector := game._hud.get_node("%LauncherSourceButton") as OptionButton
+		var selected_source := int(source_selector.get_item_metadata(source_selector.selected))
 		if game.active_course().course_id != &"deep_relay" \
-				or game.active_leg_index != 1 \
+				or game.completed_goal_indices != [0] \
+				or game.selected_launcher_goal_index != 0 \
 				or game.confirmed_ball_count() != 1 \
 				or game.launch_state != CannonGolfGame.LaunchState.PLANNING \
 				or game._camera_rig.camera_mode != &"planning" \
 				or not game.can_fire() \
 				or relay_fire_button.disabled \
-				or launcher_base == null or not launcher_base.is_visible_in_tree() \
-				or game._camera.is_position_behind(relay_launcher.global_position) \
-				or not relay_viewport.has_point(launcher_screen_position) \
-				or checkpoint_mesh == null or not checkpoint_mesh.is_visible_in_tree() \
-				or game._camera.is_position_behind(checkpoint_ball.global_position) \
-				or not relay_viewport.has_point(checkpoint_screen_position) \
-				or not relay_launcher.global_position.is_equal_approx(
-					game._course_builder.prepared_course.legs[1].launcher_position
-				) \
 				or not Vector2(relay_launcher.global_position.x, relay_launcher.global_position.z).is_equal_approx(
 					Vector2(
 						game._course_builder.goals[0].global_position.x,
 						game._course_builder.goals[0].global_position.z
 					)
 				) \
+				or source_selector.item_count != 2 or selected_source != 0 \
 				or relay_progress.text != "골 1 / 2":
-			push_error("Confirmed relay capture did not retain checkpoint one in the leg-two planning frame.")
+			push_error("Confirmed multi-goal capture did not retain free choice and the selected source.")
+			quit(1)
+			return
+	if game != null and requested_state == "launcher_source":
+		var source_selector := game._hud.get_node("%LauncherSourceButton") as OptionButton
+		var selected_source := int(source_selector.get_item_metadata(source_selector.selected))
+		if game.completed_goal_indices.size() != 1 \
+				or game.selected_launcher_goal_index < 0 \
+				or selected_source != game.selected_launcher_goal_index \
+				or game.planning_view != &"cannon" \
+				or game._camera_rig.camera_mode != &"planning":
+			push_error("Launcher-source capture did not retain its selected completed goal.")
 			quit(1)
 			return
 	if game != null and requested_state == "relay_overview":

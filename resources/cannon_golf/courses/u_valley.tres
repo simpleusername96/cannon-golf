@@ -54,6 +54,7 @@ short_brief="넓은 계곡을 가로지르는 네 목표입니다."
 generation_profile=ExtResource("3")
 authoring_mode=1
 terrain_seed_window=Vector2i(1764827015,1764827019)
+terrain_horizontal_scale=1.28
 terrain_vertical_scale=1.35
 terrain_origin=Vector3(0,-4,0)
 landform_features=Array[ExtResource("4")]([SubResource("Valley")])

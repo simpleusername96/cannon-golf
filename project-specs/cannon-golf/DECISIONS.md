@@ -192,7 +192,8 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-021 — Generate the first courses with Paint Mountain's mountain pipeline
 
-- Status: accepted for the two-course prototype.
+- Status: accepted for the two-course prototype; its goal-ownership clauses are
+  superseded by D-035.
 - Each course calls the retained route resolver and route-graph mountain
   synthesizer, adapts the generated coordinates to the Cannon Golf world, then
   passes the result through the retained top-topology and geometry builders.
@@ -243,7 +244,8 @@ in `OPEN_QUESTIONS.md`.
 ### D-025 — Keep goal, retry, and normal-play UI physically direct
 
 - Status: accepted for the two-course prototype on 2026-08-13; its side-view
-  control is superseded by D-034.
+  control is superseded by D-034 and its terrain-basin goal is superseded by
+  D-035.
 - Each goal is a terrain-owned concave basin: its center is lowest, height rises
   toward the rim, and the goal node adds no physical cup. Safe settlement still
   determines success; a ball that rebounds out fails.
@@ -433,6 +435,48 @@ in `OPEN_QUESTIONS.md`.
   against the prepared terrain height. Free exploration remains available, but
   the camera cannot enter or cross the terrain.
 - Fire remains camera-independent and Shot Follow remains explicit per D-029.
+
+### D-035 — Use physical surface goal plates and progressive macro terrain
+
+- Status: accepted on 2026-08-14; supersedes D-021 and D-025 goal ownership,
+  D-028's `0.75 m` current ball radius, and fixed late-course size/relief clauses.
+- Each current-catalog goal owns a shallow physical floor, low segmented wall,
+  broad incoming opening, settlement containment, world marker, and visual
+  state. The generated terrain owns only a fitted support `0.18 m` below the
+  plate and must not form a goal basin or retaining wall.
+- Safe settlement requires one continuous second inside the active plate under
+  the existing safe linear/angular motion thresholds. Brief contact or escape
+  remains unsuccessful. Relay launchers move to the completed plate's exact
+  horizontal center and floor elevation.
+- The physical and visual ball radius is `1.0 m`; the material is dark navy and
+  low gloss. Every muzzle, trajectory, containment, and clearance consumer uses
+  the same shared radius.
+- The ten-course horizontal scale progresses through
+  `1.00, 1.00, 1.05, 1.10, 1.15, 1.20, 1.28, 1.35, 1.42, 1.50`; minimum relief
+  progresses through `60, 65, 80, 90, 100, 112, 124, 136, 148, 160` metres.
+  Macro peaks, shelves, ridges, and valleys own that relief. Goal support
+  conditioning must not be used to satisfy it.
+
+### D-036 — Let players choose goal order and cannon source
+
+- Status: accepted on 2026-08-14; supersedes D-030 and D-031 ordered-progression
+  clauses, D-034's per-leg target framing, and D-035's active-plate wording.
+- Goal indices remain stable authoring and UI identities, not gameplay order.
+  Every incomplete goal may settle a ball at any time. A course clears only
+  when all goals are confirmed; there is no active, future, or next goal in
+  normal play.
+- Confirming a goal freezes its ball, unlocks that plate as a cannon source, and
+  updates the compact tally. It does not move the cannon. The player chooses
+  between the original start and any completed goal through one compact
+  edge-aligned selector. A selected goal source centers the reusable cannon on
+  the plate floor and resets its setup to `50 / 50 / 50`.
+- Each cannon source has a stable base yaw toward the course center rather than
+  toward a selected goal. The cannon camera shows only the selected source's
+  local base-aim context and never frames or implies a target. The high-oblique
+  view remains the complete-course planning view.
+- Source selection may occur while earlier balls remain live. Each live ball
+  records its source and three launch values, so quick retry restores the exact
+  recorded launch rather than inheriting a later source selection.
 
 ## Rationale
 

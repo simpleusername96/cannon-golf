@@ -44,6 +44,9 @@ var planning_zoom: float:
 var current_ball: CannonGolfBall
 var confirmed_ball: CannonGolfBall
 var confirmed_balls: Array[CannonGolfBall] = []
+var completed_goal_indices: Array[int] = []
+var selected_launcher_goal_index := -1
+## Retained only for offline per-leg certification compatibility.
 var active_leg_index := 0
 var last_launch_outcome: StringName = &""
 var _active_balls: Array[CannonGolfBall] = []
@@ -56,6 +59,7 @@ func _ready() -> void:
 	_hud.fire_requested.connect(fire)
 	_hud.setup_changed.connect(_on_setup_changed)
 	_hud.view_requested.connect(set_planning_view)
+	_hud.launcher_source_requested.connect(select_launcher_source)
 	_hud.follow_requested.connect(toggle_shot_camera)
 	_hud.camera_zoom_requested.connect(zoom_planning)
 	_hud.camera_reset_requested.connect(reset_planning_camera)
@@ -97,9 +101,11 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 	var shot := _shot_state(ball)
 	if shot == null or shot.ending:
 		return
-	var goal := _course_builder.goal
-	var inside := _active_goal_contains(ball, shot)
-	if inside:
+	var goal_index := _goal_index_for_ball(ball, shot)
+	var goal := _course_builder.goal_at(goal_index)
+	if goal != null:
+		if shot.entered_goal_index < 0:
+			shot.entered_goal_index = goal_index
 		shot.entered_goal = true
 		shot.reset_low_speed()
 		if not ball.settlement_drag_is_active() \
@@ -111,7 +117,7 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 		if goal.motion_is_safe(ball.linear_velocity, ball.angular_velocity):
 			shot.settle_elapsed += delta
 			if shot.settle_elapsed >= goal.settle_seconds:
-				_confirm_goal(ball)
+				_confirm_goal(ball, goal_index)
 		else:
 			shot.reset_settlement()
 	elif shot.entered_goal:
@@ -133,16 +139,24 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 			shot.reset_low_speed()
 
 
-func _active_goal_contains(ball: CannonGolfBall, shot: CannonGolfLiveShotState) -> bool:
-	if ball == null or shot == null or _course_builder.goal == null:
-		return false
-	return _course_builder.goal.contains_rebound_column(
-		ball.global_position,
-		CannonGolfBall.RADIUS
-	) if shot.entered_goal else _course_builder.goal.contains_ball(
-		ball.global_position,
-		CannonGolfBall.RADIUS
-	)
+func _goal_index_for_ball(ball: CannonGolfBall, shot: CannonGolfLiveShotState) -> int:
+	if ball == null or shot == null:
+		return -1
+	if shot.entered_goal_index >= 0:
+		var entered_goal := _course_builder.goal_at(shot.entered_goal_index)
+		return shot.entered_goal_index if entered_goal != null \
+				and entered_goal.contains_rebound_column(
+					ball.global_position, CannonGolfBall.RADIUS
+				) else -1
+	for goal_index in range(_course_builder.goals.size()):
+		if completed_goal_indices.has(goal_index):
+			continue
+		var candidate := _course_builder.goal_at(goal_index)
+		if candidate != null and candidate.contains_ball(
+			ball.global_position, CannonGolfBall.RADIUS
+		):
+			return goal_index
+	return -1
 
 
 func _input(event: InputEvent) -> void:
@@ -249,7 +263,15 @@ func fire() -> bool:
 	ball.launch_ended.connect(_on_ball_launch_ended)
 	_ball_root.add_child(ball)
 	_active_balls.append(ball)
-	_live_shots[ball.get_instance_id()] = CannonGolfLiveShotState.new(ball)
+	_live_shots[ball.get_instance_id()] = CannonGolfLiveShotState.new(
+		ball,
+		selected_launcher_goal_index,
+		Vector3(
+			_course_builder.launcher.horizontal_aim,
+			_course_builder.launcher.elevation_degrees,
+			_course_builder.launcher.power_percent
+		)
+	)
 	current_ball = ball
 	launch_state = LaunchState.FLYING
 	last_launch_outcome = &""
@@ -270,8 +292,18 @@ func retry_attempt() -> bool:
 			or current_ball == null or not is_instance_valid(current_ball):
 		return false
 	var retry_ball := current_ball
+	var retry_shot := _shot_state(retry_ball)
+	if retry_shot == null:
+		return false
+	var retry_source := retry_shot.launcher_source_goal_index
+	var retry_setup := retry_shot.launch_setup
 	var keep_follow := _camera_rig.is_following(retry_ball)
 	_remove_live_ball(retry_ball, true, false)
+	if not _select_launcher_source(retry_source):
+		return false
+	_course_builder.launcher.set_setup(retry_setup.x, retry_setup.y, retry_setup.z)
+	_hud.set_setup(retry_setup.x, retry_setup.y, retry_setup.z)
+	_camera_rig.set_cannon_yaw(_course_builder.launcher.yaw_degrees)
 	last_launch_outcome = &""
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
@@ -403,6 +435,9 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 		push_error("Cannon Golf could not build the selected course.")
 		return
 	active_leg_index = 0
+	selected_launcher_goal_index = -1
+	completed_goal_indices.clear()
+	_course_builder.set_all_goals_available()
 	_apply_world_envelope()
 	_camera_rig.configure(
 		_camera,
@@ -411,7 +446,7 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 		Callable(_course_builder, "height_at_local")
 	)
 	if _course_builder.prepared_course != null:
-		_set_camera_context_for_leg(active_leg_index)
+		_set_camera_context_for_launcher()
 	launch_state = LaunchState.PLANNING
 	last_launch_outcome = &""
 	_hud.set_setup(
@@ -422,6 +457,7 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
 	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
+	_sync_launcher_sources()
 	_refresh_hud_availability()
 	_hud.hide_clear()
 	_hud.focus_fire()
@@ -456,6 +492,7 @@ func _clear_balls() -> void:
 	current_ball = null
 	confirmed_ball = null
 	confirmed_balls.clear()
+	completed_goal_indices.clear()
 	_active_balls.clear()
 	_live_shots.clear()
 
@@ -484,6 +521,7 @@ func _on_setup_changed(horizontal: float, elevation: float, power: float) -> voi
 		_course_builder.launcher.elevation_degrees,
 		_course_builder.launcher.power_percent
 	)
+	_camera_rig.set_cannon_yaw(_course_builder.launcher.yaw_degrees)
 
 
 func _adjust_setup(horizontal_delta: float, elevation_delta: float, power_delta: float) -> void:
@@ -496,6 +534,7 @@ func _adjust_setup(horizontal_delta: float, elevation_delta: float, power_delta:
 		launcher.power_percent + power_delta
 	)
 	_hud.set_setup(launcher.horizontal_aim, launcher.elevation_degrees, launcher.power_percent)
+	_camera_rig.set_cannon_yaw(launcher.yaw_degrees)
 
 
 func _on_result_primary_requested() -> void:
@@ -533,8 +572,10 @@ func _on_ball_launch_ended(ball: CannonGolfBall, reason: StringName) -> void:
 	# A late but valid arrival must finish the goal's settlement check. The ball
 	# can still fail by leaving the rebound column, so this does not turn contact
 	# alone into confirmation.
-	if reason == &"timeout" and shot != null and _active_goal_contains(ball, shot):
+	var timeout_goal_index := _goal_index_for_ball(ball, shot) if shot != null else -1
+	if reason == &"timeout" and shot != null and timeout_goal_index >= 0:
 		shot.entered_goal = true
+		shot.entered_goal_index = timeout_goal_index
 		shot.reset_low_speed()
 		return
 	_fail_ball(ball, reason)
@@ -566,15 +607,23 @@ func _finish_failed_ball(ball: CannonGolfBall, reason: StringName) -> void:
 		_hud.focus_fire()
 
 
-func _confirm_goal(ball: CannonGolfBall = null) -> void:
+func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	var winning_ball := current_ball if ball == null else ball
 	if winning_ball == null or _shot_state(winning_ball) == null \
 			or launch_state == LaunchState.CLEARED:
+		return
+	var winning_shot := _shot_state(winning_ball)
+	if goal_index < 0:
+		goal_index = _goal_index_for_ball(winning_ball, winning_shot)
+	if goal_index < 0 or completed_goal_indices.has(goal_index):
 		return
 	winning_ball.lock_as_confirmed()
 	last_launch_outcome = &"confirmed"
 	confirmed_ball = winning_ball
 	confirmed_balls.append(winning_ball)
+	completed_goal_indices.append(goal_index)
+	completed_goal_indices.sort()
+	_course_builder.set_goal_completed(goal_index, true)
 	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
 	for live_ball in _active_balls.duplicate():
 		if live_ball != winning_ball and is_instance_valid(live_ball):
@@ -582,19 +631,12 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 	_active_balls.clear()
 	_live_shots.clear()
 	current_ball = null
-	if active_leg_index + 1 < _course_builder.leg_count():
-		active_leg_index += 1
-		assert(_course_builder.activate_leg(active_leg_index), "Relay leg transition must be valid.")
+	if completed_goal_indices.size() < _course_builder.leg_count():
 		launch_state = LaunchState.PLANNING
-		_set_camera_context_for_leg(active_leg_index)
-		_hud.set_setup(
-			_course_builder.launcher.horizontal_aim,
-			_course_builder.launcher.elevation_degrees,
-			_course_builder.launcher.power_percent
-		)
 		_hud.set_view(_camera_rig.view_mode)
 		_hud.set_camera_mode(&"planning")
 		_hud.hide_clear()
+		_sync_launcher_sources()
 		_refresh_hud_availability()
 		_hud.focus_fire()
 		return
@@ -621,6 +663,45 @@ func _set_camera_context_for_leg(index: int) -> bool:
 		prepared_leg.launcher_position,
 		prepared_leg.shot_axis_yaw_degrees
 	)
+
+
+func _set_camera_context_for_launcher() -> bool:
+	return _camera_rig.set_planning_context(
+		_course_builder.course.content_bounds,
+		_course_builder.course.content_bounds.get_center(),
+		_course_builder.launcher.position,
+		_course_builder.launcher.shot_axis_yaw_degrees
+	)
+
+
+func select_launcher_source(goal_index: int) -> bool:
+	return _select_launcher_source(goal_index)
+
+
+func _select_launcher_source(goal_index: int) -> bool:
+	if launch_state == LaunchState.CLEARED or goal_index < -1 \
+			or (goal_index >= 0 and not completed_goal_indices.has(goal_index)):
+		return false
+	var stored_view := _camera_rig.view_mode
+	if not _course_builder.select_launcher_source(goal_index):
+		return false
+	selected_launcher_goal_index = goal_index
+	_set_camera_context_for_launcher()
+	_camera_rig.set_cannon_yaw(_course_builder.launcher.yaw_degrees)
+	_camera_rig.set_view(stored_view)
+	_hud.set_setup(
+		_course_builder.launcher.horizontal_aim,
+		_course_builder.launcher.elevation_degrees,
+		_course_builder.launcher.power_percent
+	)
+	_hud.set_view(_camera_rig.view_mode)
+	_hud.set_camera_mode(&"planning")
+	_sync_launcher_sources()
+	return true
+
+
+func _sync_launcher_sources() -> void:
+	_hud.set_launcher_sources(completed_goal_indices, selected_launcher_goal_index)
 
 
 func _update_camera(delta: float) -> void:

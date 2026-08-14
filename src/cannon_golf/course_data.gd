@@ -27,7 +27,7 @@ const AUTHORING_CONSTRAINT_RECIPE := 1
 @export var terrain_color := Color("596661")
 @export var terrain_accent_color := Color("47544F")
 
-@export_category("Ordered Relay Legs")
+@export_category("Authored Goal Layout")
 @export var legs: Array[CannonGolfCourseLegData] = []
 
 @export_category("Semantic Landforms")
