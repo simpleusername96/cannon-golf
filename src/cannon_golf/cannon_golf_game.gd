@@ -207,7 +207,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_1:
 			set_planning_view(&"oblique")
 		KEY_2:
-			set_planning_view(&"side")
+			set_planning_view(&"cannon")
 		KEY_R:
 			if event.shift_pressed:
 				reset_course()
@@ -404,12 +404,14 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 		return
 	active_leg_index = 0
 	_apply_world_envelope()
-	_camera_rig.configure(_camera, _course_builder.course)
+	_camera_rig.configure(
+		_camera,
+		_course_builder.course,
+		_course_builder.prepared_course.local_bounds,
+		Callable(_course_builder, "height_at_local")
+	)
 	if _course_builder.prepared_course != null:
-		_camera_rig.set_planning_context(
-			_course_builder.frame_bounds_for_leg(active_leg_index),
-			_course_builder.course.planning_focus
-		)
+		_set_camera_context_for_leg(active_leg_index)
 	launch_state = LaunchState.PLANNING
 	last_launch_outcome = &""
 	_hud.set_setup(
@@ -436,10 +438,7 @@ func configure_certification_leg(index: int) -> bool:
 		return false
 	launch_state = LaunchState.PLANNING
 	last_launch_outcome = &""
-	_camera_rig.set_planning_context(
-		_course_builder.frame_bounds_for_leg(index),
-		_course_builder.course.planning_focus
-	)
+	_set_camera_context_for_leg(index)
 	_hud.set_setup(
 		_course_builder.launcher.horizontal_aim,
 		_course_builder.launcher.elevation_degrees,
@@ -587,10 +586,7 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 		active_leg_index += 1
 		assert(_course_builder.activate_leg(active_leg_index), "Relay leg transition must be valid.")
 		launch_state = LaunchState.PLANNING
-		_camera_rig.set_planning_context(
-			_course_builder.frame_bounds_for_leg(active_leg_index),
-			_course_builder.course.planning_focus
-		)
+		_set_camera_context_for_leg(active_leg_index)
 		_hud.set_setup(
 			_course_builder.launcher.horizontal_aim,
 			_course_builder.launcher.elevation_degrees,
@@ -611,6 +607,19 @@ func _confirm_goal(ball: CannonGolfBall = null) -> void:
 	_hud.show_clear(
 		_course_builder.course,
 		course_index + 1 < CannonGolfCourseCatalog.all_courses().size()
+	)
+
+
+func _set_camera_context_for_leg(index: int) -> bool:
+	if _course_builder.prepared_course == null or index < 0 \
+			or index >= _course_builder.prepared_course.legs.size():
+		return false
+	var prepared_leg := _course_builder.prepared_course.legs[index]
+	return _camera_rig.set_planning_context(
+		_course_builder.frame_bounds_for_leg(index),
+		_course_builder.course.planning_focus,
+		prepared_leg.launcher_position,
+		prepared_leg.shot_axis_yaw_degrees
 	)
 
 

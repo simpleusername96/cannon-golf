@@ -5,9 +5,10 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 2
+const ALGORITHM_VERSION := 3
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
-const GOAL_OUTER_BLEND := 5.0
+const GOAL_VISIBILITY_APRON := 14.0
+const GOAL_APRON_MAXIMUM_RISE_PER_METRE := 0.45
 const CORRIDOR_HALF_WIDTH := 18.0
 const CORRIDOR_CLEARANCE := 3.0
 const LANDING_CENTER_CLEARANCE := 0.35
@@ -464,7 +465,7 @@ static func _carve_goal(height: float, point: Vector2, leg_data: Dictionary) -> 
 	var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
 	var radius := float(leg_data.goal_radius)
 	var distance := point.distance_to(goal)
-	if distance >= radius + GOAL_OUTER_BLEND:
+	if distance >= radius + GOAL_VISIBILITY_APRON:
 		return height
 	var floor_y := float(leg_data.goal.y)
 	var lip_y := float(leg_data.lip_y)
@@ -477,8 +478,10 @@ static func _carve_goal(height: float, point: Vector2, leg_data: Dictionary) -> 
 			lip_y,
 			_smoothstep((distance - inner_radius) / (radius - inner_radius))
 		)
-	var outer_t := _smoothstep((distance - radius) / GOAL_OUTER_BLEND)
-	return lerpf(lip_y, height, outer_t)
+	var apron_distance := distance - radius
+	var outer_t := _smoothstep(apron_distance / GOAL_VISIBILITY_APRON)
+	var apron_cap := lip_y + apron_distance * GOAL_APRON_MAXIMUM_RISE_PER_METRE
+	return lerpf(lip_y, minf(height, apron_cap), outer_t)
 
 
 static func _build_route_graph(course_id: StringName, plan: Array[Dictionary]) -> GeneratedRouteGraph:

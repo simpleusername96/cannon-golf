@@ -86,8 +86,8 @@ func _capture() -> void:
 			(course_select.get_node("CardsPanel/Margin/Scroll") as ScrollContainer).scroll_vertical = 100000
 	elif requested_state == "settings":
 		app.show_settings()
-	elif requested_state == "side":
-		game.set_planning_view(&"side")
+	elif requested_state == "cannon":
+		game.set_planning_view(&"cannon")
 	elif requested_state == "explored":
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
@@ -102,6 +102,11 @@ func _capture() -> void:
 		game.zoom_planning(3.0)
 	elif requested_state == "zoom_far":
 		game.zoom_planning(-3.0)
+	elif requested_state == "collision_edge":
+		game.orbit_planning(Vector2(220.0, -1000.0))
+		game.zoom_planning(100.0)
+		for _pan_step in range(8):
+			game.pan_planning(Vector2(1.0, 0.0))
 	elif requested_state == "shortcuts":
 		game._hud.set_shortcut_panel_visible(true)
 	elif requested_state == "follow":
@@ -124,7 +129,7 @@ func _capture() -> void:
 			quit(1)
 			return
 	elif requested_state == "fired_explored":
-		game.set_planning_view(&"side")
+		game.set_planning_view(&"cannon")
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
 		game.pan_planning(Vector2(1.0, 0.0))
@@ -158,7 +163,8 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "side", "explored", "panned", "zoom_close", "zoom_far", "shortcuts",
+		"planning", "cannon", "explored", "panned", "zoom_close", "zoom_far",
+		"collision_edge", "shortcuts",
 		"relay_initial", "relay_overview",
 	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
@@ -172,21 +178,36 @@ func _capture() -> void:
 			quit(1)
 			return
 	if game != null and requested_state == "panned":
-		if panned_end_focus.distance_to(panned_start_focus) <= 20.0 \
+		var drag_distance := panned_end_focus.distance_to(panned_start_focus)
+		var course_span := maxf(
+			game.active_course().content_bounds.size.x,
+			game.active_course().content_bounds.size.z
+		)
+		if drag_distance <= 1.0 or drag_distance > course_span * 0.081 \
 				or not game.active_course().content_bounds.has_point(panned_end_focus):
-			push_error("Panned capture did not move through the bounded course.")
+			push_error("Panned capture did not retain restrained bounded movement.")
 			quit(1)
 			return
 	if game != null and requested_state == "zoom_close" \
-			and game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.55:
+			and game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.75:
 		push_error("Close-zoom capture did not move materially toward the course.")
 		quit(1)
 		return
 	if game != null and requested_state == "zoom_far" \
-			and game.planning_zoom < CannonGolfCourseCameraRig.MAXIMUM_ZOOM:
-		push_error("Far-zoom capture did not reach its bounded course view.")
+			and game.planning_zoom <= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 1.30:
+		push_error("Far-zoom capture did not move materially away from the course.")
 		quit(1)
 		return
+	if game != null and requested_state == "collision_edge":
+		var camera_position := game._camera.global_position
+		var terrain_bounds := game._course_builder.prepared_course.local_bounds
+		if terrain_bounds.has_point(Vector2(camera_position.x, camera_position.z)) \
+				and camera_position.y < game._course_builder.height_at_local(
+					camera_position.x, camera_position.z
+				) + CannonGolfCourseCameraRig.CAMERA_TERRAIN_CLEARANCE - 0.01:
+			push_error("Collision-edge capture placed the planning camera inside terrain.")
+			quit(1)
+			return
 	if game != null and requested_state == "shortcuts" \
 			and not game._hud.is_shortcut_panel_visible():
 		push_error("Shortcut capture did not retain its open help panel.")

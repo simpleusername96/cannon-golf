@@ -49,12 +49,13 @@ coefficients, stage data formats, or code ownership.
   runtime screenshot, pixel contract, final stage layout, or claim that every
   shown mechanism appears in one stage.
 - The large left panel establishes the high-oblique planning composition. The
-  upper-right panel demonstrates a true side/profile reading of height and the
-  gravity drop. The lower-right panel demonstrates temporary ball follow.
+  upper-right panel is retained only as a historical height-reading reference;
+  the runtime alternate is now the per-leg cannon view. The lower-right panel
+  demonstrates temporary ball follow.
 - Preserve the quiet warm HUD language, but replace coverage, timer, remaining
   balls, and remaining shots with three compact launch-control modules and one
   primary Fire action. Each module pairs a prominent current value and key hint
-  with direct decrement, slider, and increment input. Overview, side view, ball
+  with direct decrement, slider, and increment input. Overview, cannon view, ball
   follow, quick retry, pause, camera controls, and on-demand shortcut help remain
   small icon actions with accessible names.
 - The combined board deliberately shows player-placed bounce, damping, airflow,
@@ -66,8 +67,9 @@ coefficients, stage data formats, or code ownership.
 - Do not treat the inherited frontal Aim View as the default composition.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
-- Use a side or near-profile planning view to explain height, launch elevation,
-  ledges, gaps, and rebound direction.
+- Use a per-leg behind-cannon planning view to explain the active launcher's
+  direction, local height, and immediate route. It is derived from the active
+  launcher and updates when a relay advances.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In either planning family, left-drag orbits around the current fixed course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -77,12 +79,12 @@ coefficients, stage data formats, or code ownership.
   action restores the authored high-oblique view, zero pan, and default distance.
   One wheel notch or compact zoom action must visibly change planning distance;
   do not require several repeated inputs before the course scale changes.
-- A behind-cannon view may be a temporary launch or local-aim view. It must not
-  hide the course structure or become the only way to plan.
+- The behind-cannon view is a persistent selectable planning preset. It must not
+  hide the cannon or become the only way to plan.
 - Shot Follow should reveal cause and effect without taking control away. Fire
   must not change camera mode, planning pose, or an existing follow target. The
   compact follow action explicitly follows the newest live ball; `Tab`, that
-  action, overview, or side view returns immediately to the exact stored
+  action, overview, or cannon view returns immediately to the exact stored
   planning pose. Aim and Fire remain usable while an earlier ball is still live.
 - Camera changes must preserve stage identity, selected goal, selected device,
   and launch parameters.
@@ -176,7 +178,7 @@ coefficients, stage data formats, or code ownership.
 - Placement mode must show the legal surface or air volume, current orientation,
   stock, and invalid state without covering the route. The device tray must show
   only mechanisms the player can place in the current stage.
-- Use top/oblique or side/profile composition for placement; do not require the
+- Use top/oblique or per-leg cannon composition for placement; do not require the
   player to infer a wall normal from a frontal view.
 - Bounce, damping, airflow, and gravity must have distinct silhouettes and
   motion cues in grayscale; color is supporting information only.
@@ -190,7 +192,7 @@ coefficients, stage data formats, or code ownership.
   navy type, saturated blue for the sole primary action, Pretendard, Korean-first
   copy, edge alignment, generous padding, and minimal containment.
 - Keep the course center open. Normal play may persist only one compact
-  three-module aim panel, Fire, and overview, side-view, ball-follow,
+  three-module aim panel, Fire, and overview, cannon-view, ball-follow,
   quick-retry, pause, a compact completed-goals/total-goals tally, camera, and
   help icon actions at safe edges. The help icon may open one concise shortcut
   panel at the upper-right edge; it stays collapsed by default and manages
@@ -221,7 +223,7 @@ coefficients, stage data formats, or code ownership.
 ## Acceptance Criteria
 
 - A still from a planning state reads as 3D golf without explanatory copy.
-- At least one top/high-oblique and one side/near-profile view show every
+- At least one top/high-oblique and one per-leg cannon view show every
   required goal and the selected pad without persistent HUD obstruction.
 - Firing, switching views, exploring the course, quick retry, and returning from
   Shot Follow retain horizontal aim, vertical angle, power, impact history,

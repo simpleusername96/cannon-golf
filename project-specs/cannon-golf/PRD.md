@@ -39,9 +39,9 @@ alone, so the player places limited bounce pads to redirect shots. After the
 core bounce-pad progression, the accepted expansion vocabulary adds a flat
 damping pad, a mid-air airflow device, and a bounded gravity zone. All four
 mechanism families are placed by the player; authored courses contain no
-preinstalled puzzle mechanism. Strategic
-top, side, and oblique views and stable course exploration are more important
-than the inherited frontal cannon composition.
+preinstalled puzzle mechanism. Strategic high-oblique and per-leg cannon views
+plus stable course exploration are more important than the inherited frontal
+cannon composition.
 
 ## Problem Statement
 
@@ -211,18 +211,21 @@ than the inherited frontal cannon composition.
 
 ### FR-8: Planning cameras
 
-- Requirement: planning must support terrain-reading compositions such as
-  top/oblique and side/profile views. A behind-cannon view may support launch
-  drama or local aim, but must not be the only or automatically dominant view.
+- Requirement: planning must support a terrain-reading top/high-oblique view
+  and a per-leg behind-cannon view derived from the active launcher and shot
+  axis. The cannon view supports local aim but is never the only or
+  automatically dominant view.
   Firing never changes the current camera mode, planning pose, or existing
   follow target. The compact follow action explicitly enters or leaves Shot
   Follow for the newest live ball. `Tab` is a one-way immediate return to the
-  stored planning pose; it never enters Shot Follow. Overview, side view, or
+  stored planning pose; it never enters Shot Follow. Overview, cannon view, or
   direct course exploration also restore planning while balls remain live.
   Direct planning interaction uses left-drag to orbit around
   the current fixed course focus, the mouse wheel or compact zoom actions to
-  change distance. One wheel notch or compact zoom press must change the
-  planning distance by at least `20%`; zoom remains bounded in both directions.
+  change distance. One wheel notch or compact zoom press changes the planning
+  distance by `10%`; zoom remains bounded in both directions. Left-drag pan,
+  right-drag orbit, arrow pan, and all interpolated planning poses remain above
+  the generated terrain instead of entering or crossing it.
   Arrow keys pan, and `Home` or the compact reset action must
   restore the authored high-oblique pose. A click without drag must not refocus
   the camera. Starting any direct course exploration during Shot Follow first
@@ -242,7 +245,7 @@ than the inherited frontal cannon composition.
   a full post-launch trajectory, or a separate UI label for the prior impact.
   The terrain mark itself is the feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power modules with direct
-  decrement, slider, and increment input; Fire; overview; side view; ball
+  decrement, slider, and increment input; Fire; overview; cannon view; ball
   follow; quick retry; pause; one compact completed-goals/total-goals tally; and
   one restrained camera/help dock. A single shortcut panel may open on demand
   from that dock and must be collapsed by default. Course prose, progress cards,
@@ -397,7 +400,7 @@ than the inherited frontal cannon composition.
 
 - Applies to: FR-8, FR-10.
 - Conditions for done: planning provides at least one top/oblique view and one
-  side/profile view in which goals, settled balls, retained marks, and the
+  per-leg cannon view in which goals, settled balls, retained marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. Firing

@@ -31,7 +31,7 @@ signal result_primary_requested
 @onready var _power_decrease: Button = %PowerDecrease
 @onready var _power_increase: Button = %PowerIncrease
 @onready var _oblique_button: Button = %ObliqueButton
-@onready var _side_button: Button = %SideButton
+@onready var _cannon_button: Button = %CannonButton
 @onready var _follow_button: Button = %FollowButton
 @onready var _zoom_in_button: Button = %ZoomInButton
 @onready var _camera_reset_button: Button = %CameraResetButton
@@ -75,7 +75,7 @@ func _ready() -> void:
 	_connect_step_button(_power_decrease, _power_slider, -1.0)
 	_connect_step_button(_power_increase, _power_slider, 1.0)
 	_oblique_button.pressed.connect(func() -> void: view_requested.emit(&"oblique"))
-	_side_button.pressed.connect(func() -> void: view_requested.emit(&"side"))
+	_cannon_button.pressed.connect(func() -> void: view_requested.emit(&"cannon"))
 	_follow_button.pressed.connect(func() -> void: follow_requested.emit())
 	_zoom_in_button.pressed.connect(func() -> void: camera_zoom_requested.emit(1.0))
 	_camera_reset_button.pressed.connect(func() -> void: camera_reset_requested.emit())
@@ -208,7 +208,7 @@ func apply_language(language: String) -> void:
 	_fire_button.text = "FIRE" if english else "발사"
 	_set_icon_copy(_fire_button, "Fire (Space)" if english else "발사 (Space)")
 	_set_icon_copy(_oblique_button, "Overview (1)" if english else "전체 보기 (1)")
-	_set_icon_copy(_side_button, "Side view (2)" if english else "측면 보기 (2)")
+	_set_icon_copy(_cannon_button, "Cannon view (2)" if english else "대포 시점 (2)")
 	_set_icon_copy(_zoom_in_button, "Zoom in (Wheel up)" if english else "확대 (휠 위)")
 	_set_icon_copy(
 		_camera_reset_button,
@@ -226,7 +226,7 @@ func apply_language(language: String) -> void:
 	%ShortcutPlanning.text = "Return to aim" if english else "조준으로 복귀"
 	%ShortcutRetry.text = "Relaunch same setup" if english else "같은 설정 재발사"
 	%ShortcutReset.text = "Reset course" if english else "코스 초기화"
-	%ShortcutView.text = "Overview / side view" if english else "전체 / 측면 보기"
+	%ShortcutView.text = "Overview / cannon view" if english else "전체 / 대포 시점"
 	%DragKey.text = "L / R Drag" if english else "좌 / 우 드래그"
 	%ShortcutDrag.text = "Move / orbit view" if english else "화면 이동 / 회전"
 	%WheelKey.text = "Wheel" if english else "휠"
@@ -359,7 +359,7 @@ func _refresh_camera_buttons() -> void:
 				if following else ("Follow ball" if english else "공 따라가기")
 	)
 	_oblique_button.button_pressed = not following and _planning_view == &"oblique"
-	_side_button.button_pressed = not following and _planning_view == &"side"
+	_cannon_button.button_pressed = not following and _planning_view == &"cannon"
 
 
 func _set_icon_copy(button: Button, accessible_copy: String) -> void:
@@ -383,7 +383,7 @@ func _install_focus_order() -> void:
 		_zoom_out_button,
 		_shortcut_button,
 		_oblique_button,
-		_side_button,
+		_cannon_button,
 		_follow_button,
 		_retry_button,
 		%PauseButton,

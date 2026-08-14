@@ -44,7 +44,7 @@ func _run() -> void:
 		hud.get_node("%ZoomOutButton"),
 		hud.get_node("%ShortcutButton"),
 		hud.get_node("%ObliqueButton"),
-		hud.get_node("%SideButton"),
+		hud.get_node("%CannonButton"),
 		hud.get_node("%FollowButton"),
 		hud.get_node("%RetryButton"),
 		hud.get_node("%PauseButton"),
@@ -62,7 +62,7 @@ func _run() -> void:
 		"HorizontalDecrease", "HorizontalIncrease", "ElevationDecrease",
 		"ElevationIncrease", "PowerDecrease", "PowerIncrease", "ZoomInButton",
 		"CameraResetButton", "ZoomOutButton", "ShortcutButton", "ObliqueButton",
-		"SideButton", "FollowButton", "RetryButton", "PauseButton",
+		"CannonButton", "FollowButton", "RetryButton", "PauseButton",
 	]:
 		var button := hud.get_node("%%%s" % button_name) as Button
 		_assert(not button.tooltip_text.is_empty(), "Icon action needs a tooltip: %s." % button_name)
@@ -89,14 +89,14 @@ func _run() -> void:
 				and (node as Button).theme_type_variation == &"PrimaryButton":
 			normal_primary_count += 1
 	_assert(normal_primary_count == 1, "Fire must be the only normal-play primary action.")
-	hud.set_view(&"side")
+	hud.set_view(&"cannon")
 	hud.set_launch_availability(1, 2, false)
 	await process_frame
 	var fire_button := hud.get_node("%FireButton") as Button
 	var action_dock := hud.get_node("Root/ActionDock") as Control
 	_assert(
 		fire_button.size.x >= 112.0 and action_dock.get_global_rect().encloses(fire_button.get_global_rect()),
-		"Selected side view must not squeeze or clip Fire; fire %s, dock %s." % [
+		"Selected cannon view must not squeeze or clip Fire; fire %s, dock %s." % [
 			fire_button.get_global_rect(), action_dock.get_global_rect(),
 		]
 	)

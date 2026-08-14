@@ -57,7 +57,7 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-006 — Camera direction must move away from frontal-only planning
 
-- Status: accepted.
+- Status: accepted; its side-view requirement is superseded by D-034.
 - Top, side, and oblique planning compositions are required exploration areas.
   The existing frontal view and the three early concept images are only rough
   references.
@@ -242,7 +242,8 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-025 — Keep goal, retry, and normal-play UI physically direct
 
-- Status: accepted for the two-course prototype on 2026-08-13.
+- Status: accepted for the two-course prototype on 2026-08-13; its side-view
+  control is superseded by D-034.
 - Each goal is a terrain-owned concave basin: its center is lowest, height rises
   toward the rim, and the goal node adds no physical cup. Safe settlement still
   determines success; a ball that rebounds out fails.
@@ -251,7 +252,7 @@ in `OPEN_QUESTIONS.md`.
   It preserves impact history and planning context. Course reset remains a
   separate pause-menu action and clears course-local attempt state.
 - Normal play shows only the compact three-control aim panel, Fire, overview,
-  side view, ball follow, quick retry, pause, and one restrained camera/help
+  cannon view, ball follow, quick retry, pause, and one restrained camera/help
   dock. Per D-027, one collapsed-by-default shortcut panel may open from that
   dock. Course prose, progress/status cards, permanently expanded shortcut
   legends, feedback panels, in-game course navigation, and visible full-course
@@ -417,6 +418,22 @@ in `OPEN_QUESTIONS.md`.
   neighbor robustness certification, and rendered tuning are not required by
   this decision.
 
+### D-034 — Use terrain-safe oblique and cannon planning views
+
+- Status: accepted on 2026-08-14; supersedes every prior side/profile runtime
+  requirement in D-006, D-018, and D-025 plus D-028's `22%` planning-zoom step.
+- The selectable planning presets are the whole-course high-oblique view and a
+  per-leg behind-cannon view derived from the active launcher and shot axis.
+  Key and HUD action `1` select oblique; `2` selects cannon. A relay transition
+  recomputes the cannon preset for its new launcher without changing aim or
+  firing.
+- One wheel notch or compact zoom action changes planning distance by `10%`.
+  Left-drag pan, right-drag orbit, and arrow pan use restrained response values.
+- Every planning focus, desired pose, and interpolated pose is conditioned
+  against the prepared terrain height. Free exploration remains available, but
+  the camera cannot enter or cross the terrain.
+- Fire remains camera-independent and Shot Follow remains explicit per D-029.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
@@ -457,7 +474,7 @@ in `OPEN_QUESTIONS.md`.
 - Placement and course-state owners must distinguish surface pads, mid-air
   airflow and gravity placement instead of treating every mechanism as the same
   placeable object.
-- New reference images must demonstrate top, side, or mixed planning rather than
+- New reference images must demonstrate oblique, cannon, or mixed planning rather than
   refine the current frontal mockups.
 
 ## Alternatives

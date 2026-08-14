@@ -19,7 +19,7 @@ func _run() -> void:
 
 	var fire_button := game._hud.get_node("%FireButton") as Button
 	_assert_true(fire_button.has_focus(), "Fire must own initial keyboard focus.")
-	game.set_planning_view(&"side")
+	game.set_planning_view(&"cannon")
 	game.pan_planning(Vector2(1.0, -1.0))
 	game.orbit_planning(Vector2(72.0, -24.0))
 	game.zoom_planning(2.0)
@@ -45,7 +45,7 @@ func _run() -> void:
 	await _push_key(KEY_TAB)
 	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must never re-enter Shot Follow.")
 
-	game.set_planning_view(&"side")
+	game.set_planning_view(&"cannon")
 	var oblique_button := game._hud.get_node("%ObliqueButton") as Button
 	oblique_button.grab_focus()
 	await process_frame
@@ -145,7 +145,7 @@ func _run() -> void:
 	await _push_mouse_button(MOUSE_BUTTON_WHEEL_UP, true)
 	_assert_true(
 		game._camera_rig.camera_mode == &"planning" \
-				and game.planning_zoom <= zoom_before_wheel * 0.80,
+				and game.planning_zoom <= zoom_before_wheel * 0.91,
 		"Wheel input during follow must return to planning and visibly zoom toward the terrain."
 	)
 
@@ -226,10 +226,16 @@ func _run() -> void:
 	for _drag_index in range(4):
 		await _push_drag(Vector2(640.0, 360.0), Vector2(120.0, 0.0))
 	var relay_focus_after_drag := game._camera_rig.planning_focus()
+	var relay_drag_distance := relay_focus_after_drag.distance_to(relay_focus_before_drag)
+	var relay_span := maxf(
+		game.active_course().content_bounds.size.x,
+		game.active_course().content_bounds.size.z
+	)
 	_assert_true(
-		relay_focus_after_drag.distance_to(relay_focus_before_drag) > 20.0 \
+		relay_drag_distance > 1.0 \
+				and relay_drag_distance <= relay_span * 0.081 \
 				and game.active_course().content_bounds.has_point(relay_focus_after_drag),
-		"Relay left drag must traverse the deep terrain while staying inside its exploration bounds."
+		"Relay left drag must move gently while staying inside its exploration bounds."
 	)
 
 	if not _failed:

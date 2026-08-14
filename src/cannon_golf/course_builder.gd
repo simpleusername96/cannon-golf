@@ -158,9 +158,17 @@ func goal_at(index: int) -> CannonGolfSettlementGoal:
 
 
 func frame_bounds_for_leg(index: int) -> AABB:
-	return prepared_course.legs[index].frame_bounds \
-			if prepared_course != null and index >= 0 and index < prepared_course.legs.size() \
-			else AABB()
+	if prepared_course == null or index < 0 or index >= prepared_course.legs.size():
+		return AABB()
+	var bounds := prepared_course.legs[index].frame_bounds
+	var framed_goal := goal_at(index)
+	if framed_goal != null:
+		bounds = bounds.expand(Vector3(
+			framed_goal.global_position.x,
+			framed_goal.marker_top_world_y() + 3.0,
+			framed_goal.global_position.z
+		))
+	return bounds
 
 
 func height_at_local(local_x: float, local_z: float) -> float:
@@ -185,7 +193,10 @@ func _build_goals() -> void:
 		var settlement_goal := CannonGolfSettlementGoal.new()
 		settlement_goal.name = "SettlementGoal%02d" % (index + 1)
 		settlement_goal.configure(
-			prepared.goal_position, prepared.goal_radius, prepared.goal_lip_y
+			prepared.goal_position,
+			prepared.goal_radius,
+			prepared.goal_lip_y,
+			_goal_marker_top_y(prepared.goal_position, prepared.goal_lip_y)
 		)
 		settlement_goal.visual_state = CannonGolfSettlementGoal.VisualState.ACTIVE \
 				if index == 0 else CannonGolfSettlementGoal.VisualState.FUTURE
@@ -196,6 +207,8 @@ func _build_goals() -> void:
 func _add_dressing() -> void:
 	for index in range(prepared_course.dressing.size()):
 		var placement := prepared_course.dressing[index]
+		if _dressing_overlaps_goal_clearance(placement.position):
+			continue
 		var packed := load(placement.model_path) as PackedScene
 		if packed == null:
 			continue
@@ -208,6 +221,32 @@ func _add_dressing() -> void:
 		decoration.scale = Vector3.ONE * placement.uniform_scale
 		_apply_dressing_material(decoration, placement.is_tree)
 		add_child(decoration)
+
+
+func _goal_marker_top_y(goal_position: Vector3, goal_lip_y: float) -> float:
+	var local_skyline := goal_lip_y
+	var sample_radius := 32.0
+	var sample_step := 4.0
+	var sample_count := ceili(sample_radius / sample_step)
+	for z_index in range(-sample_count, sample_count + 1):
+		for x_index in range(-sample_count, sample_count + 1):
+			var offset := Vector2(float(x_index), float(z_index)) * sample_step
+			if offset.length() > sample_radius:
+				continue
+			local_skyline = maxf(
+				local_skyline,
+				height_at_local(goal_position.x + offset.x, goal_position.z + offset.y)
+			)
+	return maxf(goal_lip_y + 18.0, local_skyline + 8.0)
+
+
+func _dressing_overlaps_goal_clearance(position: Vector3) -> bool:
+	var position_xz := Vector2(position.x, position.z)
+	for settlement_goal in goals:
+		var goal_xz := Vector2(settlement_goal.position.x, settlement_goal.position.z)
+		if position_xz.distance_to(goal_xz) <= settlement_goal.inner_radius + 8.0:
+			return true
+	return false
 
 
 func _apply_dressing_material(node: Node, is_tree: bool) -> void:
