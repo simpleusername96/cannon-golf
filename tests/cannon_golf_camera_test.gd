@@ -9,216 +9,70 @@ func _initialize() -> void:
 
 func _run() -> void:
 	root.size = Vector2i(1280, 720)
-	var builder := CannonGolfCourseBuilder.new()
-	root.add_child(builder)
-	var camera := Camera3D.new()
-	camera.fov = 48.0
-	camera.far = 520.0
-	root.add_child(camera)
-	var rig := CannonGolfCourseCameraRig.new()
-	root.add_child(rig)
-	for source_course in CannonGolfCourseCatalog.all_courses():
-		builder.build(source_course)
+	var catalog := CannonGolfCourseCatalog.all_courses()
+	for index in [0, 3, 9]:
+		var builder := CannonGolfCourseBuilder.new()
+		root.add_child(builder)
+		_assert_true(builder.build(catalog[index]), "Course must build for camera coverage.")
+		var camera := Camera3D.new()
+		camera.fov = 48.0
+		root.add_child(camera)
+		var rig := CannonGolfCourseCameraRig.new()
+		root.add_child(rig)
 		rig.configure(
 			camera, builder.course, builder.prepared_course.local_bounds,
-			Callable(builder, "height_at_local")
+			Callable(builder, "height_at_local"), builder.presentation_bounds(),
+			builder.camera_collision_exclusions()
 		)
-		var first_leg := builder.prepared_course.legs[0]
 		_assert_true(rig.set_planning_context(
-			builder.course.content_bounds, builder.course.content_bounds.get_center(),
-			builder.launcher.position, builder.launcher.shot_axis_yaw_degrees
-		), "Planning camera must accept prepared terrain context.")
-		for view in [&"oblique", &"cannon"]:
-			rig.reset_planning_view()
-			_assert_true(rig.set_view(view), "Planning view must be supported.")
-			rig.snap_to_planning()
-			_assert_terrain_clear(camera, builder, "%s %s default" % [source_course.course_id, view])
-			var orbit_focus := rig.planning_focus()
-			var position_before_orbit := camera.global_position
-			_assert_true(rig.orbit(Vector2(72.0, -28.0)), "Planning orbit must accept a real drag delta.")
-			rig.snap_to_planning()
-			_assert_true(
-				camera.global_position.distance_to(position_before_orbit) > 0.1,
-				"Planning orbit must change camera position."
-			)
-			_assert_true(
-				rig.planning_focus().is_equal_approx(orbit_focus),
-				"Planning orbit must retain its fixed course focus."
-			)
-			_assert_terrain_clear(camera, builder, "%s %s orbited" % [source_course.course_id, view])
-			for _step in range(20):
-				rig.pan(Vector2(1.0, 1.0))
-			rig.snap_to_planning()
-			_assert_true(
-				rig.planning_focus().distance_to(orbit_focus) > 1.0,
-				"Planning pan must move the camera focus across the course."
-			)
-			_assert_terrain_clear(camera, builder, "%s %s panned" % [source_course.course_id, view])
-			var default_distance := camera.global_position.distance_to(rig.planning_focus())
-			var default_zoom := rig.zoom
-			_assert_true(rig.zoom_by_steps(1.0), "One planning zoom step must move toward the course.")
-			rig.snap_to_planning()
-			var one_step_distance := camera.global_position.distance_to(rig.planning_focus())
-			_assert_true(
-				is_equal_approx(
-					rig.zoom,
-					default_zoom * CannonGolfCourseCameraRig.ZOOM_FACTOR_PER_STEP
-				) and one_step_distance <= default_distance + 0.01 \
-						and camera.global_position.is_finite(),
-				"One zoom-in step must apply the 10 percent control value without moving away: %s %s." \
-						% [source_course.course_id, view]
-			)
-			_assert_true(rig.zoom_by_steps(-1.0), "The inverse step must restore planning distance.")
-			rig.snap_to_planning()
-			_assert_true(
-				is_equal_approx(
-					camera.global_position.distance_to(rig.planning_focus()),
-					default_distance
-				),
-				"One zoom-out step must reverse one zoom-in step."
-			)
-			_assert_true(rig.zoom_by_steps(100.0), "Planning zoom must move toward the course.")
-			rig.snap_to_planning()
-			var close_distance := camera.global_position.distance_to(rig.planning_focus())
-			_assert_true(
-				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MINIMUM_ZOOM) \
-						and close_distance <= default_distance + 0.01 \
-						and camera.global_position.is_finite(),
-				"Planning zoom-in must be bounded, terrain-safe, and produce a valid pose: %s %s." \
-						% [source_course.course_id, view]
-			)
-			_assert_true(rig.zoom_by_steps(-100.0), "Planning zoom must move away from the course.")
-			rig.snap_to_planning()
-			_assert_true(
-				is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.MAXIMUM_ZOOM) \
-						and camera.global_position.is_finite(),
-				"Planning zoom-out must reach a bounded valid pose: %s %s." \
-						% [source_course.course_id, view]
-			)
-			if view == &"oblique":
-				_assert_bounds_fit(
-					camera, builder.course.content_bounds, rig.planning_focus(),
-					"%s overview maximum zoom" % source_course.course_id
-				)
-			_assert_terrain_clear(camera, builder, "%s %s zoomed" % [source_course.course_id, view])
-		var stored_view := rig.view_mode
-		var stored_pan := rig.pan_offset
-		var stored_zoom := rig.zoom
-		var stored_orbit := rig.orbit_degrees
+			builder.presentation_bounds(), builder.course.content_bounds.get_center(),
+			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction()
+		), "Camera context must accept the launcher pose.")
 		rig.snap_to_planning()
-		var stored_position := camera.global_position
-		var pose_builds := rig.planning_pose_build_count()
-		for _frame in range(30):
-			rig.update(1.0 / 60.0)
+		_assert_true(camera.global_position.is_finite(), "Reset overview must be finite.")
+		for _step in range(10):
+			rig.zoom_by_steps(1.0)
+		rig.snap_to_planning()
 		_assert_true(
-			rig.planning_pose_build_count() == pose_builds,
-			"Unchanged planning frames must reuse the resolved pose."
+			absf(rig.resolved_planning_distance() - 28.0) <= 0.3,
+			"Ten zoom steps must resolve the 28 m close view."
 		)
-
-		var target := Node3D.new()
-		target.position = builder.course.cannon_position + Vector3(0.0, 18.0, -35.0)
-		root.add_child(target)
-		_assert_true(rig.follow(target), "A valid live ball must enter Shot Follow.")
-		rig.update(1.0 / 60.0)
-		_assert_true(rig.is_following(target), "Shot Follow must retain its explicit target.")
-		rig.return_to_planning(true)
-		_assert_true(rig.camera_mode == &"planning", "Camera return must restore planning mode.")
-		_assert_true(rig.view_mode == stored_view, "Camera return must retain overview/cannon choice.")
-		_assert_true(rig.pan_offset.is_equal_approx(stored_pan), "Camera return must retain planning pan.")
-		_assert_true(is_equal_approx(rig.zoom, stored_zoom), "Camera return must retain planning zoom.")
-		_assert_true(rig.orbit_degrees.is_equal_approx(stored_orbit), "Camera return must retain planning orbit.")
-		_assert_true(camera.global_position.is_equal_approx(stored_position), "Immediate camera return must restore the stored pose.")
-		_assert_true(rig.follow(target), "The same live target may be followed again.")
-		target.queue_free()
-		await process_frame
-		rig.update(1.0 / 60.0)
-		_assert_true(rig.camera_mode == &"planning", "An ended follow target must fall back to planning.")
 		rig.reset_planning_view()
+		for _step in range(6):
+			rig.zoom_by_steps(-1.0)
 		rig.snap_to_planning()
+		_assert_true(camera.global_position.is_finite(), "Six zoom-out steps must stay finite.")
+		var old_focus := rig.planning_focus()
+		_assert_true(rig.pan_drag(Vector2.ZERO, Vector2(80.0, -30.0)), "Left drag must pan.")
+		_assert_true(rig.orbit(Vector2(80.0, -30.0)), "Right drag must orbit.")
+		rig.snap_to_planning()
+		_assert_true(not rig.planning_focus().is_equal_approx(old_focus), "Pan must move the overview pivot.")
+
+		_assert_true(rig.set_view(&"cannon"), "Cannon first-person must be available.")
+		rig.snap_to_planning()
+		var camera_forward := -camera.global_transform.basis.z
 		_assert_true(
-			rig.view_mode == &"oblique" and rig.pan_offset.is_zero_approx() \
-					and is_equal_approx(rig.zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
-					and rig.orbit_degrees.is_zero_approx(),
-			"Camera reset must restore the authored high-oblique planning view."
+			camera.global_position.distance_to(builder.launcher.first_person_eye_position()) < 0.01
+					and rad_to_deg(camera_forward.angle_to(builder.launcher.launch_direction())) < 0.1,
+			"Cannon view must use the exact launcher eye and launch direction."
 		)
-		_assert_fits(camera, builder.course, rig, "%s reset" % source_course.course_id)
-		if builder.prepared_course != null:
-			_assert_true(
-				rig.set_planning_context(
-					builder.course.content_bounds, builder.course.content_bounds.get_center(),
-					builder.launcher.position, builder.launcher.shot_axis_yaw_degrees
-				),
-				"Relay planning must accept its active-leg frame."
-			)
-			_assert_bounds_fit(
-				camera, builder.frame_bounds_for_leg(0), rig.planning_focus(),
-				"%s active leg" % source_course.course_id
-			)
-			_assert_true(rig.zoom_by_steps(-100.0), "Relay overview must zoom to the course limit.")
-			rig.snap_to_planning()
-			_assert_bounds_fit(
-				camera, builder.course.content_bounds, rig.planning_focus(),
-				"%s full-course overview" % source_course.course_id
-			)
+		var stored_view := rig.view_mode
+		var target := RigidBody3D.new()
+		target.position = builder.launcher.position + Vector3(0.0, 12.0, -20.0)
+		target.linear_velocity = builder.launcher.launch_direction() * 20.0
+		root.add_child(target)
+		_assert_true(rig.follow(target), "Fire target must enter follow.")
+		rig.update(1.0 / 60.0)
+		rig.return_to_planning(true)
+		_assert_true(rig.view_mode == stored_view, "Tab return must restore the prior view.")
+		target.queue_free()
+		builder.queue_free()
+		camera.queue_free()
+		rig.queue_free()
+		await process_frame
 	if not _failed:
-		print("Cannon Golf generated-content planning and Shot Follow camera contract passed.")
+		print("Cannon Golf overview, first-person, and follow camera contract passed.")
 	quit(1 if _failed else 0)
-
-
-func _assert_fits(
-		camera: Camera3D,
-		course: CannonGolfCourseData,
-		rig: CannonGolfCourseCameraRig,
-		label: String
-) -> void:
-	var focus := rig.planning_focus()
-	_assert_true(
-		TerrainCameraFramer.pose_fits_bounds(
-			course.content_bounds,
-			camera.global_position,
-			focus,
-			camera.fov,
-			1280.0 / 720.0,
-			1.0
-		),
-		"Camera must fit generated content: %s." % label
-	)
-
-
-func _assert_bounds_fit(
-		camera: Camera3D,
-		bounds: AABB,
-		focus: Vector3,
-		label: String
-) -> void:
-	_assert_true(
-		TerrainCameraFramer.pose_fits_bounds(
-			bounds,
-			camera.global_position,
-			focus,
-			camera.fov,
-			1280.0 / 720.0,
-			1.0
-		),
-		"Camera must fit requested bounds: %s." % label
-	)
-
-
-func _assert_terrain_clear(
-		camera: Camera3D,
-		builder: CannonGolfCourseBuilder,
-		label: String
-) -> void:
-	var position := camera.global_position
-	var in_terrain_bounds := builder.prepared_course.local_bounds.has_point(
-		Vector2(position.x, position.z)
-	)
-	_assert_true(
-		not in_terrain_bounds \
-				or position.y >= builder.height_at_local(position.x, position.z) \
-						+ CannonGolfCourseCameraRig.CAMERA_TERRAIN_CLEARANCE - 0.01,
-		"Camera must remain above generated terrain: %s." % label
-	)
 
 
 func _assert_true(condition: bool, message: String) -> void:

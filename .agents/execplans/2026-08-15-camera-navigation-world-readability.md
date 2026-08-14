@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-15
 scope: Rebuild camera navigation, remove white world patches, and add readable goal and cannon cues
 supersedes: .agents/execplans/2026-08-15-interface-scale-and-close-inspection.md
@@ -137,8 +137,9 @@ Locked world-readability decisions:
   energies unchanged. The diorama base must render as muted green-gray rather
   than white; set its shader base to `#596657`, cap photographic detail mix at
   `0.10`, and retain full roughness.
-- Replace the cyan unshaded stem, diamond, and redundant decorative flag with
-  one thick downward 3D arrow. Use a matte amber `#F2A33A` shaft and cone plus a
+- Keep the physical goal flag at the plate as the local landing cue. Replace
+  only the cyan unshaded stem and diamond with one thick downward 3D arrow.
+  Use a matte amber `#F2A33A` shaft and cone plus a
   dark `#13243A` collar. The shaft is `1.1 m` thick and `7 m` tall; the conical
   tip is `4.8 m` wide and `4 m` tall. It is real all-angle geometry, has no
   emission, and does not collide or cast a shadow.
@@ -219,7 +220,7 @@ Source owners: `project-specs/cannon-golf/PRD.md`,
 `project-specs/cannon-golf/DESIGN_RULES.md`,
 `project-specs/cannon-golf/DECISIONS.md`
 
-- [ ] **1.1** Record the three-state camera and surface contract.
+- [x] **1.1** Record the three-state camera and surface contract.
   - Change: add one accepted decision superseding D-029's explicit-only follow,
     D-034's external cannon view and endpoint lift, and D-037's `14 m` close
     endpoint/fire independence. Update matching current PRD/design clauses.
@@ -236,15 +237,16 @@ Source owners: `src/cannon_golf/settlement_goal.gd`,
 `src/cannon_golf/course_builder.gd`, `scenes/cannon_golf/cannon_golf.tscn`,
 `tests/cannon_golf_goal_test.gd`, `tests/cannon_golf_course_build_test.gd`
 
-- [ ] **2.1** Remove white ground patches without changing world lighting.
+- [x] **2.1** Remove white ground patches without changing world lighting.
   - Accept: plate floor/wall and base shader equal the locked values; Sun, fill,
     ambient, goal physics, goal dimensions, and terrain palettes are unchanged;
     no visible world ground surface uses the old pale plate materials.
-- [ ] **2.2** Replace flag/diamond marker ownership with the thick 3D arrow.
-  - Accept: every incomplete goal has one downward arrow at its actual `x/z`,
-    arrow tip clears the computed local skyline, confirmed arrows are hidden,
-    and no active/future/next-goal distinction remains.
-- [ ] **2.3** Enlarge cannon art and add its world-yaw cue.
+- [x] **2.2** Keep the plate flag and replace only the airborne cyan marker.
+  - Accept: every goal retains its physical flag; every incomplete goal also
+    has one downward arrow at its actual `x/z`; the arrow tip clears the
+    computed local skyline; confirmed arrows are hidden; no active/future/
+    next-goal distinction remains.
+- [x] **2.3** Enlarge cannon art and add its world-yaw cue.
   - Accept: visual extents are `1.6x`, cue wedge tracks current yaw after key,
     slider, and source changes, while launch origin/velocity remain byte-for-byte
     equivalent for the same `50 / 50 / 50` input.
@@ -257,18 +259,18 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`, new responsibility-shaped
 `src/cannon_golf/course_world_envelope.gd`,
 `src/cannon_golf/cannon_golf_game.gd`, `tests/cannon_golf_camera_test.gd`
 
-- [ ] **3.1** Extract overview pose/framing from the camera state owner.
+- [x] **3.1** Extract overview pose/framing from the camera state owner.
   - Change: keep transitions/follow in the rig; move overview focus, bounds,
     orbit, pan, zoom, and desired pose math to the solver. Remove cannon scaling,
     `14 m`, `2.0x` overview, and vertical endpoint-lift paths.
   - Accept: reset fits presentation bounds directly; ten zoom-ins resolve to a
     desired `28 m`; six zoom-outs never exceed the fit view; no old constants or
     competing overview resolver remains reachable.
-- [ ] **3.2** Add terrain-safe pivot and swept camera boom.
+- [x] **3.2** Add terrain-safe pivot and swept camera boom.
   - Accept: pan/orbit/zoom and interpolation keep the camera sphere outside
     terrain; blocked motion shortens the boom or preserves the last pose and
     never raises the camera into a sky-dominant jump.
-- [ ] **3.3** Use presentation bounds for camera, base, shadow, and clipping.
+- [x] **3.3** Use presentation bounds for camera, base, shadow, and clipping.
   - Accept: all goal arrows and cannon cue fit reset framing on courses 1, 4,
     and 10; finite near/far planes contain the complete visible course.
 
@@ -282,11 +284,11 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
 `scenes/cannon_golf/cannon_golf_hud.tscn`,
 `tests/cannon_golf_camera_test.gd`, `tests/cannon_golf_ui_contract_test.gd`
 
-- [ ] **4.1** Resolve cannon view directly from launcher transform and direction.
+- [x] **4.1** Resolve cannon view directly from launcher transform and direction.
   - Accept: at minimum/maximum yaw and elevation the camera origin remains at
     the selected launcher and its forward vector matches launch direction within
     `0.1 degrees`; no goal position enters the calculation.
-- [ ] **4.2** Add the panel-free reticle and update compact camera/help semantics.
+- [x] **4.2** Add the panel-free reticle and update compact camera/help semantics.
   - Accept: reticle appears only in cannon first-person; overview and follow
     buttons remain one restrained dock; help says left-drag pan, right-drag
     orbit, wheel zoom, `1` overview, `2` cannon, and `Tab` return.
@@ -299,11 +301,11 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
 `src/cannon_golf/cannon_golf_game.gd`,
 `tests/cannon_golf_camera_test.gd`, `tests/cannon_golf_input_test.gd`
 
-- [ ] **5.1** Store/restore one exact planning snapshot around Shot Follow.
+- [x] **5.1** Store/restore one exact planning snapshot around Shot Follow.
   - Accept: Fire from overview and first-person follows the spawned ball; `Tab`
     restores exact prior state; second Fire retargets without replacing the
     snapshot; direct view selection exits follow deterministically.
-- [ ] **5.2** Make follow velocity-relative and collision-safe.
+- [x] **5.2** Make follow velocity-relative and collision-safe.
   - Accept: airborne and grounded follow never enter terrain, outcome returns
     after `0.5 s`, quick retry follows its replacement, and controls remain
     usable under the existing live-ball limit.
@@ -313,20 +315,20 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`,
 Preconditions: tasks 1.1-5.2 are complete. Do not run UI, performance, broad,
 solution, certification, or rendered tests earlier.
 
-- [ ] **6.1** Run the focused final gate once through
+- [x] **6.1** Run the focused final gate once through
   `scripts/invoke-cannon-golf-validation.ps1`.
   - Order: camera (`90 s`), input (`90 s`), goal (`300 s`), course build
     (`120 s`), UI contract (`60 s`), app flow (`90 s`), catalog smoke (`120 s`).
   - Accept: every process exits zero, persistent-log growth is zero, and no
     task-owned Godot process remains. Stop at first failure; rerun only its
     owner after one material correction.
-- [ ] **6.2** Capture final user-facing states once.
+- [x] **6.2** Capture final user-facing states once.
   - Capture: courses 1, 4, and 10 at `1280 x 720`: reset overview, panned close
     overview, cannon first-person at `50 / 50 / 50`, and active Shot Follow.
   - Accept: no white terrain-like patch remains; goals/arrows separate from
     terrain; full course is not sky-clipped; close navigation works; cannon
     direction is clear; HUD has no new panel or overlap.
-- [ ] **6.3** Run the task-scoped quality and hygiene gate.
+- [x] **6.3** Run the task-scoped quality and hygiene gate.
   - Accept: codebase-quality audit finds no catch-all or competing camera owner;
     `git diff --check` passes; task-owned captures/logs are removed after review;
     no prepared resource changed; one coherent task commit remains.
@@ -384,11 +386,16 @@ solution, certification, or rendered tests earlier.
   decisions.
 - [x] Closed camera-state, collision, visual-cue, input, ownership, and final-
   validation decisions in this contract.
+- [x] Implemented the surface, goal-arrow, launcher-cue, overview, first-person,
+  follow, exact-return, and minimal-reticle changes without regenerating terrain.
+- [x] Focused camera, input, goal, course-build, UI, app-flow, and catalog checks
+  passed through the storage-safe wrapper with zero persistent-log growth.
+- [x] Reviewed courses 1, 4, and 10 in reset, close-pan, cannon, and follow
+  captures; removed the first-person barrel occlusion found by that review.
 
 ## Next Steps
 
-- [ ] Resume at task 1.1. Keep this file as the only active progress ledger for
-  this outcome.
+- [x] Complete. No follow-up task remains in this execution contract.
 
 ## Completion and Stop Conditions
 

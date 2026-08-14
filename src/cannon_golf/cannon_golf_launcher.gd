@@ -1,6 +1,9 @@
 class_name CannonGolfLauncher
 extends Node3D
 
+const VISUAL_SCALE := 1.6
+const DIRECTION_RING_RADIUS := 5.5
+
 var shot_axis_yaw_degrees := 0.0
 var horizontal_aim := 50.0
 var yaw_degrees := 0.0
@@ -10,6 +13,8 @@ var power_percent := 50.0
 var _yaw_pivot: Node3D
 var _elevation_pivot: Node3D
 var _muzzle: Marker3D
+var _visual_root: Node3D
+var _direction_cue: Node3D
 
 
 func _ready() -> void:
@@ -87,12 +92,32 @@ func launch_origin() -> Vector3:
 	)
 
 
+func first_person_eye_position() -> Vector3:
+	var root_position := global_position if is_inside_tree() else position
+	return root_position + Vector3.UP * (CannonGolfBallistics.YAW_PIVOT_HEIGHT + 0.65) \
+			- launch_direction() * 0.35
+
+
+func direction_cue_radius() -> float:
+	return DIRECTION_RING_RADIUS
+
+
+func set_first_person_visuals_hidden(hidden: bool) -> void:
+	if _visual_root != null:
+		_visual_root.visible = not hidden
+
+
 func _build_visuals() -> void:
 	if _yaw_pivot != null:
 		return
 	var dark := _material(Color("0E1A29"), 0.46, 0.36)
 	var white := _material(Color("F2EFE8"), 0.12, 0.5)
 	var blue := _material(Color("2584FF"), 0.18, 0.3)
+	var amber := _material(Color("F2A33A"), 0.04, 0.72)
+	_visual_root = Node3D.new()
+	_visual_root.name = "LauncherVisualRoot"
+	_visual_root.scale = Vector3.ONE * VISUAL_SCALE
+	add_child(_visual_root)
 	var base := MeshInstance3D.new()
 	base.name = "Base"
 	var base_mesh := CylinderMesh.new()
@@ -102,12 +127,13 @@ func _build_visuals() -> void:
 	base_mesh.radial_segments = 16
 	base_mesh.material = dark
 	base.mesh = base_mesh
-	base.position.y = 0.3
-	add_child(base)
+	base.position.y = 0.3 / VISUAL_SCALE
+	base_mesh.height /= VISUAL_SCALE
+	_visual_root.add_child(base)
 	_yaw_pivot = Node3D.new()
 	_yaw_pivot.name = "YawPivot"
-	_yaw_pivot.position.y = 1.05
-	add_child(_yaw_pivot)
+	_yaw_pivot.position.y = CannonGolfBallistics.YAW_PIVOT_HEIGHT / VISUAL_SCALE
+	_visual_root.add_child(_yaw_pivot)
 	var pivot := MeshInstance3D.new()
 	var pivot_mesh := SphereMesh.new()
 	pivot_mesh.radius = 0.98
@@ -125,11 +151,11 @@ func _build_visuals() -> void:
 	var barrel_mesh := CylinderMesh.new()
 	barrel_mesh.top_radius = 0.42
 	barrel_mesh.bottom_radius = 0.62
-	barrel_mesh.height = 4.0
+	barrel_mesh.height = CannonGolfBallistics.BARREL_LENGTH / VISUAL_SCALE
 	barrel_mesh.radial_segments = 16
 	barrel_mesh.material = white
 	barrel.mesh = barrel_mesh
-	barrel.position.z = -2.0
+	barrel.position.z = -CannonGolfBallistics.BARREL_LENGTH * 0.5 / VISUAL_SCALE
 	barrel.rotation_degrees.x = 90.0
 	_elevation_pivot.add_child(barrel)
 	var band := MeshInstance3D.new()
@@ -140,13 +166,38 @@ func _build_visuals() -> void:
 	band_mesh.radial_segments = 16
 	band_mesh.material = blue
 	band.mesh = band_mesh
-	band.position.z = -3.2
+	band.position.z = -3.2 / VISUAL_SCALE
 	band.rotation_degrees.x = 90.0
 	_elevation_pivot.add_child(band)
 	_muzzle = Marker3D.new()
 	_muzzle.name = "Muzzle"
-	_muzzle.position.z = -4.0
+	_muzzle.position.z = -CannonGolfBallistics.BARREL_LENGTH / VISUAL_SCALE
 	_elevation_pivot.add_child(_muzzle)
+
+	_direction_cue = Node3D.new()
+	_direction_cue.name = "DirectionCue"
+	_direction_cue.position.y = 0.12
+	add_child(_direction_cue)
+	var ring := MeshInstance3D.new()
+	ring.name = "DirectionRing"
+	var ring_mesh := TorusMesh.new()
+	ring_mesh.inner_radius = DIRECTION_RING_RADIUS - 0.22
+	ring_mesh.outer_radius = DIRECTION_RING_RADIUS
+	ring_mesh.rings = 32
+	ring_mesh.ring_segments = 8
+	ring_mesh.material = dark
+	ring.mesh = ring_mesh
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_direction_cue.add_child(ring)
+	var wedge := MeshInstance3D.new()
+	wedge.name = "DirectionWedge"
+	var wedge_mesh := PrismMesh.new()
+	wedge_mesh.size = Vector3(1.8, 0.24, 6.8)
+	wedge_mesh.material = amber
+	wedge.mesh = wedge_mesh
+	wedge.position.z = -3.4
+	wedge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_direction_cue.add_child(wedge)
 
 
 func _apply_visuals() -> void:
@@ -154,6 +205,8 @@ func _apply_visuals() -> void:
 		return
 	_yaw_pivot.rotation.y = -deg_to_rad(yaw_degrees)
 	_elevation_pivot.rotation.x = deg_to_rad(elevation_degrees)
+	if _direction_cue != null:
+		_direction_cue.rotation.y = -deg_to_rad(yaw_degrees)
 
 
 func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:

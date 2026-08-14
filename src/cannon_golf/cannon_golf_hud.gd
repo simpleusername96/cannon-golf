@@ -50,6 +50,7 @@ signal result_primary_requested
 @onready var _goal_progress_label: Label = %GoalProgressLabel
 @onready var _launcher_source_panel: PanelContainer = $Root/LauncherSource
 @onready var _launcher_source_button: OptionButton = %LauncherSourceButton
+@onready var _aim_reticle: Control = %AimReticle
 
 var _syncing := false
 var _pause_suspended := false
@@ -408,6 +409,7 @@ func is_shortcut_panel_visible() -> bool:
 
 func _refresh_camera_buttons() -> void:
 	var following := _camera_mode == &"follow"
+	_aim_reticle.visible = not following and _planning_view == &"cannon"
 	_follow_button.button_pressed = following
 	var english := _language == "en"
 	_set_icon_copy(

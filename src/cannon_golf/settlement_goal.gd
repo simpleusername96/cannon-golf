@@ -13,6 +13,10 @@ const BASE_CAPTURE_ENTRY_ANGULAR_SPEED := 8.0
 const ACTIVE_FLAG_HEIGHT := 16.0
 const FUTURE_FLAG_HEIGHT := 14.0
 const CONFIRMED_FLAG_HEIGHT := 10.0
+const ARROW_SHAFT_HEIGHT := 7.0
+const ARROW_TIP_HEIGHT := 4.0
+const ARROW_COLLAR_HEIGHT := 0.6
+const ARROW_TOTAL_HEIGHT := ARROW_TIP_HEIGHT + ARROW_SHAFT_HEIGHT
 
 enum VisualState {
 	FUTURE,
@@ -36,8 +40,7 @@ var _plate_body: StaticBody3D
 var _plate_floor: MeshInstance3D
 var _flag_pole: MeshInstance3D
 var _flag: MeshInstance3D
-var _air_marker_stem: MeshInstance3D
-var _air_marker_faces: Array[MeshInstance3D] = []
+var _air_arrow: Node3D
 var _marker_top_height := 18.0
 var _incoming_yaw_degrees := 0.0
 
@@ -51,8 +54,9 @@ func configure(
 ) -> void:
 	position = world_position
 	inner_radius = radius
-	rim_height = maxf(0.4, world_wall_top_y - world_position.y) \
+	var authored_rim_height := world_wall_top_y - world_position.y \
 			if is_finite(world_wall_top_y) else 0.8
+	rim_height = maxf(maxf(0.4, authored_rim_height), CannonGolfBall.RADIUS * 0.8)
 	_incoming_yaw_degrees = incoming_yaw_degrees
 	_marker_top_height = maxf(
 		rim_height + 18.0,
@@ -101,7 +105,16 @@ func motion_allows_settlement_drag(
 
 func marker_top_world_y() -> float:
 	var origin_y := global_position.y if is_inside_tree() else position.y
-	return origin_y + _marker_top_height
+	return origin_y + _marker_top_height + ARROW_TOTAL_HEIGHT
+
+
+func camera_collision_rid() -> RID:
+	return _plate_body.get_rid() if _plate_body != null else RID()
+
+
+func entry_opening_width() -> float:
+	var segment_angle := TAU / float(RIM_SEGMENTS)
+	return 2.0 * inner_radius * sin(segment_angle * float(_entry_gap_segment_count()) * 0.5)
 
 
 func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> bool:
@@ -110,8 +123,8 @@ func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> 
 
 
 func _build_plate() -> void:
-	var floor_material := _material(Color("E8E1CE"), 0.02, 0.84)
-	var wall_material := _material(Color("D4D0C4"), 0.03, 0.78)
+	var floor_material := _material(Color("53634F"), 0.0, 0.96)
+	var wall_material := _material(Color("24394D"), 0.04, 0.88)
 	var body := StaticBody3D.new()
 	body.name = "GoalPlateBody"
 	body.collision_layer = 1
@@ -145,7 +158,7 @@ func _build_plate() -> void:
 	body.add_child(floor_collision)
 	var opening_angle := -deg_to_rad(_incoming_yaw_degrees)
 	var segment_angle := TAU / float(RIM_SEGMENTS)
-	var opening_half_angle := segment_angle * float(ENTRY_GAP_SEGMENTS) * 0.5
+	var opening_half_angle := segment_angle * float(_entry_gap_segment_count()) * 0.5
 	var wall_radius := inner_radius + WALL_THICKNESS * 0.5
 	var segment_length := TAU * (inner_radius + 0.25) / float(RIM_SEGMENTS) * 1.08
 	for index in range(RIM_SEGMENTS):
@@ -176,6 +189,17 @@ func _build_plate() -> void:
 		body.add_child(collision)
 
 
+func _entry_gap_segment_count() -> int:
+	var required_width := CannonGolfBall.RADIUS * 2.0 + 0.5
+	var ratio := clampf(required_width / maxf(inner_radius * 2.0, required_width), 0.0, 1.0)
+	var required_angle := 2.0 * asin(ratio)
+	return clampi(
+		maxi(ENTRY_GAP_SEGMENTS, ceili(required_angle / (TAU / float(RIM_SEGMENTS)))),
+		1,
+		RIM_SEGMENTS - 1
+	)
+
+
 func _build_flag() -> void:
 	var pole := MeshInstance3D.new()
 	var pole_mesh := CylinderMesh.new()
@@ -199,53 +223,69 @@ func _build_flag() -> void:
 
 
 func _build_air_marker() -> void:
-	var marker_material := _material(Color("20D9F2"), 0.0, 0.34)
-	marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	var stem := MeshInstance3D.new()
-	stem.name = "GoalAirMarkerStem"
-	var stem_mesh := CylinderMesh.new()
-	stem_mesh.top_radius = 0.15
-	stem_mesh.bottom_radius = 0.15
-	stem_mesh.height = maxf(_marker_top_height - rim_height, 1.0)
-	stem_mesh.radial_segments = 10
-	stem_mesh.material = marker_material
-	stem.mesh = stem_mesh
-	stem.position = Vector3(0.0, rim_height + stem_mesh.height * 0.5, 0.0)
-	stem.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(stem)
-	_air_marker_stem = stem
-	for face_index in range(2):
-		var face := MeshInstance3D.new()
-		face.name = "GoalAirMarkerFace%d" % (face_index + 1)
-		var face_mesh := BoxMesh.new()
-		face_mesh.size = Vector3(5.8, 5.8, 0.22)
-		face_mesh.material = marker_material
-		face.mesh = face_mesh
-		face.position = Vector3(0.0, _marker_top_height, 0.0)
-		face.rotation = Vector3(0.0, float(face_index) * PI * 0.5, PI * 0.25)
-		face.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		add_child(face)
-		_air_marker_faces.append(face)
+	var amber := _material(Color("F2A33A"), 0.0, 0.82)
+	var dark := _material(Color("13243A"), 0.08, 0.72)
+	var arrow := Node3D.new()
+	arrow.name = "GoalAirArrow"
+	arrow.position.y = _marker_top_height
+	add_child(arrow)
+	_air_arrow = arrow
+
+	var tip := MeshInstance3D.new()
+	tip.name = "GoalAirArrowTip"
+	var tip_mesh := CylinderMesh.new()
+	tip_mesh.top_radius = 2.4
+	tip_mesh.bottom_radius = 0.0
+	tip_mesh.height = ARROW_TIP_HEIGHT
+	tip_mesh.radial_segments = 16
+	tip_mesh.material = amber
+	tip.mesh = tip_mesh
+	tip.position.y = ARROW_TIP_HEIGHT * 0.5
+	tip.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	arrow.add_child(tip)
+
+	var collar := MeshInstance3D.new()
+	collar.name = "GoalAirArrowCollar"
+	var collar_mesh := CylinderMesh.new()
+	collar_mesh.top_radius = 0.9
+	collar_mesh.bottom_radius = 0.9
+	collar_mesh.height = ARROW_COLLAR_HEIGHT
+	collar_mesh.radial_segments = 16
+	collar_mesh.material = dark
+	collar.mesh = collar_mesh
+	collar.position.y = ARROW_TIP_HEIGHT + ARROW_COLLAR_HEIGHT * 0.5
+	collar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	arrow.add_child(collar)
+
+	var shaft := MeshInstance3D.new()
+	shaft.name = "GoalAirArrowShaft"
+	var shaft_mesh := CylinderMesh.new()
+	shaft_mesh.top_radius = 0.55
+	shaft_mesh.bottom_radius = 0.55
+	shaft_mesh.height = ARROW_SHAFT_HEIGHT
+	shaft_mesh.radial_segments = 12
+	shaft_mesh.material = amber
+	shaft.mesh = shaft_mesh
+	shaft.position.y = ARROW_TIP_HEIGHT + ARROW_SHAFT_HEIGHT * 0.5
+	shaft.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	arrow.add_child(shaft)
 
 
 func _apply_visual_state() -> void:
-	if _flag_pole == null or _flag == null or _air_marker_stem == null:
+	if _flag_pole == null or _flag == null or _air_arrow == null:
 		return
 	var pole_height := ACTIVE_FLAG_HEIGHT
 	var flag_height := ACTIVE_FLAG_HEIGHT - 1.0
 	var flag_scale := Vector3(1.75, 1.75, 1.0)
-	var air_marker_scale := 1.0
 	match visual_state:
 		VisualState.FUTURE:
 			pole_height = FUTURE_FLAG_HEIGHT
 			flag_height = FUTURE_FLAG_HEIGHT - 1.0
 			flag_scale = Vector3(1.35, 1.35, 1.0)
-			air_marker_scale = 0.82
 		VisualState.CONFIRMED:
 			pole_height = CONFIRMED_FLAG_HEIGHT
 			flag_height = CONFIRMED_FLAG_HEIGHT - 1.0
 			flag_scale = Vector3(1.0, 1.0, 1.0)
-			air_marker_scale = 0.75
 	_flag_pole.scale = Vector3(1.0, pole_height / 10.0, 1.0)
 	_flag_pole.position.y = rim_height + pole_height * 0.5
 	_flag.scale = flag_scale
@@ -254,9 +294,7 @@ func _apply_visual_state() -> void:
 		rim_height + flag_height,
 		0.0
 	)
-	_air_marker_stem.visible = visual_state != VisualState.CONFIRMED
-	for face in _air_marker_faces:
-		face.scale = Vector3.ONE * air_marker_scale
+	_air_arrow.visible = visual_state != VisualState.CONFIRMED
 	for index in range(_rim_markers.size()):
 		var marker := _rim_markers[index]
 		if visual_state == VisualState.FUTURE:

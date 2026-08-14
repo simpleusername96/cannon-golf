@@ -214,6 +214,30 @@ func frame_bounds_for_leg(index: int) -> AABB:
 	return bounds
 
 
+func presentation_bounds() -> AABB:
+	var bounds := course.content_bounds if course != null else AABB()
+	for settlement_goal in goals:
+		bounds = bounds.expand(Vector3(
+			settlement_goal.global_position.x,
+			settlement_goal.marker_top_world_y() + 3.0,
+			settlement_goal.global_position.z
+		))
+	if launcher != null:
+		var cue := launcher.direction_cue_radius()
+		bounds = bounds.expand(launcher.global_position + Vector3(cue, 3.0, cue))
+		bounds = bounds.expand(launcher.global_position + Vector3(-cue, 0.0, -cue))
+	return bounds
+
+
+func camera_collision_exclusions() -> Array[RID]:
+	var result: Array[RID] = []
+	for settlement_goal in goals:
+		var rid := settlement_goal.camera_collision_rid()
+		if rid.is_valid():
+			result.append(rid)
+	return result
+
+
 func height_at_local(local_x: float, local_z: float) -> float:
 	return prepared_course.height_at_local(local_x, local_z) \
 			if prepared_course != null else 0.0

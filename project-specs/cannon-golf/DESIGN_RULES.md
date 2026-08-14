@@ -67,25 +67,27 @@ coefficients, stage data formats, or code ownership.
 - Do not treat the inherited frontal Aim View as the default composition.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
-- Use a local behind-cannon planning view to explain the selected cannon
-  source, its `50 / 50 / 50` base direction, and nearby terrain. It must not
-  auto-frame or imply a next goal.
+- Use a true first-person view at the selected cannon source to show its actual
+  launch direction. A small reticle and a world-space direction cue make yaw
+  and elevation readable without implying a target or next goal.
 - Use an oblique three-quarter view when both axes must remain readable.
-- In either planning family, left-drag orbits around the current fixed course
+- In overview, left-drag pans, right-drag orbits around the bounded course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
-  must not refocus or jump the orbit pivot. Direct exploration during Shot
-  Follow returns to the stored planning context before applying the input.
+  must not refocus or jump the pivot. Direct overview interaction during Shot
+  Follow restores the stored overview before applying the input.
 - Keep zoom bounded but materially useful in both directions. A compact reset
   action restores the authored high-oblique view, zero pan, and default distance.
   One wheel notch or compact zoom action must visibly change planning distance;
   do not require several repeated inputs before the course scale changes.
-- The behind-cannon view is a persistent selectable planning preset. It must not
-  hide the cannon or become the only way to plan.
-- Shot Follow should reveal cause and effect without taking control away. Fire
-  must not change camera mode, planning pose, or an existing follow target. The
-  compact follow action explicitly follows the newest live ball; `Tab`, that
-  action, overview, or cannon view returns immediately to the exact stored
-  planning pose. Aim and Fire remain usable while an earlier ball is still live.
+  Ten equal zoom-in actions reach a `28 m` desired minimum distance, while six
+  zoom-out actions reach the complete-course fit. Keep the response logarithmic.
+- Terrain collision shortens the camera boom. It must not lift the camera into
+  a sky-dominant jump or let the near plane enter a cliff.
+- Cannon first-person is a persistent selectable aim preset but not an
+  exploration camera. Overview remains the complete-course planning owner.
+- Shot Follow reveals cause and effect without locking input. Fire follows the
+  newest ball automatically; `Tab`, overview, or cannon view returns to the
+  exact stored pre-follow state. Aim and Fire remain usable while a ball lives.
 - Camera changes must preserve stage identity, selected cannon source, selected
   device, and launch parameters.
 - Whatever exploration controls are selected must not move gameplay objects,
@@ -136,6 +138,9 @@ coefficients, stage data formats, or code ownership.
 - All incomplete goals share the strongest available-goal flag and marker
   rhythm. Confirmed goals are led by their retained ball and a completed marker
   rhythm; there is no future or next-goal state in normal play.
+  Keep the physical plate flag as the local landing cue. Add a thick matte 3D
+  downward arrow above the local skyline for course-scale location; do not use
+  a thin emissive stem or diamond.
   One small edge-aligned tally may show completed goals over total goals, such as
   `1 / 2`; it must not become a progress card or central status panel. Shape,
   height, spacing, and the confirmed ball must distinguish the world states in
@@ -144,7 +149,7 @@ coefficients, stage data formats, or code ownership.
   goal numbers only. It is a location choice, not a target selector. Selecting
   a completed goal moves the cannon to that plate center and resets that source
   to `50 / 50 / 50`; confirmation never selects it automatically.
-- The current-catalog ball uses one `1.0 m` physical and visual radius plus a
+- The current-catalog ball uses one `2.0 m` physical and visual radius plus a
   dark navy, low-gloss material so it remains readable over the enlarged pale
   terrain without becoming a non-physical screen-space marker.
 - A completed state must not rely on color alone.

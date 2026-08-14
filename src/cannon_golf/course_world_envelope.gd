@@ -20,7 +20,7 @@ static func resolve(content_bounds: AABB) -> Dictionary:
 				BASE_GROUND_CENTER_XZ.y
 			),
 			"ground_scale": 1.0,
-			"far_distance": BASE_FAR_DISTANCE,
+			"far_distance": BASE_FAR_DISTANCE * 1.25,
 		}
 	var horizontal_radius := Vector2(
 		content_bounds.size.x,
@@ -33,5 +33,5 @@ static func resolve(content_bounds: AABB) -> Dictionary:
 			content_bounds.get_center().z
 		),
 		"ground_scale": maxf(1.0, horizontal_radius / BASE_GROUND_RADIUS),
-		"far_distance": maxf(BASE_FAR_DISTANCE, content_bounds.size.length() * 2.4),
+		"far_distance": maxf(BASE_FAR_DISTANCE, content_bounds.size.length() * 2.4) * 1.25,
 	}

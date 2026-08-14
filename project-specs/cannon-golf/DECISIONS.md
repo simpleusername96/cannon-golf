@@ -478,6 +478,48 @@ in `OPEN_QUESTIONS.md`.
   records its source and three launch values, so quick retry restores the exact
   recorded launch rather than inheriting a later source selection.
 
+### D-037 — Compact the front end and use map-independent close inspection
+
+- Status: accepted on 2026-08-15; supersedes only D-034's fixed `10%` planning
+  zoom step and D-035's `1.0 m` current-catalog ball radius.
+- The main menu keeps one panel. Its title wraps as `CANNON` over `GOLF`, and
+  the panel and four existing actions narrow around that content. Course rows
+  remain one scrollable list; normal rows have no floating shadow, and selected
+  and keyboard-focus states use one restrained left-edge accent rather than
+  stacked all-side outlines.
+- The physical and visual ball radius is `2.0 m`. Mesh, collider, muzzle,
+  trajectory, goal containment, and construction clearance share that value.
+  Existing goal radii remain unchanged; plate walls and incoming openings retain
+  enough physical height and width for the larger sphere.
+- High-oblique zoom has twelve equal control steps from default to a `14 m`
+  focus-to-camera close-inspection distance on every course and six steps from
+  default to the complete-course overview. The distance response is logarithmic.
+- The overview camera samples a small footprint around every desired and
+  interpolated pose and stays at least `2.0 m` above the highest available
+  prepared-terrain sample. Cannon view, pan, orbit, reset, Shot Follow, and fire
+  independence remain unchanged.
+
+### D-038 — Use collision-boom overview, cannon first-person, and automatic follow
+
+- Status: accepted on 2026-08-15; supersedes D-029's explicit-only follow,
+  D-034's behind-cannon/end-point-lift clauses, and D-037's `14 m` overview
+  endpoint and fire-independence clauses.
+- Camera states are overview, cannon first-person, and transient Shot Follow.
+  Overview owns bounded pan, orbit, zoom, and reset. Cannon first-person stays
+  at the selected source and looks along its real launch direction; it never
+  frames a target or next goal.
+- Overview uses a terrain-safe pivot and a swept camera boom. Ten logarithmic
+  zoom-in actions reach a `28 m` desired minimum; six zoom-out actions reach the
+  complete-course fit. A blocked boom shortens or preserves its last valid pose
+  and never resolves by lifting the camera into the sky.
+- Fire immediately follows the newest ball. The first follow stores the exact
+  preceding overview or cannon state; later shots retarget without overwriting
+  it. `Tab` and direct view selection restore planning, and resolved shots return
+  automatically after a short result hold.
+- White or near-white world-ground patches are retired. The physical goal flag
+  remains at each plate. A separate thick matte downward 3D arrow replaces only
+  the thin cyan airborne stem/diamond and hides after confirmation.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

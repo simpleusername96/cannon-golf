@@ -60,7 +60,8 @@ func _capture() -> void:
 	# Warm the HUD font atlas before applying an immediate scripted gameplay state.
 	# A real player sees these frames before Fire can be pressed.
 	for _warmup_frame in range(2):
-		await RenderingServer.frame_post_draw
+		if DisplayServer.get_name() != "headless":
+			await RenderingServer.frame_post_draw
 		await process_frame
 	if requested_state in [
 		"course_select", "course_preparing", "course_ready", "course_failed", "course_scrolled",
@@ -93,18 +94,19 @@ func _capture() -> void:
 		game.zoom_planning(2.0)
 		game.pan_planning(Vector2(1.0, 0.0))
 	elif requested_state == "panned":
+		game.zoom_planning(CannonGolfCourseCameraRig.CLOSE_ZOOM)
 		panned_start_focus = game._camera_rig.planning_focus()
 		for _drag_index in range(4):
 			game.pan_planning_drag(Vector2(760.0, 360.0), Vector2(120.0, 0.0))
 			game._camera_rig.update(1.0)
 		panned_end_focus = game._camera_rig.planning_focus()
 	elif requested_state == "zoom_close":
-		game.zoom_planning(3.0)
+		game.zoom_planning(CannonGolfCourseCameraRig.CLOSE_ZOOM)
 	elif requested_state == "zoom_far":
-		game.zoom_planning(-3.0)
+		game.zoom_planning(CannonGolfCourseCameraRig.OVERVIEW_ZOOM)
 	elif requested_state == "collision_edge":
 		game.orbit_planning(Vector2(220.0, -1000.0))
-		game.zoom_planning(100.0)
+		game.zoom_planning(CannonGolfCourseCameraRig.CLOSE_ZOOM)
 		for _pan_step in range(8):
 			game.pan_planning(Vector2(1.0, 0.0))
 	elif requested_state == "shortcuts":
@@ -112,10 +114,6 @@ func _capture() -> void:
 	elif requested_state == "follow":
 		if not game.fire():
 			push_error("Follow capture could not launch its ball.")
-			quit(1)
-			return
-		if not game.toggle_shot_camera():
-			push_error("Follow capture could not enter explicit Shot Follow.")
 			quit(1)
 			return
 	elif requested_state == "two_live":
@@ -196,12 +194,12 @@ func _capture() -> void:
 			quit(1)
 			return
 	if game != null and requested_state == "zoom_close" \
-			and game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.75:
+			and not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.CLOSE_ZOOM):
 		push_error("Close-zoom capture did not move materially toward the course.")
 		quit(1)
 		return
 	if game != null and requested_state == "zoom_far" \
-			and game.planning_zoom <= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 1.30:
+			and not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.OVERVIEW_ZOOM):
 		push_error("Far-zoom capture did not move materially away from the course.")
 		quit(1)
 		return
@@ -306,7 +304,7 @@ func _capture() -> void:
 			return
 	if game != null and requested_state == "relay_overview":
 		if game.active_course().course_id != &"deep_relay" \
-				or not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.MAXIMUM_ZOOM) \
+				or not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.OVERVIEW_ZOOM) \
 				or not TerrainCameraFramer.pose_fits_bounds(
 					game.active_course().content_bounds,
 					game._camera.global_position,
@@ -322,7 +320,8 @@ func _capture() -> void:
 	# atlas and Control batch has reached the viewport texture. Wait for several
 	# completed draws so delivery evidence records a stable composed frame.
 	for _render_frame in range(12):
-		await RenderingServer.frame_post_draw
+		if DisplayServer.get_name() != "headless":
+			await RenderingServer.frame_post_draw
 		await process_frame
 	var image := root.get_texture().get_image()
 	var error := image.save_png(output_path)

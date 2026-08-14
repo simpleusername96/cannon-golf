@@ -28,20 +28,23 @@ func _run() -> void:
 	var fire_pan := game.planning_pan
 	var fire_zoom := game.planning_zoom
 	var fire_orbit := game._camera_rig.orbit_degrees
-	var fire_transform := game._camera.global_transform
 	await _push_space()
 	_assert_ball_count(game, 1, "One physical Space press must create exactly one ball.")
 	_assert_true(
-		game._camera_rig.camera_mode == &"planning"
+		game._camera_rig.camera_mode == &"follow"
 				and game.planning_view == fire_view
 				and game.planning_pan.is_equal_approx(fire_pan)
 				and is_equal_approx(game.planning_zoom, fire_zoom)
-				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit)
-				and game._camera.global_transform.is_equal_approx(fire_transform),
-		"Physical Fire must preserve the exact explored planning camera."
+				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit),
+		"Physical Fire must follow the newest ball without changing the stored planning state."
 	)
 	await _push_key(KEY_TAB)
-	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must leave planning unchanged.")
+	_assert_true(
+		game._camera_rig.camera_mode == &"planning" and game.planning_view == fire_view
+				and game.planning_pan.is_equal_approx(fire_pan)
+				and is_equal_approx(game.planning_zoom, fire_zoom),
+		"Tab must restore the exact pre-fire planning state."
+	)
 	await _push_key(KEY_TAB)
 	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must never re-enter Shot Follow.")
 
@@ -140,12 +143,11 @@ func _run() -> void:
 		launcher.power_percent
 	)
 	var zoom_before_wheel := game.planning_zoom
-	_assert_true(game._camera_rig.camera_mode == &"planning", "The newest Space launch must preserve planning.")
-	_assert_true(game.toggle_shot_camera(), "Only the explicit follow action must enter Shot Follow.")
+	_assert_true(game._camera_rig.camera_mode == &"follow", "The newest Space launch must follow its ball.")
 	await _push_mouse_button(MOUSE_BUTTON_WHEEL_UP, true)
 	_assert_true(
 		game._camera_rig.camera_mode == &"planning" \
-				and game.planning_zoom <= zoom_before_wheel * 0.91,
+				and game.planning_zoom > zoom_before_wheel,
 		"Wheel input during follow must return to planning and visibly zoom toward the terrain."
 	)
 
@@ -196,7 +198,7 @@ func _run() -> void:
 	(game._hud.get_node("%ZoomInButton") as Button).pressed.emit()
 	await process_frame
 	_assert_true(
-		game.planning_zoom <= CannonGolfCourseCameraRig.DEFAULT_ZOOM * 0.80,
+		is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM + 1.0),
 		"The compact zoom-in action must visibly use the planning camera owner."
 	)
 	(game._hud.get_node("%CameraResetButton") as Button).pressed.emit()
@@ -208,7 +210,7 @@ func _run() -> void:
 	(game._hud.get_node("%ZoomOutButton") as Button).pressed.emit()
 	await process_frame
 	_assert_true(
-		game.planning_zoom >= CannonGolfCourseCameraRig.DEFAULT_ZOOM / 0.80,
+		is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM - 1.0),
 		"The compact zoom-out action must visibly use the planning camera owner."
 	)
 	(game._hud.get_node("%CameraResetButton") as Button).pressed.emit()

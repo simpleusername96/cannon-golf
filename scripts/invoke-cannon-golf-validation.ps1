@@ -5,6 +5,7 @@ param(
     [string]$GodotPath = $env:GODOT_BIN,
     [string[]]$UserArgs = @(),
     [switch]$CheckOnly,
+    [switch]$Rendered,
     [ValidateRange(1, 3600)]
     [int]$TimeoutSeconds = 180
 )
@@ -92,7 +93,8 @@ try {
     # can silently end an accelerated headless physics run with exit code 0
     # before its coroutine reaches an explicit success/failure result.
     $checkOnlyArgument = if ($CheckOnly) { ' --check-only' } else { '' }
-    $startInfo.Arguments = "--headless --log-file `"$runLogFile`" --path `"$projectRoot`" --script `"$Script`"$checkOnlyArgument"
+    $displayArgument = if ($Rendered) { '' } else { '--headless ' }
+    $startInfo.Arguments = "$displayArgument--log-file `"$runLogFile`" --path `"$projectRoot`" --script `"$Script`"$checkOnlyArgument"
     if ($UserArgs.Count -gt 0) {
         $quotedUserArgs = $UserArgs | ForEach-Object { '"' + $_ + '"' }
         $startInfo.Arguments += ' -- ' + ($quotedUserArgs -join ' ')

@@ -212,31 +212,25 @@ cannon composition.
 
 ### FR-8: Planning cameras
 
-- Requirement: planning must support a terrain-reading top/high-oblique view
-  and a local behind-cannon view derived only from the currently selected
-  cannon source and its stable map-facing shot axis. It does not track, frame,
-  or imply a next goal. The cannon view supports local aim but is never the only or
-  automatically dominant view.
-  Firing never changes the current camera mode, planning pose, or existing
-  follow target. The compact follow action explicitly enters or leaves Shot
-  Follow for the newest live ball. `Tab` is a one-way immediate return to the
-  stored planning pose; it never enters Shot Follow. Overview, cannon view, or
-  direct course exploration also restore planning while balls remain live.
-  Direct planning interaction uses left-drag to orbit around
-  the current fixed course focus, the mouse wheel or compact zoom actions to
-  change distance. One wheel notch or compact zoom press changes the planning
-  distance by `10%`; zoom remains bounded in both directions. Left-drag pan,
-  right-drag orbit, arrow pan, and all interpolated planning poses remain above
-  the generated terrain instead of entering or crossing it.
+- Requirement: planning supports one terrain-reading high-oblique overview and
+  one true first-person view at the currently selected cannon source. The
+  first-person camera looks along the real launch direction and never tracks,
+  frames, or implies a next goal. Fire immediately follows the newest ball.
+  `Tab` restores the exact overview or cannon state stored before follow; a
+  second launch retargets follow without replacing that stored state.
+  Overview interaction uses left-drag pan, right-drag orbit, the mouse wheel or
+  compact actions for distance, and arrow keys for pan. Ten logarithmic
+  zoom-in actions move from reset framing to a `28 m` desired minimum distance;
+  six zoom-out actions reach the complete-course fit. A swept camera boom
+  shortens before terrain instead of lifting the camera above an obstruction.
   Arrow keys pan, and `Home` or the compact reset action must
   restore the authored high-oblique pose. A click without drag must not refocus
   the camera. Starting any direct course exploration during Shot Follow first
   returns to planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  The high-oblique reset frames the complete course. The cannon preset resets
-  to its local `50 / 50 / 50` context at the selected source; bounded pan,
-  orbit, and zoom still permit inspection of the complete course.
+  The high-oblique reset frames the complete presentation bounds. Cannon view
+  is a fixed first-person aim pose; map exploration remains owned by overview.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
@@ -288,7 +282,7 @@ cannon composition.
 
 - Requirement: the standard ball must have a visible, predictable baseline
   rebound on ordinary hard terrain, with energy loss sufficient for eventual
-  rest. The current catalog uses one shared `1.0 m` radius for its visible
+  rest. The current catalog uses one shared `2.0 m` radius for its visible
   sphere, collision sphere, muzzle clearance, goal containment, and range
   admission. It uses a dark low-gloss material that remains readable against
   the pale terrain. It must neither stick dead on ordinary impact nor gain
@@ -386,16 +380,15 @@ cannon composition.
 ### AC-5: Strategic composition
 
 - Applies to: FR-8, FR-10.
-- Conditions for done: planning provides at least one top/oblique view and one
-  local cannon view in which the selected cannon, settled balls, retained marks, and the
+- Conditions for done: planning provides one top/oblique view and one true
+  cannon first-person view in which settled balls, retained marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. Firing
-  preserves that exact framing without waiting for the ball to resolve;
-  the follow icon alone enters follow; `Tab` and direct drag/wheel exploration
-  restore planning; and the launch controls remain usable. Orbit keeps a fixed
-  course focus, click-only input does not move it, and camera reset returns to a
-  valid authored frame.
+  follows the newest ball; `Tab` restores the exact stored pre-fire context;
+  direct overview/cannon selection exits follow; and launch controls remain
+  usable. Overview keeps a stable bounded focus, click-only input does not move
+  it, camera collision never enters terrain, and reset fits the full course.
 
 ### AC-6: Repeatability
 
