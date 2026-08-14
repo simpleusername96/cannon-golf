@@ -22,6 +22,7 @@ var current_screen: StringName = SCREEN_MAIN_MENU
 var selected_course_index := 0
 var active_game: Node3D
 var settings_store: CannonGolfSettingsStore
+var course_artifact_repository: CannonGolfCourseArtifactRepository
 
 var _main_menu: CannonGolfMainMenu
 var _course_select: CannonGolfCourseSelect
@@ -35,9 +36,15 @@ func _ready() -> void:
 	settings_store.load_settings()
 	settings_store.changed.connect(_on_settings_changed)
 	settings_store.apply_runtime(get_viewport())
+	course_artifact_repository = CannonGolfCourseArtifactRepository.new()
+	course_artifact_repository.name = "CourseArtifactRepository"
+	add_child(course_artifact_repository)
+	course_artifact_repository.course_ready.connect(_on_prepared_course_ready)
+	course_artifact_repository.course_failed.connect(_on_prepared_course_failed)
 	_create_screens()
 	_apply_language(String(settings_store.get_settings()[&"language"]))
 	show_main_menu(false)
+	_request_selected_course(selected_course_index)
 
 
 func _create_screens() -> void:
@@ -67,7 +74,6 @@ func show_main_menu(animate: bool = true) -> void:
 	_remove_active_game()
 	_hide_screens()
 	_preview_world.set_preview_visible(true)
-	_preview_world.show_course(selected_course_index)
 	_main_menu.visible = true
 	_main_menu.begin_passive_focus_session()
 	_set_screen(SCREEN_MAIN_MENU, animate)
@@ -78,8 +84,8 @@ func show_course_select(animate: bool = true) -> void:
 	_remove_active_game()
 	_hide_screens()
 	_preview_world.set_preview_visible(true)
-	_preview_world.show_course(selected_course_index)
 	_course_select.set_selected_course_index(selected_course_index)
+	_request_selected_course(selected_course_index)
 	_course_select.visible = true
 	_set_screen(SCREEN_COURSE_SELECT, animate)
 	_course_select.focus_primary()
@@ -103,6 +109,10 @@ func start_selected_course(index: int = -1) -> Node3D:
 	var course := CannonGolfCourseCatalog.course_at(selected_course_index)
 	if course == null:
 		return null
+	var prepared := course_artifact_repository.ready_course(course)
+	if prepared == null:
+		_request_selected_course(selected_course_index)
+		return null
 	_course_select.set_selected_course_index(selected_course_index)
 	_remove_active_game()
 	_hide_screens()
@@ -111,11 +121,11 @@ func start_selected_course(index: int = -1) -> Node3D:
 	var game := GAME_SCENE.instantiate() as Node3D
 	if game == null:
 		return null
-	# The current prototype predates this property. Metadata preserves the
-	# pre-add contract, while _synchronize_game_course adapts the current scene.
 	game.set_meta(&"initial_course_index", selected_course_index)
 	if _has_property(game, &"initial_course_index"):
 		game.set(&"initial_course_index", selected_course_index)
+	if _has_property(game, &"initial_prepared_course"):
+		game.set(&"initial_prepared_course", prepared)
 	if game.has_signal(&"navigation_requested"):
 		game.connect(&"navigation_requested", Callable(self, &"_on_game_navigation"))
 	add_child(game)
@@ -124,7 +134,6 @@ func start_selected_course(index: int = -1) -> Node3D:
 		game.call(&"apply_language", String(settings_store.get_settings()[&"language"]))
 	_set_screen(SCREEN_GAMEPLAY, true)
 	course_started.emit(selected_course_index)
-	call_deferred("_synchronize_game_course", game, selected_course_index)
 	return game
 
 
@@ -144,7 +153,43 @@ func _on_game_navigation(destination: StringName) -> void:
 
 func _on_course_selection_changed(index: int) -> void:
 	selected_course_index = index
-	_preview_world.show_course(index)
+	_request_selected_course(index)
+
+
+func _request_selected_course(index: int) -> void:
+	var course := CannonGolfCourseCatalog.course_at(index)
+	if course == null or course_artifact_repository == null:
+		return
+	var prepared := course_artifact_repository.ready_course(course)
+	if prepared != null:
+		_on_prepared_course_ready(course.course_id, prepared)
+		return
+	_course_select.set_course_preparation_state(
+		CannonGolfCourseSelect.CoursePreparationState.PREPARING
+	)
+	course_artifact_repository.request_course(course)
+
+
+func _on_prepared_course_ready(
+		course_id: StringName, prepared: CannonGolfPreparedCourse
+) -> void:
+	var course := CannonGolfCourseCatalog.course_at(selected_course_index)
+	if course == null or course.course_id != course_id or not prepared.is_valid_for(course):
+		return
+	_course_select.set_course_preparation_state(
+		CannonGolfCourseSelect.CoursePreparationState.READY
+	)
+	if _preview_world.visible:
+		_preview_world.show_course(selected_course_index, prepared)
+
+
+func _on_prepared_course_failed(course_id: StringName) -> void:
+	var course := CannonGolfCourseCatalog.course_at(selected_course_index)
+	if course == null or course.course_id != course_id:
+		return
+	_course_select.set_course_preparation_state(
+		CannonGolfCourseSelect.CoursePreparationState.FAILED
+	)
 
 
 func _on_settings_closed() -> void:
@@ -176,14 +221,6 @@ func _apply_language(language: String) -> void:
 	if active_game != null and is_instance_valid(active_game) \
 			and active_game.has_method(&"apply_language"):
 		active_game.call(&"apply_language", language)
-
-
-func _synchronize_game_course(game: Node3D, index: int) -> void:
-	if game == null or not is_instance_valid(game) or game.is_queued_for_deletion():
-		return
-	if _has_property(game, &"course_index") and int(game.get(&"course_index")) != index \
-			and game.has_method(&"_load_course"):
-		game.call(&"_load_course", index)
 
 
 func _call_game_overlay(open: bool) -> void:

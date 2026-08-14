@@ -17,6 +17,7 @@ enum Phase {
 	SKIRT_SHAPE,
 	FINALIZE,
 	DONE,
+	FAILED,
 }
 
 var _layout: GeneratedStageLayout
@@ -49,6 +50,7 @@ var _top_shape: ConcavePolygonShape3D
 var _skirt_shape: ConcavePolygonShape3D
 var _result: TerrainGeometry
 var _skirt_vertex_count: int = 0
+var _failure_message := ""
 
 
 func _init(
@@ -68,6 +70,8 @@ func _init(
 
 
 func step(budget_usec: int = 8000) -> bool:
+	if _phase == Phase.FAILED:
+		return false
 	var started_at := Time.get_ticks_usec()
 	var starting_phase := _phase
 	while _phase != Phase.DONE and _phase == starting_phase:
@@ -119,6 +123,14 @@ func result() -> TerrainGeometry:
 	return _result if _phase == Phase.DONE else null
 
 
+func failed() -> bool:
+	return _phase == Phase.FAILED
+
+
+func failure_message() -> String:
+	return _failure_message
+
+
 func progress_fraction() -> float:
 	return float(_phase) / float(Phase.DONE)
 
@@ -161,10 +173,9 @@ func _step_skirts() -> void:
 		return
 	var top_a := _topology.vertex_at(_boundary_edges[_boundary_cursor])
 	var top_b := _topology.vertex_at(_boundary_edges[_boundary_cursor + 1])
-	assert(
-		minf(top_a.y, top_b.y) - _base_y >= TerrainGeometryFactory.MINIMUM_SKIRT_HEIGHT,
-		"Terrain boundary must retain the minimum visible skirt height."
-	)
+	if minf(top_a.y, top_b.y) - _base_y < TerrainGeometryFactory.MINIMUM_SKIRT_HEIGHT:
+		_fail("Terrain boundary must retain the minimum visible skirt height.")
+		return
 	var bottom_a := Vector3(top_a.x, _base_y, top_a.z)
 	var bottom_b := Vector3(top_b.x, _base_y, top_b.z)
 	var vertex_offset := (_boundary_cursor / 2) * 6
@@ -218,6 +229,13 @@ func _preallocate_output_arrays() -> void:
 	_shell_normals.resize(shell_vertex_count)
 	_shell_uvs.resize(shell_vertex_count)
 	_shell_colors.resize(shell_vertex_count)
+
+
+func _fail(message: String) -> void:
+	if _phase == Phase.FAILED:
+		return
+	_failure_message = message
+	_phase = Phase.FAILED
 
 
 func _write_triangle(

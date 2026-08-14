@@ -4,7 +4,7 @@ status: active
 created: 2026-08-12
 topic: 3D cannon golf, planning cameras, impact history, and placeable trajectory devices
 scope: Comparative product and visual references; consult only
-source: Local Paint Mountain evidence and primary developer or storefront pages reviewed on 2026-08-12
+source: Local/product references reviewed on 2026-08-12; constraint-generation primary sources and pilot reviewed on 2026-08-14
 related:
   - PRD.md
   - DESIGN_RULES.md
@@ -154,6 +154,58 @@ not define their Cannon Golf implementation.
 - Rejected as a camera target: the framing remains mostly frontal and the basins
   need plan/profile views to communicate their true shape.
 
+### Constraint-first course generation evidence (2026-08-14)
+
+Primary sources support a coarse-to-fine pipeline, not a single closed-form
+generator:
+
+| Primary source | Directly supported lesson | Cannon Golf use |
+| --- | --- | --- |
+| [Tanagra: An Intelligent Level Design Assistant](https://ojs.aaai.org/index.php/AIIDE/article/view/12379) | Numerical movement constraints and reactive planning can build playable geometry around a modeled player action | Describe shot/route intent before committing exact terrain |
+| [Path-First Platformer Generation](https://dmgregory.github.io/path-first.html) | Feasible movement traces can be produced first and geometry fitted around them | Let ballistic reachability constrain goal and corridor candidates |
+| [Tanager: A Generator of Feasible and Engaging Levels](https://homepages.dcc.ufmg.br/~lferreira/assets/papers/2017/tciaig-evoab.pdf) | Physics simulation is used to validate stability/playability and an agent supplies a concrete solution | Treat a real-engine solution witness as required bake evidence |
+| [Physics-Based Task Generation through Causal Sequences](https://ojs.aaai.org/index.php/AIIDE/article/view/27501) | Physics tasks need checks for stability, intended solutions and unintended solutions | Certify settlement and default miss after final geometry exists |
+| [Deceptive Level Generation for Angry Birds](https://arxiv.org/abs/2106.01639) | Practical physics generation analyzes trajectories, retries failed placements, then revalidates stability and solvability | Use bounded backtracking from physics failure to goal/terrain candidates |
+| [Godot 4.7 release policy](https://docs.godotengine.org/en/4.7/about/release_policy.html) | Godot states that its physics engine is not deterministic | Reproduce recipe/artifact hashes, but recertify outcome after engine changes |
+| [Godot 4.7 ProjectSettings](https://docs.godotengine.org/en/4.7/classes/class_projectsettings.html) | The 3D backend and 60 Hz tick setting are explicit project inputs; `DEFAULT` may change | Pin `GodotPhysics3D`, ticks and engine identity in the certificate |
+
+Recommended order:
+
+1. Create a deterministic macro terrain prior and launcher state from a recipe.
+2. Compute a cheap legal yaw/range/height region.
+3. Select goal candidates and target approach from the intersection of that
+   region, placement bounds and allowed local terrain change.
+4. Condition the local goal, corridor and semantic landform; rebuild geometry.
+5. Revalidate topology and ballistic admission on final geometry.
+6. Run only the highest-ranked survivors through actual Godot physics, test a
+   control neighborhood and the default miss, then bake the winner.
+7. Backtrack or reject the recipe when a later leg or physics certificate fails.
+
+Rejected simplifications:
+
+- Analytic reachability as final proof after terrain collision is added.
+- One perfect witness as evidence of a learnable solution.
+- Geometry-first generation followed by one solver attempt.
+- Exhaustive search over continuous controls and terrain values.
+- A surrogate score in place of final real-engine simulation.
+- A promise of bit-identical trajectories across Godot versions or machines.
+
+#### Local bounded pilot
+
+The storage-safe wrapper ran one `first_ridge` pilot on Godot `4.7.1` with zero
+persistent-log growth and no remaining owned process:
+
+- A two-unit elevation/power grid evaluated 1,380 analytic combinations and kept
+  18 that crossed the existing bowl-to-lip goal column.
+- The current authored `50 / 46° / 72%` witness ranked second by analytic bowl
+  height error, so the cheap model did retain and rank a real solution well.
+- Live physics repeated the center witness twice with the same successful result.
+  Across center twice plus `±1°` elevation and `±1%` power, only `3/6` shots
+  cleared. The default `50 / 50 / 50` did not advance.
+- The live portion took most of the 39.3-second run. Therefore the resolver must
+  filter/rank cheaply, simulate only a bounded finalist set and explicitly reject
+  fragile one-point witnesses.
+
 ## Findings
 
 - `3D golf` is the clearest public-facing shorthand, while `artillery` explains
@@ -171,6 +223,10 @@ not define their Cannon Golf implementation.
 - The selected additions separate three useful verbs: remove energy on a flat
   landing surface, make a small mid-air correction, and force a sharp local
   vertical drop.
+- Constraint-first generation is a good fit only when analytic reachability is
+  followed by final-geometry validation, exact physics replay and bounded
+  backtracking. The local pilot confirms both the filtering value and the risk
+  of a fragile single witness.
 - This is not a weak build case: no reviewed reference supplies the complete
   combination, and the existing local runtime materially reduces technical
   startup cost.
@@ -182,9 +238,9 @@ not define their Cannon Golf implementation.
   near-profile, and temporary launch-follow views.
 - Validate the direct-shot and bounce-pad loop before committing expansion-stage
   counts, even though the later mechanic vocabulary is now selected.
-- Begin with a human-authored intended solution plus automated generation and
-  replay validation. Add a Godot editor plugin only after manual stage work
-  reveals stable repeated operations.
+- Author high-level course recipes, let the bounded offline resolver select exact
+  geometry and witnesses, and bake only real-physics-certified artifacts. Add a
+  Godot editor plugin only after this workflow reveals stable repeated operations.
 - Audit candidate code owners against `PRD.md` before any rename or rewrite.
 
 ## Limitations
@@ -196,5 +252,6 @@ not define their Cannon Golf implementation.
 - The screen-direction storyboard is generated design evidence, not feasible
   geometry, a runtime capture, or a final camera-transition specification.
 - Exact aiming controls, camera transitions, mark retention, pad editing,
-  settlement tolerances, and confirmed-ball collision treatment still require
-  owner decisions.
+  placement-device tolerances, and confirmed-ball collision treatment still
+  require owner decisions. The direct-shot certification tolerance is accepted
+  separately in `DECISIONS.md` D-032.

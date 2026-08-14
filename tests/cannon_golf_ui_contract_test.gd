@@ -169,9 +169,10 @@ func _run() -> void:
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	_assert(
-		course_select.course_buttons().size() == CannonGolfCourseCatalog.all_courses().size(),
-		"Course select must create one reusable button per catalog course."
+		course_select.course_buttons().size() == 10,
+		"Course select must create ten reusable catalog cards."
 	)
+	_assert(course_select.get_node_or_null("CardsPanel/Margin/Scroll") is ScrollContainer, "Course cards need a scroll owner.")
 	for index in range(course_select.course_buttons().size()):
 		var course_button := course_select.course_buttons()[index]
 		_assert(course_button.custom_minimum_size.y >= 44.0, "Course buttons need a stable keyboard target.")
@@ -183,6 +184,18 @@ func _run() -> void:
 			course_button.focus_next == expected_next.get_path(),
 			"Catalog buttons must retain explicit forward focus order."
 		)
+	_assert(course_select.select_course(1), "A non-default course card must be selectable.")
+	await process_frame
+	var pressed_cards := 0
+	for course_button in course_select.course_buttons():
+		if course_button.button_pressed:
+			pressed_cards += 1
+	_assert(pressed_cards == 1, "Only one course card may appear selected.")
+	_assert(course_select.course_buttons()[1].has_focus(), "Selected course card must own keyboard focus.")
+	_assert(
+		course_select.course_buttons()[1].get_theme_stylebox(&"focus") != course_select.course_buttons()[1].get_theme_stylebox(&"pressed"),
+		"Course-card focus and selected styles must remain distinct."
+	)
 	quit(1 if _failed else 0)
 
 

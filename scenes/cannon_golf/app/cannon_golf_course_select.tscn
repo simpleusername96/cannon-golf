@@ -38,7 +38,7 @@ layout_mode = 0
 offset_left = 42.0
 offset_top = 98.0
 offset_right = 420.0
-offset_bottom = 370.0
+offset_bottom = 624.0
 self_modulate = Color(1, 1, 1, 0.9)
 
 [node name="Margin" type="MarginContainer" parent="CardsPanel"]
@@ -48,8 +48,13 @@ theme_override_constants/margin_top = 22
 theme_override_constants/margin_right = 22
 theme_override_constants/margin_bottom = 22
 
-[node name="Cards" type="VBoxContainer" parent="CardsPanel/Margin"]
+[node name="Scroll" type="ScrollContainer" parent="CardsPanel/Margin"]
 layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Cards" type="VBoxContainer" parent="CardsPanel/Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
 [node name="Back" type="Button" parent="."]

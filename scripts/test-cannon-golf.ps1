@@ -17,6 +17,9 @@ if ([string]::IsNullOrWhiteSpace($GodotPath) -or -not (Test-Path -LiteralPath $G
 $resolvedGodot = (Resolve-Path -LiteralPath $GodotPath).Path
 $tests = @(
     'cannon_golf_course_test.gd',
+	'cannon_golf_course_artifact_test.gd',
+	'cannon_golf_course_repository_test.gd',
+	'cannon_golf_course_selection_state_test.gd',
     'cannon_golf_ballistics_test.gd',
     'cannon_golf_range_test.gd',
     'cannon_golf_goal_test.gd',
@@ -28,6 +31,7 @@ $tests = @(
     'cannon_golf_input_test.gd',
     'cannon_golf_session_test.gd',
     'cannon_golf_relay_test.gd',
+	'cannon_golf_multi_goal_test.gd',
     'cannon_golf_solution_test.gd',
     'cannon_golf_ui_contract_test.gd',
     'cannon_golf_settings_test.gd',
@@ -36,7 +40,7 @@ $tests = @(
 
 foreach ($test in $tests) {
     Write-Host "Running $test..."
-    $output = & $resolvedGodot --headless --path $projectRoot --quit-after 7200 --script "res://tests/$test" 2>&1
+    $output = & (Join-Path $PSScriptRoot 'invoke-cannon-golf-validation.ps1') -GodotPath $resolvedGodot -Script "res://tests/$test" 2>&1
     $exitCode = $LASTEXITCODE
     $output | ForEach-Object { Write-Host $_ }
     $text = $output | Out-String

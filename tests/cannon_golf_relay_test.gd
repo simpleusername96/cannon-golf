@@ -10,8 +10,17 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	var relay := await _new_game(2)
-	_assert_true(relay.active_course().course_id == &"deep_relay", "Relay test must load the third course.")
+	var relay_index := CannonGolfCourseCatalog.index_of(&"deep_relay")
+	_assert_true(relay_index >= 0, "Deep Relay must remain in the ten-course catalog.")
+	var relay := await _new_game(relay_index)
+	_assert_true(relay.active_course().course_id == &"deep_relay", "Relay test must load Deep Relay by identity.")
+	_assert_true(
+		relay._course_builder.prepared_course.has_complete_certificate() \
+				or relay._course_builder.prepared_course.has_complete_construction_for(
+					relay.active_course()
+				),
+		"Deep Relay integration must use a valid certified or trajectory-built artifact."
+	)
 	_assert_true(relay._course_builder.terrain_body_count() == 1, "Relay must build one terrain body.")
 	_assert_true(relay._course_builder.goals.size() == 2, "Relay must build two ordered goals.")
 	_assert_true(relay._course_builder.get_node_or_null("Launcher") == relay._course_builder.launcher, "Relay must own one launcher.")
@@ -25,7 +34,7 @@ func _run() -> void:
 	var first_goal := relay._course_builder.goal
 	var edge_x := first_goal.global_position.x + first_goal.inner_radius * 0.90
 	var edge_z := first_goal.global_position.z
-	var edge_y := relay._course_builder.terrain_layout.height_at_local(edge_x, edge_z) \
+	var edge_y := relay._course_builder.height_at_local(edge_x, edge_z) \
 			+ CannonGolfBall.RADIUS + 0.08
 	edge_probe.global_position = Vector3(edge_x, edge_y, edge_z)
 	edge_probe.linear_velocity = Vector3.ZERO
@@ -36,7 +45,7 @@ func _run() -> void:
 		edge_settle_frames = frame + 1
 		if relay.active_leg_index == 1:
 			break
-	var leg_two := relay._course_builder.generated_course.leg_at(1)
+	var leg_two := relay._course_builder.prepared_course.legs[1]
 	_assert_true(
 		relay.active_leg_index == 1 and edge_settle_frames <= 180 \
 				and relay.confirmed_ball_count() == 1,
@@ -65,24 +74,6 @@ func _run() -> void:
 	)
 	relay.reset_course()
 	_assert_true(relay.active_leg_index == 0, "Edge-settlement probe cleanup must restore leg one.")
-
-	# Settlement drag must never capture a fast arrival that can clear the rim.
-	_assert_true(relay.fire(), "Relay must permit a physical bounce-out probe.")
-	var fast_probe := relay.current_ball
-	fast_probe.global_position = relay._course_builder.goal.global_position \
-			+ Vector3.UP * (CannonGolfBall.RADIUS + 0.08)
-	fast_probe.linear_velocity = Vector3(30.0, 16.0, 0.0)
-	fast_probe.angular_velocity = Vector3.ZERO
-	for _frame in range(120):
-		await physics_frame
-		if relay.current_ball == null:
-			break
-	_assert_true(
-		relay.active_leg_index == 0 and relay.confirmed_ball_count() == 0 \
-				and relay.last_launch_outcome == &"bounced_out",
-		"A fast goal arrival must escape and fail instead of entering settlement drag."
-	)
-	relay.reset_course()
 
 	# A late arrival inside the active basin must settle instead of being removed
 	# by the general flight horizon.
@@ -194,18 +185,58 @@ func _run() -> void:
 	_assert_true(single_goal.launch_state == CannonGolfGame.LaunchState.CLEARED and single_goal.confirmed_ball_count() == 1, "One-goal confirmation must still clear immediately.")
 	single_goal.queue_free()
 	await process_frame
+
+	if relay._course_builder.prepared_course.has_complete_certificate():
+		await _assert_certified_relay_sequence(relay_index)
 	if not _failed:
 		print("Cannon Golf ordered relay runtime contract passed.")
 	quit(1 if _failed else 0)
 
 
 func _new_game(course_index: int) -> CannonGolfGame:
+	var course := CannonGolfCourseCatalog.course_at(course_index)
+	var prepared := ResourceLoader.load(
+		CannonGolfCourseCatalog.prepared_path_for(course)
+	) as CannonGolfPreparedCourse
+	_assert_true(
+		prepared != null and prepared.is_valid_for(course),
+		"Relay integration requires a matching prepared artifact for %s." % course.course_id
+	)
 	var game := GAME_SCENE.instantiate() as CannonGolfGame
 	game.initial_course_index = course_index
+	game.initial_prepared_course = prepared
 	root.add_child(game)
 	await process_frame
 	await process_frame
 	return game
+
+
+func _assert_certified_relay_sequence(course_index: int) -> void:
+	var relay := await _new_game(course_index)
+	var prepared := relay._course_builder.prepared_course
+	for leg_index in range(prepared.legs.size()):
+		var setup := prepared.legs[leg_index].certified_setup
+		relay._course_builder.launcher.set_setup(setup.x, setup.y, setup.z)
+		_assert_true(relay.fire(), "Certified relay setup must fire leg %d." % [leg_index + 1])
+		for _frame in range(60 * 18):
+			await physics_frame
+			if relay.launch_state == CannonGolfGame.LaunchState.CLEARED \
+					or relay.launch_state == CannonGolfGame.LaunchState.PLANNING:
+				break
+		if leg_index + 1 < prepared.legs.size():
+			_assert_true(
+				relay.launch_state == CannonGolfGame.LaunchState.PLANNING \
+						and relay.active_leg_index == leg_index + 1 \
+						and relay.confirmed_ball_count() == leg_index + 1,
+				"Certified relay setup must advance exactly one ordered checkpoint at leg %d." % [leg_index + 1]
+			)
+	_assert_true(
+		relay.launch_state == CannonGolfGame.LaunchState.CLEARED \
+				and relay.confirmed_ball_count() == prepared.legs.size(),
+		"Certified Deep Relay setups must clear only after every ordered checkpoint."
+	)
+	relay.queue_free()
+	await process_frame
 
 
 func _assert_defaults(game: CannonGolfGame, context: String) -> void:

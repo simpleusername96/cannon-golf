@@ -17,6 +17,9 @@ const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
 const MAXIMUM_LIVE_BALLS := 2
 
 @export var initial_course_index := 0
+var initial_prepared_course: CannonGolfPreparedCourse
+## Set only by the offline physics certifier. It is deliberately not exported.
+var initial_certification_candidate := false
 
 @onready var _camera: Camera3D = %Camera
 @onready var _sun: DirectionalLight3D = $Sun
@@ -63,7 +66,7 @@ func _ready() -> void:
 	_hud.course_select_requested.connect(_request_navigation.bind(&"course_select"))
 	_hud.main_menu_requested.connect(_request_navigation.bind(&"main_menu"))
 	_hud.result_primary_requested.connect(_on_result_primary_requested)
-	_load_course(initial_course_index)
+	_load_course(initial_course_index, initial_prepared_course)
 
 
 func _exit_tree() -> void:
@@ -386,18 +389,23 @@ func _end_planning_drag() -> void:
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 
-func _load_course(index: int) -> void:
+func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void:
 	var courses := CannonGolfCourseCatalog.all_courses()
 	course_index = clampi(index, 0, courses.size() - 1)
 	_clear_balls()
 	_clear_marks()
-	if not _course_builder.build(courses[course_index]):
+	var built := _course_builder.build_certification_candidate(
+		courses[course_index], prepared
+	) if initial_certification_candidate else _course_builder.build(
+		courses[course_index], prepared
+	)
+	if not built:
 		push_error("Cannon Golf could not build the selected course.")
 		return
 	active_leg_index = 0
 	_apply_world_envelope()
 	_camera_rig.configure(_camera, _course_builder.course)
-	if _course_builder.generated_course != null:
+	if _course_builder.prepared_course != null:
 		_camera_rig.set_planning_context(
 			_course_builder.frame_bounds_for_leg(active_leg_index),
 			_course_builder.course.planning_focus
@@ -415,6 +423,31 @@ func _load_course(index: int) -> void:
 	_refresh_hud_availability()
 	_hud.hide_clear()
 	_hud.focus_fire()
+
+
+## Starts one independently certified relay leg on the exact candidate terrain.
+## Earlier legs are not replayed because every leg receives its own certificate.
+func configure_certification_leg(index: int) -> bool:
+	if not initial_certification_candidate or not _active_balls.is_empty() \
+			or index < 0 or index >= _course_builder.leg_count():
+		return false
+	active_leg_index = index
+	if not _course_builder.activate_leg(index):
+		return false
+	launch_state = LaunchState.PLANNING
+	last_launch_outcome = &""
+	_camera_rig.set_planning_context(
+		_course_builder.frame_bounds_for_leg(index),
+		_course_builder.course.planning_focus
+	)
+	_hud.set_setup(
+		_course_builder.launcher.horizontal_aim,
+		_course_builder.launcher.elevation_degrees,
+		_course_builder.launcher.power_percent
+	)
+	_hud.set_goal_progress(index, _course_builder.leg_count())
+	_refresh_hud_availability()
+	return true
 
 
 func _clear_balls() -> void:

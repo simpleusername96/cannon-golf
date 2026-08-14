@@ -3,58 +3,89 @@ extends SceneTree
 
 func _initialize() -> void:
 	for course in CannonGolfCourseCatalog.all_courses():
-		var generated: Variant = CannonGolfCourseTerrainFactory.build(course)
-		if course.has_explicit_legs():
-			var relay := generated as CannonGolfGeneratedCourse
-			_assert_true(relay != null and relay.union_range_metrics.size() > 0, "Relay must provide union admission metrics.")
-			_assert_true(float(relay.union_range_metrics.minimum_range_margin) >= 8.0, "Relay range margin failed.")
-			_assert_true(float(relay.union_range_metrics.minimum_yaw_margin_degrees) >= 8.0, "Relay yaw margin failed.")
-			_assert_true(
-				float(relay.union_range_metrics.minimum_height_margin) \
-						>= CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN,
-				"Centered relay terrain must remain inside at least one reachable height interval."
-			)
-			for point in relay.admission_points:
-				if CannonGolfCourseTerrainFactory._is_relay_launch_exclusion(point, relay.legs):
-					continue
-				var admitted := false
-				for leg in relay.legs:
-					var admission := CannonGolfCourseTerrainFactory._admit_union_point(
-						point,
-						leg,
-						CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN
-					)
-					admitted = admitted or bool(admission.passed)
-				_assert_true(admitted, "Every relay terrain point must be admitted by at least one leg.")
+		var prepared := ResourceLoader.load(CannonGolfCourseCatalog.prepared_path_for(course)) \
+			as CannonGolfPreparedCourse
+		_assert_true(
+			prepared != null and prepared.is_valid_for(course),
+			"%s must load an identity-checked prepared course." % course.course_id
+		)
+		if prepared == null or not prepared.is_valid_for(course):
 			continue
-		var layout := generated.layout as GeneratedStageLayout
-		_assert_true(
-			layout.local_bounds.size.is_equal_approx(Vector2(210.0, 120.0)),
-			"%s must retain the original 210 x 120 metre mountain extent." % course.course_id
-		)
-		var cannon_position: Vector3 = generated.cannon_position
-		var goal_position: Vector3 = generated.goal_position
-		_assert_true(
-			Vector2(cannon_position.x, cannon_position.z).distance_to(
-				Vector2(goal_position.x, goal_position.z)
-			) >= 140.0,
-			"%s cannon-to-goal distance must express the large course." % course.course_id
-		)
-		var metrics: Dictionary = generated.range_metrics
-		_assert_true(float(metrics.farthest_distance) >= 175.0, "%s far terrain must be at least 175 metres away." % course.course_id)
-		_assert_true(float(metrics.minimum_range_margin) >= 8.0, "%s range margin failed." % course.course_id)
-		_assert_true(float(metrics.minimum_yaw_margin_degrees) >= 8.0, "%s yaw margin failed." % course.course_id)
-		_assert_true(
-			float(metrics.minimum_height_margin) >= CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN,
-			"%s height margin failed." % course.course_id
-		)
-		for point in generated.admission_points as PackedVector3Array:
-			var admission := CannonGolfBallistics.admit_world_point(
-				point, cannon_position, float(generated.shot_axis_yaw_degrees)
-			)
-			_assert_true(bool(admission.passed), "%s terrain point escaped the admitted launch envelope." % course.course_id)
-	print("Cannon Golf whole-terrain launch-envelope contract passed for all courses.")
+		_assert_whole_terrain_admission(prepared, course)
+		_assert_leg_corridor_admission(prepared, course)
+	print("Cannon Golf whole-terrain launch-envelope contract passed for all prepared courses.")
 	quit(0)
+
+
+func _assert_whole_terrain_admission(
+		prepared: CannonGolfPreparedCourse, course: CannonGolfCourseData
+) -> void:
+	var metrics := prepared.union_range_metrics
+	_assert_true(not metrics.is_empty(), "%s must retain whole-terrain admission metrics." % course.course_id)
+	_assert_true(float(metrics.get("minimum_range_margin", -INF)) >= 8.0, "%s range margin failed." % course.course_id)
+	_assert_true(float(metrics.get("minimum_yaw_margin_degrees", -INF)) >= 8.0, "%s yaw margin failed." % course.course_id)
+	_assert_true(
+		float(metrics.get("minimum_height_margin", -INF)) \
+				>= CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN,
+		"%s whole terrain must remain inside at least one reachable height interval." % course.course_id
+	)
+	var topology := TerrainTopTopology.build(
+		prepared.cell_count, prepared.local_bounds, prepared.heights, prepared.footprint
+	)
+	_assert_true(topology != null and topology.is_valid(), "%s prepared terrain topology must reconstruct." % course.course_id)
+	if topology == null:
+		return
+	var admitted_points := CannonGolfCourseTerrainFactory._terrain_admission_points(topology)
+	_assert_true(
+		int(metrics.get("point_count", -1)) == admitted_points.size(),
+		"%s whole-terrain metrics must account for every visible terrain point." % course.course_id
+	)
+	if prepared.legs.size() > 1:
+		_assert_true(
+			int(metrics.get("excluded_point_count", 0)) > 0,
+			"%s relay terrain must exclude centered launch footprints explicitly." % course.course_id
+		)
+	var launchers := _generated_legs(prepared)
+	for point in admitted_points:
+		if CannonGolfCourseTerrainFactory._is_relay_launch_exclusion(point, launchers):
+			continue
+		var admitted := false
+		for launcher in launchers:
+			var admission := CannonGolfCourseTerrainFactory._admit_union_point(
+				point, launcher, CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN
+			)
+			admitted = admitted or bool(admission.passed)
+		_assert_true(admitted, "%s terrain point escaped every admitted launch envelope." % course.course_id)
+
+
+func _generated_legs(prepared: CannonGolfPreparedCourse) -> Array[CannonGolfGeneratedCourseLeg]:
+	var result: Array[CannonGolfGeneratedCourseLeg] = []
+	for source in prepared.legs:
+		var leg := CannonGolfGeneratedCourseLeg.new()
+		leg.goal_position = source.goal_position
+		leg.goal_rim_y = source.goal_rim_y
+		leg.goal_lip_y = source.goal_lip_y
+		leg.launcher_position = source.launcher_position
+		leg.shot_axis_yaw_degrees = source.shot_axis_yaw_degrees
+		leg.frame_bounds = source.frame_bounds
+		leg.corridor_admission = source.corridor_admission
+		result.append(leg)
+	return result
+
+
+func _assert_leg_corridor_admission(
+		prepared: CannonGolfPreparedCourse, course: CannonGolfCourseData
+) -> void:
+	for leg in prepared.legs:
+		var metrics := leg.corridor_admission
+		_assert_true(not metrics.is_empty(), "%s every leg needs corridor admission metrics." % course.course_id)
+		_assert_true(float(metrics.get("point_count", 0)) > 0, "%s corridor must contain sampled terrain." % course.course_id)
+		_assert_true(float(metrics.get("minimum_range_margin", -INF)) >= 8.0, "%s corridor range margin failed." % course.course_id)
+		_assert_true(float(metrics.get("minimum_yaw_margin_degrees", -INF)) >= 8.0, "%s corridor yaw margin failed." % course.course_id)
+		_assert_true(
+			float(metrics.get("minimum_height_margin", -INF)) >= CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN,
+			"%s corridor height margin failed." % course.course_id
+		)
 
 
 func _assert_true(condition: bool, message: String) -> void:

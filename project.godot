@@ -9,6 +9,11 @@ config/name="Cannon Golf Prototype"
 config/description="A retry-driven 3D cannon golf physics puzzle."
 run/main_scene="res://scenes/cannon_golf/app/cannon_golf_app.tscn"
 
+[debug]
+
+file_logging/enable_file_logging=false
+file_logging/enable_file_logging.pc=false
+
 [display]
 
 window/size/viewport_width=1280
@@ -35,6 +40,7 @@ locale/translations=PackedStringArray("res://translations/ui.en.translation", "r
 
 [physics]
 
+3d/physics_engine="GodotPhysics3D"
 common/physics_interpolation=true
 common/physics_ticks_per_second=60
 

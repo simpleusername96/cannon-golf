@@ -10,6 +10,13 @@ func _initialize() -> void:
 func _run() -> void:
 	for course_index in range(CannonGolfCourseCatalog.all_courses().size()):
 		var course := CannonGolfCourseCatalog.course_at(course_index)
+		var prepared := _prepared_for(course)
+		if not prepared.has_complete_certificate():
+			_assert_true(
+				prepared.has_complete_construction_for(course),
+				"Uncertified course must expose a complete trajectory construction."
+			)
+			continue
 		for default_leg_index in range(course.leg_count()):
 			var default_result := await _replay(course_index, false, default_leg_index)
 			_assert_true(
@@ -34,22 +41,29 @@ func _run() -> void:
 				solution_result.velocity,
 			]
 		)
-	print("Cannon Golf default-miss and per-leg direct-solution replay passed for all courses.")
+	print("Cannon Golf certified solutions replayed; constructed courses passed structural setup checks.")
 	quit(0)
 
 
 func _replay(course_index: int, use_solution: bool, default_leg_index: int = 0) -> Dictionary:
+	var authored_course := CannonGolfCourseCatalog.course_at(course_index)
+	var prepared := _prepared_for(authored_course)
 	var game := GAME_SCENE.instantiate() as CannonGolfGame
 	game.initial_course_index = course_index
+	game.initial_prepared_course = prepared
 	root.add_child(game)
 	await process_frame
 	await process_frame
 	var course := game.active_course()
+	_assert_true(
+		game._course_builder.prepared_course == prepared,
+		"Replay must use the exact identity-checked prepared artifact for %s." % course.course_id
+	)
 	var setup := course.leg_at(0).default_setup()
 	var completed_legs := 0
 	var leg_limit := course.leg_count() if use_solution else default_leg_index + 1
 	for leg_index in range(leg_limit):
-		setup = course.solution_for_leg(leg_index) \
+		setup = _solution_setup(course, prepared, leg_index) \
 				if use_solution or leg_index < default_leg_index \
 				else course.leg_at(leg_index).default_setup()
 		game._course_builder.launcher.set_setup(setup.x, setup.y, setup.z)
@@ -92,6 +106,31 @@ func _replay(course_index: int, use_solution: bool, default_leg_index: int = 0) 
 	game.queue_free()
 	await process_frame
 	return result
+
+
+func _prepared_for(course: CannonGolfCourseData) -> CannonGolfPreparedCourse:
+	var prepared := ResourceLoader.load(
+		CannonGolfCourseCatalog.prepared_path_for(course)
+	) as CannonGolfPreparedCourse
+	_assert_true(
+		prepared != null and prepared.is_valid_for(course),
+		"Solution replay requires a matching prepared artifact for %s." % course.course_id
+	)
+	return prepared
+
+
+func _solution_setup(
+		course: CannonGolfCourseData,
+		prepared: CannonGolfPreparedCourse,
+		leg_index: int
+) -> Vector3:
+	if course.is_constraint_recipe():
+		_assert_true(
+			prepared != null and prepared.has_complete_certificate(),
+			"Only certified recipe courses may enter physical solution replay: %s." % course.course_id
+		)
+		return prepared.legs[leg_index].certified_setup
+	return course.solution_for_leg(leg_index)
 
 
 func _assert_true(condition: bool, message: String) -> void:

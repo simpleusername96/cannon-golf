@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=8 format=3]
+[ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_leg_data.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/cannon_golf/courses/deep_relay_profile.tres" id="3"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_landform_feature.gd" id="4"]
+[sub_resource type="Resource" id="Terrace"]
+script = ExtResource("4")
+feature_id = &"peak_terrace"
+kind = 6
+route_t = 0.52
+radius = 32.0
+amplitude = 14.0
+flatness = 0.62
+[sub_resource type="Resource" id="A"]
+script = ExtResource("2")
+route_interval = Vector2(0.74, 0.82)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 0
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"terraced_peak_checkpoint_1"
+[sub_resource type="Resource" id="B"]
+script = ExtResource("2")
+route_interval = Vector2(0.52, 0.60)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 2
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"terraced_peak_checkpoint_2"
+[sub_resource type="Resource" id="C"]
+script = ExtResource("2")
+route_interval = Vector2(0.28, 0.36)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 0
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"terraced_peak_checkpoint_3"
+[resource]
+script = ExtResource("1")
+course_id = &"terraced_peak"
+display_name = "계단식 봉우리"
+short_brief = "오르고 내려가는 세 목표입니다."
+generation_profile = ExtResource("3")
+authoring_mode = 1
+terrain_seed_window = Vector2i(1764827014, 1764827018)
+terrain_vertical_scale = 1.35
+terrain_origin = Vector3(0, -4, 0)
+landform_features = Array[ExtResource("4")]([SubResource("Terrace")])
+legs = Array[ExtResource("2")]([SubResource("A"), SubResource("B"), SubResource("C")])

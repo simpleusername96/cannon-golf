@@ -5,7 +5,13 @@ signal back_requested
 signal start_requested(course_index: int)
 signal selection_changed(course_index: int)
 
-@onready var _cards: VBoxContainer = $CardsPanel/Margin/Cards
+enum CoursePreparationState {
+	PREPARING,
+	READY,
+	FAILED,
+}
+
+@onready var _cards: VBoxContainer = $CardsPanel/Margin/Scroll/Cards
 @onready var _back: Button = %Back
 @onready var _start: Button = %Start
 
@@ -14,13 +20,14 @@ var _courses: Array[CannonGolfCourseData] = []
 var _course_buttons: Array[Button] = []
 var _course_button_group := ButtonGroup.new()
 var _language := "ko"
+var _preparation_state := CoursePreparationState.PREPARING
 
 
 func _ready() -> void:
 	_courses = CannonGolfCourseCatalog.all_courses()
 	_build_course_buttons()
 	_back.pressed.connect(func() -> void: back_requested.emit())
-	_start.pressed.connect(func() -> void: start_requested.emit(_selected_course_index))
+	_start.pressed.connect(_on_start_pressed)
 	_refresh_course_copy()
 
 
@@ -45,6 +52,7 @@ func select_course(index: int, emit_signal: bool = true) -> bool:
 		return false
 	_selected_course_index = index
 	_refresh_course_copy()
+	_course_buttons[index].grab_focus.call_deferred()
 	if emit_signal:
 		selection_changed.emit(_selected_course_index)
 	return true
@@ -63,11 +71,26 @@ func apply_language(language: String) -> void:
 	_refresh_course_copy()
 
 
+func set_course_preparation_state(state: int) -> void:
+	_preparation_state = state
+	_refresh_course_copy()
+
+
+func course_preparation_state() -> int:
+	return _preparation_state
+
+
 func _refresh_course_copy() -> void:
 	if _courses.is_empty():
 		_start.disabled = true
 		return
-	_start.disabled = false
+	_start.disabled = _preparation_state != CoursePreparationState.READY
+	if _preparation_state == CoursePreparationState.PREPARING:
+		_start.text = "PREPARING…" if _language == "en" else "준비 중…"
+	elif _preparation_state == CoursePreparationState.FAILED:
+		_start.text = "PREPARATION FAILED" if _language == "en" else "준비 실패"
+	else:
+		_start.text = "START COURSE" if _language == "en" else "코스 시작"
 	for index in range(_course_buttons.size()):
 		var button := _course_buttons[index]
 		button.text = _course_label(_courses[index])
@@ -87,13 +110,18 @@ func _build_course_buttons() -> void:
 		var button := Button.new()
 		button.name = "Course%02d" % (index + 1)
 		button.custom_minimum_size = Vector2(0.0, 68.0)
-		button.theme_type_variation = &"QuietButton"
+		button.theme_type_variation = &"StageCardButton"
 		button.toggle_mode = true
 		button.button_group = _course_button_group
 		button.pressed.connect(select_course.bind(index))
 		_cards.add_child(button)
 		_course_buttons.append(button)
 	_install_course_focus_order()
+
+
+func _on_start_pressed() -> void:
+	if _preparation_state == CoursePreparationState.READY:
+		start_requested.emit(_selected_course_index)
 
 
 func _install_course_focus_order() -> void:

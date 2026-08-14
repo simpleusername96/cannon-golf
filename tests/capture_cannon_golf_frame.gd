@@ -45,7 +45,10 @@ func _capture() -> void:
 	DirAccess.make_dir_recursive_absolute(output_path.get_base_dir())
 	var game: CannonGolfGame
 	var app: CannonGolfApp
-	if requested_state in ["menu", "course_select", "settings"]:
+	if requested_state in [
+		"menu", "course_select", "course_preparing", "course_ready", "course_failed",
+		"course_scrolled", "settings",
+	]:
 		app = APP_SCENE.instantiate() as CannonGolfApp
 		root.add_child(app)
 	else:
@@ -59,11 +62,28 @@ func _capture() -> void:
 	for _warmup_frame in range(2):
 		await RenderingServer.frame_post_draw
 		await process_frame
-	if requested_state == "course_select":
+	if requested_state in [
+		"course_select", "course_preparing", "course_ready", "course_failed", "course_scrolled",
+	]:
 		app.show_course_select(false)
+		var course_select := app.get_node("ScreenLayer/CourseSelect") as CannonGolfCourseSelect
 		if requested_course > 0:
-			var course_select := app.get_node("ScreenLayer/CourseSelect") as CannonGolfCourseSelect
 			course_select.select_course(requested_course)
+		if requested_state == "course_preparing":
+			course_select.set_course_preparation_state(
+				CannonGolfCourseSelect.CoursePreparationState.PREPARING
+			)
+		elif requested_state == "course_ready":
+			course_select.set_course_preparation_state(
+				CannonGolfCourseSelect.CoursePreparationState.READY
+			)
+		elif requested_state == "course_failed":
+			course_select.set_course_preparation_state(
+				CannonGolfCourseSelect.CoursePreparationState.FAILED
+			)
+		elif requested_state == "course_scrolled":
+			course_select.select_course(9)
+			(course_select.get_node("CardsPanel/Margin/Scroll") as ScrollContainer).scroll_vertical = 100000
 	elif requested_state == "settings":
 		app.show_settings()
 	elif requested_state == "side":
@@ -246,7 +266,7 @@ func _capture() -> void:
 				or game._camera.is_position_behind(checkpoint_ball.global_position) \
 				or not relay_viewport.has_point(checkpoint_screen_position) \
 				or not relay_launcher.global_position.is_equal_approx(
-					game._course_builder.generated_course.leg_at(1).launcher_position
+					game._course_builder.prepared_course.legs[1].launcher_position
 				) \
 				or not Vector2(relay_launcher.global_position.x, relay_launcher.global_position.z).is_equal_approx(
 					Vector2(

@@ -9,7 +9,7 @@ func _run() -> void:
 	var goal := CannonGolfSettlementGoal.new()
 	goal.configure(Vector3(3.0, 2.0, -8.0), 10.0, 5.5)
 	root.add_child(goal)
-	_assert_true(goal.find_children("*", "StaticBody3D", true, false).is_empty(), "Goal must be a non-colliding marker over the terrain depression.")
+	_assert_true(goal.find_children("*", "StaticBody3D", true, false).is_empty(), "Goal must remain a non-colliding marker over its physical terrain basin.")
 	_assert_true(goal.contains_ball(Vector3(3.0, 2.7, -8.0), CannonGolfBall.RADIUS), "Centered ball must be inside.")
 	_assert_true(not goal.contains_ball(Vector3(14.0, 2.7, -8.0), CannonGolfBall.RADIUS), "Outside ball must not be contained.")
 	_assert_true(goal.motion_is_safe(Vector3(0.2, 0.1, 0.2), Vector3(0.0, 0.8, 0.0)), "Slow motion must be safe.")
@@ -74,7 +74,7 @@ func _assert_physical_basin(course: CannonGolfCourseData) -> void:
 	for raw_offset in start_offsets:
 		var offset: Vector2 = raw_offset
 		var xz: Vector2 = Vector2(center.x, center.z) + offset
-		var surface_y := builder.terrain_layout.height_at_local(xz.x, xz.y)
+		var surface_y := builder.height_at_local(xz.x, xz.y)
 		var ball := CannonGolfBall.new()
 		ball.configure(
 			builder.course.play_bounds,

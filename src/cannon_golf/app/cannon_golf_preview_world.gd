@@ -32,16 +32,24 @@ func _process(delta: float) -> void:
 		_camera_rig.update(delta)
 
 
-func show_course(index: int) -> bool:
+func show_course(index: int, prepared: CannonGolfPreparedCourse = null) -> bool:
 	var course := CannonGolfCourseCatalog.course_at(index)
-	if course == null:
+	if course == null or prepared == null or not prepared.is_valid_for(course):
 		return false
-	if course_index == index and _builder.course != null:
+	if course_index == index and _builder.prepared_course == prepared:
 		_camera.current = visible
 		return true
-	course_index = index
-	if not _builder.build(course):
+	var replacement := CannonGolfCourseBuilder.new()
+	replacement.name = "PreviewCourseBuilder"
+	if not replacement.build(course, prepared):
+		replacement.free()
 		return false
+	add_child(replacement)
+	if _builder != null:
+		remove_child(_builder)
+		_builder.free()
+	_builder = replacement
+	course_index = index
 	_apply_world_envelope()
 	_camera_rig.configure(_camera, _builder.course)
 	_camera.current = visible
@@ -52,10 +60,6 @@ func set_preview_visible(should_show: bool) -> void:
 	visible = should_show
 	if not should_show:
 		_camera.current = false
-		if _builder != null:
-			_builder.clear_course()
-		return
-	show_course(course_index)
 
 
 func _build_environment() -> void:

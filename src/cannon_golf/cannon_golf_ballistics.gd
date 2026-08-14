@@ -163,6 +163,19 @@ static func sampled_reachable_height_interval(horizontal_distance: float) -> Vec
 	return Vector2(lowest, highest)
 
 
+## Exact analytic height of one legal setup at a horizontal distance. Course
+## construction uses this before terrain exists; live launch still owns the
+## final rigid-body motion.
+static func height_for_setup_at_distance(
+		horizontal_distance: float, elevation_degrees: float, power_percent: float
+) -> float:
+	return _height_for_setup_at_distance(
+		horizontal_distance,
+		canonical_elevation(elevation_degrees),
+		canonical_power(power_percent)
+	)
+
+
 static func maximum_horizontal_range() -> float:
 	if _maximum_range >= 0.0:
 		return _maximum_range

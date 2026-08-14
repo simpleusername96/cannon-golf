@@ -1,29 +1,38 @@
-[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1_course"]
 [ext_resource type="Resource" path="res://resources/cannon_golf/courses/deep_relay_profile.tres" id="2_profile"]
 [ext_resource type="Script" path="res://src/cannon_golf/course_leg_data.gd" id="3_leg"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_landform_feature.gd" id="4_feature"]
+
+[sub_resource type="Resource" id="DescendingTerrace"]
+script = ExtResource("4_feature")
+feature_id = &"descending_terrace"
+kind = 6
+route_t = 0.58
+radius = 34.0
+amplitude = 12.0
+flatness = 0.55
 
 [sub_resource type="Resource" id="LegOne"]
 script = ExtResource("3_leg")
-goal_route_t = 0.75
-launcher_route_t = 1.0
-goal_radius = 10.0
-goal_recess_depth = 4.5
-goal_lip_height = 1.5
-solution_horizontal_aim = 50.0
-solution_elevation_degrees = 54.0
-solution_power_percent = 84.0
+route_interval = Vector2(0.71, 0.79)
+lateral_offset_range = Vector2(-7.5, 7.5)
+relative_rim_band = 0
+bowl_radius_range = Vector2(10.0, 12.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"deep_relay_checkpoint_1"
 
 [sub_resource type="Resource" id="LegTwo"]
 script = ExtResource("3_leg")
-goal_route_t = 0.30
-goal_radius = 10.0
-goal_recess_depth = 4.5
-goal_lip_height = 1.5
-solution_horizontal_aim = 50.0
-solution_elevation_degrees = 67.0
-solution_power_percent = 91.0
+route_interval = Vector2(0.26, 0.34)
+lateral_offset_range = Vector2(-7.5, 7.5)
+relative_rim_band = 2
+bowl_radius_range = Vector2(10.0, 12.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"deep_relay_checkpoint_2"
 
 [resource]
 script = ExtResource("1_course")
@@ -31,11 +40,12 @@ course_id = &"deep_relay"
 display_name = "깊은 릴레이"
 short_brief = "깊은 능선을 따라 두 개의 정착 지점을 잇는 긴 릴레이 코스입니다."
 generation_profile = ExtResource("2_profile")
-terrain_seed = 1764827013
+authoring_mode = 1
+terrain_seed_window = Vector2i(1764827011, 1764827015)
 terrain_horizontal_scale = 1.0
 terrain_vertical_scale = 1.35
 terrain_origin = Vector3(0, -4, 0)
-cannon_route_t = 1.0
 terrain_color = Color(0.37, 0.40, 0.37, 1)
 terrain_accent_color = Color(0.26, 0.31, 0.28, 1)
+landform_features = Array[ExtResource("4_feature")]([SubResource("DescendingTerrace")])
 legs = Array[ExtResource("3_leg")]([SubResource("LegOne"), SubResource("LegTwo")])

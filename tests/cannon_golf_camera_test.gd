@@ -129,7 +129,7 @@ func _run() -> void:
 			"Camera reset must restore the authored high-oblique planning view."
 		)
 		_assert_fits(camera, builder.course, rig, "%s reset" % source_course.course_id)
-		if builder.generated_course != null:
+		if builder.prepared_course != null:
 			_assert_true(
 				rig.set_planning_context(builder.frame_bounds_for_leg(0), builder.course.planning_focus),
 				"Relay planning must accept its active-leg frame."

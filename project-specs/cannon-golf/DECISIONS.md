@@ -357,6 +357,66 @@ in `OPEN_QUESTIONS.md`.
   height guard is reduced to a nonnegative height margin. Authored goal and
   launcher-to-goal corridor validation retain the full height guard.
 
+### D-032 — Resolve course geometry from constraints and certify it offline
+
+- Status: accepted on 2026-08-14; expands D-021 from the initial courses and
+  resolves Q-20 for direct shots and Q-22 for course authoring.
+- A course has three distinct representations. A `Course Recipe` contains the
+  generation seed window, goal count and order, route and lateral placement
+  regions, relative rim bands, bounded goal dimensions, semantic landform roles,
+  and difficulty targets. It does not contain final goal coordinates or a copied
+  solution shot. A sealed `Resolved Course Plan` contains the selected launcher,
+  goal, terrain adjustment and rejection metrics. A `Prepared Course` contains
+  the immutable runtime geometry, collision, resolved legs and physics
+  certificate.
+- The offline resolver uses bounded feedback, not a one-way geometry pass:
+  launcher state → analytic ballistic reachability → goal candidates → bounded
+  terrain conditioning → final geometry/admission validation → real Godot
+  physics certification. A failed later leg backtracks to an earlier candidate.
+  It never changes the accepted ballistics, settlement, connectivity, checkpoint
+  or admission rules to obtain a pass.
+- Analytic ballistics is only a cheap candidate filter. The built collision scene
+  is the solvability authority. The certifier repeats the center witness twice
+  and tests the six axial one-unit neighbors across horizontal aim, elevation
+  and power. The center must pass twice; at least four neighbors must pass, with
+  at least one passing neighbor on each control axis. `50 / 50 / 50` remains a
+  separately replayed miss. Device-placement tolerance remains unresolved until
+  those mechanics are accepted.
+- Search is deterministic and bounded: no more than 180 analytic goal/terrain
+  candidates per leg, a beam of four partial multi-leg plans, and twelve exact
+  physics finalists per course. An exhausted domain rejects the recipe with
+  metrics; it does not fall back to a hand-placed goal or an unbounded search.
+- Bakes and certificates use the pinned Godot `4.7.1` build, explicit
+  `GodotPhysics3D`, 60 Hz ticks and recorded relevant settings. Same inputs must
+  reproduce the resolved-plan and semantic artifact hashes. Godot physics is not
+  treated as bit-exact across machines or engine changes; affected artifacts are
+  recertified by outcome and tolerance instead of trajectory hash.
+- Runtime selection, preview and gameplay consume only a valid prepared artifact.
+  They never run the resolver, terrain generator or solution search.
+
+### D-033 — Construct the first ten courses trajectory-first under one minute
+
+- Status: accepted on 2026-08-14; supersedes D-032's candidate-search and
+  mandatory physics-certificate requirements for the first ten-course catalog.
+- Each leg starts from one of a small fixed set of deterministic intended shot
+  setups. The generator calculates the flight first, chooses a descending goal
+  point, and then makes one connected terrain mesh below the protected flight
+  corridor. It does not generate a mountain repeatedly until a shot happens to
+  fit.
+- The terrain generator adds retaining goal bowls and deterministic peaks,
+  shelves, valleys, and basins only after every launcher, intended trajectory,
+  and goal is fixed. Goal elevation may rise or fall between legs.
+- Each course has a measured hard generation limit of 60 seconds. An overrun
+  rejects and stops the bake; it does not widen the search or run a longer
+  certifier.
+- Preview and gameplay still load an immutable identity-checked prepared
+  artifact. The artifact records the construction algorithm version and intended
+  setups. Runtime course generation remains forbidden.
+- Acceptance for this implementation is intentionally narrow: the game starts
+  and all ten prepared courses load and instantiate. Exhaustive solution replay,
+  neighbor robustness certification, and rendered tuning are not required by
+  this decision.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

@@ -54,6 +54,12 @@ var union_range_metrics: Dictionary = {}:
 	set(value):
 		_assert_writable()
 		union_range_metrics = value.duplicate(true)
+var landform_metrics: Dictionary = {}:
+	get:
+		return landform_metrics.duplicate(true)
+	set(value):
+		_assert_writable()
+		landform_metrics = value.duplicate(true)
 var content_bounds := AABB():
 	set(value):
 		_assert_writable()

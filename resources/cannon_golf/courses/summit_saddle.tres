@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_leg_data.gd" id="2"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_landform_feature.gd" id="3"]
+[ext_resource type="Resource" path="res://resources/cannon_golf/courses/deep_relay_profile.tres" id="4"]
+[sub_resource type="Resource" id="Feature"]
+script = ExtResource("3")
+feature_id = &"summit"
+kind = 0
+route_t = 0.56
+radius = 32.0
+amplitude = 16.0
+[sub_resource type="Resource" id="A"]
+script = ExtResource("2")
+route_interval = Vector2(0.72, 0.80)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 2
+bowl_radius_range = Vector2(10.0, 12.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"summit_saddle_checkpoint_1"
+[sub_resource type="Resource" id="B"]
+script = ExtResource("2")
+route_interval = Vector2(0.38, 0.46)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 0
+bowl_radius_range = Vector2(10.0, 12.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"summit_saddle_checkpoint_2"
+[resource]
+script = ExtResource("1")
+course_id = &"summit_saddle"
+display_name = "정상 안부"
+short_brief = "정상과 안부를 잇는 두 개의 목표입니다."
+generation_profile = ExtResource("4")
+authoring_mode = 1
+terrain_seed_window = Vector2i(1764827012, 1764827016)
+terrain_vertical_scale = 0.85
+terrain_origin = Vector3(0, -4, 0)
+landform_features = Array[ExtResource("3")]([SubResource("Feature")])
+legs = Array[ExtResource("2")]([SubResource("A"), SubResource("B")])

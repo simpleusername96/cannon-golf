@@ -1,7 +1,18 @@
-[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1_course"]
 [ext_resource type="Resource" path="res://resources/cannon_golf/courses/cannon_golf_mountain_profile.tres" id="2_profile"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_leg_data.gd" id="3_leg"]
+
+[sub_resource type="Resource" id="OpeningLeg"]
+script = ExtResource("3_leg")
+route_interval = Vector2(0.09, 0.17)
+lateral_offset_range = Vector2(-7.0, 7.0)
+relative_rim_band = 2
+bowl_radius_range = Vector2(12.0, 14.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"rising_bend_checkpoint_1"
 
 [resource]
 script = ExtResource("1_course")
@@ -9,26 +20,11 @@ course_id = &"rising_bend"
 display_name = "오르는 굽이"
 short_brief = "더 멀고 높은 홀. 측면 시점에서 높이 차를 읽어보세요."
 generation_profile = ExtResource("2_profile")
-terrain_seed = 1347223552
+authoring_mode = 1
+terrain_seed_window = Vector2i(1347223550, 1347223554)
 terrain_horizontal_scale = 1.0
 terrain_vertical_scale = 0.45
 terrain_origin = Vector3(0, -4, -3)
-goal_route_t = 0.13
-cannon_route_t = 1.0
-goal_recess_depth = 3.5
 terrain_color = Color(0.42, 0.40, 0.35, 1)
 terrain_accent_color = Color(0.34, 0.33, 0.29, 1)
-cannon_position = Vector3(0, -3.95, 24)
-shot_axis_yaw_degrees = 0.0
-goal_position = Vector3(0, 5, -19)
-goal_radius = 10.0
-play_bounds = AABB(-42, -14, -82, 88, 66, 124)
-planning_focus = Vector3(1.5, 4, -15)
-oblique_offset = Vector3(48, 42, 55)
-side_offset = Vector3(56, 17, 3)
-default_horizontal_aim = 50.0
-default_elevation_degrees = 50.0
-default_power_percent = 50.0
-solution_horizontal_aim = 50.0
-solution_elevation_degrees = 42.0
-solution_power_percent = 71.0
+legs = Array[ExtResource("3_leg")]([SubResource("OpeningLeg")])

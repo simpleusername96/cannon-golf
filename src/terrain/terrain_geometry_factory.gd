@@ -8,7 +8,9 @@ const MINIMUM_SKIRT_HEIGHT := 8.0
 static func build(layout: GeneratedStageLayout, base_y: float = DEFAULT_BASE_Y) -> TerrainGeometry:
 	var job := begin_build(layout, base_y)
 	while not job.step(9223372036854775807):
-		pass
+		if job.failed():
+			push_error(job.failure_message())
+			return null
 	return job.result()
 
 

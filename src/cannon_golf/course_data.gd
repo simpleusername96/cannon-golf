@@ -1,10 +1,19 @@
 class_name CannonGolfCourseData
 extends Resource
 
+const AUTHORING_LEGACY_MIGRATION := 0
+const AUTHORING_CONSTRAINT_RECIPE := 1
+
 @export_category("Identity")
 @export var course_id: StringName
 @export var display_name: String
 @export_multiline var short_brief: String
+
+@export_category("Authoring Boundary")
+@export_enum("Legacy migration inputs", "Constraint recipe") var authoring_mode := AUTHORING_LEGACY_MIGRATION
+## Inclusive seed range. The resolver selects one deterministic member.
+@export var terrain_seed_window := Vector2i(1, 1)
+@export var difficulty_targets: Dictionary = {}
 
 @export_category("Generated Terrain")
 @export var generation_profile: StageGenerationProfile
@@ -21,11 +30,15 @@ extends Resource
 @export_category("Ordered Relay Legs")
 @export var legs: Array[CannonGolfCourseLegData] = []
 
+@export_category("Semantic Landforms")
+@export var landform_features: Array[Resource] = []
+
 @export_category("Play")
 @export var cannon_position := Vector3.ZERO
 @export_range(-180.0, 180.0, 0.1) var shot_axis_yaw_degrees := 0.0
-@export var goal_position := Vector3(0.0, 0.0, -40.0)
+@export var goal_position := Vector3.ZERO
 @export_range(3.5, 14.0, 0.1) var goal_radius := 10.0
+@export_range(0, 2, 1) var legacy_rim_elevation_band := 1
 @export var play_bounds := AABB(Vector3(-50.0, -15.0, -90.0), Vector3(100.0, 70.0, 130.0))
 @export var content_bounds := AABB(Vector3(-50.0, -15.0, -90.0), Vector3(100.0, 50.0, 130.0))
 
@@ -39,18 +52,27 @@ extends Resource
 @export_range(10.0, 68.0, 1.0) var default_elevation_degrees := 50.0
 @export_range(10.0, 100.0, 1.0) var default_power_percent := 50.0
 @export_range(0.0, 100.0, 1.0) var solution_horizontal_aim := 50.0
-@export_range(10.0, 68.0, 1.0) var solution_elevation_degrees := 42.0
-@export_range(10.0, 100.0, 1.0) var solution_power_percent := 55.0
+@export_range(10.0, 68.0, 1.0) var solution_elevation_degrees := 50.0
+@export_range(10.0, 100.0, 1.0) var solution_power_percent := 50.0
+
+# Runtime-only projection marker. Authored recipe resources keep this false and
+# must not contain exact positions; CourseBuilder sets it only on its duplicate
+# after an identity-checked prepared artifact supplies those positions.
+var is_prepared_runtime_projection := false
 
 
 func is_valid() -> bool:
 	if course_id.is_empty() or display_name.strip_edges().is_empty():
 		return false
 	if generation_profile == null or not generation_profile.is_valid() \
-			or terrain_seed == 0 or terrain_horizontal_scale <= 0.0 \
+			or terrain_horizontal_scale <= 0.0 \
 			or terrain_vertical_scale <= 0.0 or not terrain_origin.is_finite() \
-			or goal_route_t <= 0.0 or goal_route_t >= cannon_route_t \
-			or cannon_route_t > 1.0 or goal_recess_depth <= 0.0:
+			or goal_recess_depth <= 0.0:
+		return false
+	if is_constraint_recipe():
+		return _recipe_is_valid()
+	if terrain_seed == 0 or goal_route_t <= 0.0 or goal_route_t >= cannon_route_t \
+			or cannon_route_t > 1.0:
 		return false
 	if not legs.is_empty():
 		return _explicit_legs_are_valid()
@@ -81,6 +103,7 @@ func leg_at(index: int) -> CannonGolfCourseLegData:
 	legacy_leg.goal_route_t = goal_route_t
 	legacy_leg.launcher_route_t = cannon_route_t
 	legacy_leg.goal_radius = goal_radius
+	legacy_leg.rim_elevation_band = legacy_rim_elevation_band
 	legacy_leg.goal_recess_depth = goal_recess_depth
 	legacy_leg.goal_lip_height = 0.0
 	legacy_leg.default_horizontal_aim = default_horizontal_aim
@@ -102,10 +125,80 @@ func has_explicit_legs() -> bool:
 	return not legs.is_empty()
 
 
-func _explicit_legs_are_valid() -> bool:
-	if legs.size() < 2:
+func is_constraint_recipe() -> bool:
+	return authoring_mode == AUTHORING_CONSTRAINT_RECIPE
+
+
+## Runtime callers must only receive a baked prepared artifact for this mode.
+func requires_prepared_artifact() -> bool:
+	return is_constraint_recipe()
+
+
+func _recipe_is_valid() -> bool:
+	if terrain_seed_window.x <= 0 or terrain_seed_window.y <= 0 \
+			or terrain_seed_window.x > terrain_seed_window.y or legs.is_empty() \
+			or terrain_seed_window.y - terrain_seed_window.x + 1 > 180 \
+			or legs.size() > 6 \
+			or not (_prepared_projection_is_valid() if is_prepared_runtime_projection \
+					else _legacy_resolved_values_are_clear()) \
+			or not _difficulty_targets_are_valid():
 		return false
-	var previous_goal_t := 1.0
+	var roles: Dictionary = {}
+	var previous_route_min := cannon_route_t
+	for leg in legs:
+		if leg == null or not leg.is_valid_recipe() \
+				or leg.route_index >= generation_profile.routes.size() \
+				or leg.route_interval.y > previous_route_min - 0.02 \
+				or roles.has(leg.semantic_role):
+			return false
+		roles[leg.semantic_role] = true
+		previous_route_min = leg.route_interval.x
+	var feature_ids: Dictionary = {}
+	for feature in landform_features:
+		if feature == null or not feature.is_valid() or feature_ids.has(feature.feature_id):
+			return false
+		feature_ids[feature.feature_id] = true
+	return true
+
+
+func _legacy_resolved_values_are_clear() -> bool:
+	return cannon_position == Vector3.ZERO and goal_position == Vector3.ZERO \
+			and _launch_setup_is_valid(default_horizontal_aim, default_elevation_degrees, default_power_percent) \
+			and Vector3(default_horizontal_aim, default_elevation_degrees, default_power_percent) \
+				== Vector3(50.0, 50.0, 50.0) \
+			and Vector3(solution_horizontal_aim, solution_elevation_degrees, solution_power_percent) \
+				== Vector3(50.0, 50.0, 50.0)
+
+
+func _prepared_projection_is_valid() -> bool:
+	return cannon_position.is_finite() and goal_position.is_finite() \
+			and is_finite(shot_axis_yaw_degrees) and planning_focus.is_finite() \
+			and oblique_offset.is_finite() and side_offset.is_finite() \
+			and goal_radius >= 3.5 and play_bounds.has_volume() and content_bounds.has_volume() \
+			and Vector3(default_horizontal_aim, default_elevation_degrees, default_power_percent) \
+				== Vector3(50.0, 50.0, 50.0) \
+			and Vector3(solution_horizontal_aim, solution_elevation_degrees, solution_power_percent) \
+				== Vector3(50.0, 50.0, 50.0)
+
+
+func _difficulty_targets_are_valid() -> bool:
+	for key in difficulty_targets:
+		var value: Variant = difficulty_targets[key]
+		if str(key).is_empty() or not (value is int or value is float) \
+				or not is_finite(float(value)) or float(value) < 0.0:
+			return false
+	return true
+
+
+func _explicit_legs_are_valid() -> bool:
+	if legs.is_empty() or legs.size() > 6:
+		return false
+	var goal_regions: Array[Vector2] = []
+	var feature_ids: Dictionary = {}
+	for feature in landform_features:
+		if feature == null or not feature.is_valid() or feature_ids.has(feature.feature_id):
+			return false
+		feature_ids[feature.feature_id] = true
 	for index in range(legs.size()):
 		var leg := legs[index]
 		if leg == null or not leg.is_valid():
@@ -113,10 +206,26 @@ func _explicit_legs_are_valid() -> bool:
 		if index == 0:
 			if not is_equal_approx(leg.launcher_route_t, cannon_route_t):
 				return false
-		if leg.goal_route_t >= previous_goal_t:
+		if not leg.feature_anchor.is_empty() and not feature_ids.has(leg.feature_anchor):
 			return false
-		previous_goal_t = leg.goal_route_t
+		var region := Vector2(leg.goal_route_t, float(leg.route_index)) + leg.goal_placement_offset / 1000.0
+		for prior in goal_regions:
+			if region.distance_to(prior) < 0.01:
+				return false
+		goal_regions.append(region)
 	return true
+
+
+func landform_signature() -> String:
+	var values := PackedStringArray()
+	for feature in landform_features:
+		if feature == null:
+			return ""
+		values.append("%s:%d:%s:%s:%s:%s:%s" % [
+			feature.feature_id, feature.kind, feature.route_t, feature.route_offset,
+			feature.radius, feature.amplitude, feature.flatness,
+		])
+	return ";".join(values)
 
 
 func _launch_setup_is_valid(horizontal: float, elevation: float, power: float) -> bool:

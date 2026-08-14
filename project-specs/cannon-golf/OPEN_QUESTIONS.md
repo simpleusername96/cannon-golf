@@ -39,9 +39,7 @@ affected code path is designed.
 | Q-16 | When should damping, airflow, and gravity-zone stages enter after or around the core eleven-stage progression? | Changes teaching order, total content count, and when the device tray expands | Keep the accepted eleven-stage bounce progression intact until an expansion sequence is explicitly set |
 | Q-18 | What exact damping, airflow, and gravity values and inventory limits remain understandable without prediction? | Changes physics tuning, readability, and solution tolerance | Keep damping strong but non-sticky, airflow modest and bounded, and gravity local and sharply downward; exact values remain tuning decisions |
 | Q-19 | Which terrain topology is allowed: heightfield-only winding ground, disconnected islands, caves, bridges, overhangs, or some bounded subset? | Changes mesh representation, camera occlusion, placement normals, generator capability, and solver search space | Start with one connected heightfield-like course that bends laterally and changes elevation; do not accept overhangs or caves without a separate decision |
-| Q-20 | What minimum solution tolerance must a certified stage have around launch and placement values? | Distinguishes a learnable puzzle from a pixel-perfect or numerically fragile solution | Require replay under small perturbations, but set the actual angle, power, position, and rotation tolerances after the physics prototype |
 | Q-21 | Which authoring actions recur enough to justify a Godot editor plugin: route sketching, terrain regeneration, goal placement, stock editing, placement-volume preview, witness recording, or batch validation? | Determines whether a custom editor pays for itself and prevents premature tool scope | Author several stages with Resources and ordinary editor controls first, then build only the repeated high-cost actions into a plugin |
-| Q-22 | What is the final authoring balance between hand-authored terrain, generator-assisted variants, and fully procedural stages? | Changes tool scope, content review cost, reproducibility, and how solvability is established | Start with human-authored intended solutions plus automated replay validation; do not treat procedural generation alone as proof of quality |
 | Q-23 | Does the new request for approximately ten courses replace the accepted eleven-stage target, or should ten be the first authored batch within that target? | Changes catalog size, the number of multi-pad stages, and whether D-014 must be superseded | Treat ten as the first authored batch and keep the eleventh-stage target unchanged until the owner explicitly chooses one count |
 
 ## Resolved Questions
@@ -59,6 +57,8 @@ affected code path is designed.
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
 | Q-12 | The initial two-course prototype uses deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |
 | Q-10 | Ordered relay courses assign goals one at a time. Only the active goal may confirm; intermediate confirmation preserves its ball, moves the reusable launcher to the completed goal's exact horizontal center, advances the compact goal tally, and does not clear the course. Only the final required goal clears. | `DECISIONS.md` D-030 and D-031 |
+| Q-20 | Direct-shot certification repeats the center twice and checks all six axial one-unit control neighbors. Center must pass twice; at least four neighbors pass with one on each axis. Placement tolerances remain open with their device rules. | `DECISIONS.md` D-032 |
+| Q-22 | Authors provide bounded course intent; an offline constraint resolver chooses exact goals and terrain adjustments, and real Godot physics certifies the immutable prepared artifact. Runtime does not generate. | `DECISIONS.md` D-032 |
 
 ## Recommendations
 
@@ -67,8 +67,8 @@ affected code path is designed.
 - Use the saved screen-direction storyboard as the visual brief for runtime
   composition and compare the implemented high-oblique and side views against
   it before expanding course production.
-- Resolve Q-16 and Q-18 through Q-22 before expansion-mechanic implementation or stage
-  production becomes an execution contract.
+- Resolve Q-16, Q-18, Q-19 and Q-21 before expansion-mechanic implementation or
+  a custom authoring tool becomes an execution contract.
 
 ## Limitations
 

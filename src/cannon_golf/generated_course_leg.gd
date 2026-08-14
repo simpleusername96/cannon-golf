@@ -15,6 +15,10 @@ var goal_lip_y := 0.0:
 	set(value):
 		_assert_writable()
 		goal_lip_y = value
+var goal_radius := 0.0:
+	set(value):
+		_assert_writable()
+		goal_radius = value
 var launcher_position := Vector3.ZERO:
 	set(value):
 		_assert_writable()
