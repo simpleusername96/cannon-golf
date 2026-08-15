@@ -44,7 +44,7 @@ const AUTHORING_CONSTRAINT_RECIPE := 1
 
 @export_category("Planning Cameras")
 @export var planning_focus := Vector3(0.0, 2.0, -15.0)
-@export var oblique_offset := Vector3(42.0, 37.0, 50.0)
+@export var oblique_offset := Vector3(30.0, 64.0, 55.0)
 @export var side_offset := Vector3(48.0, 13.0, 1.0)
 
 @export_category("Launch Setup")

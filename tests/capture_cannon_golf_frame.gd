@@ -209,6 +209,10 @@ func _capture() -> void:
 			push_error("Panned capture did not retain restrained bounded movement.")
 			quit(1)
 			return
+		if not _camera_boom_is_clear(game):
+			push_error("Panned capture put the overview boom through terrain.")
+			quit(1)
+			return
 	if game != null and requested_state == "zoom_close" \
 			and not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.CLOSE_ZOOM):
 		push_error("Close-zoom capture did not move materially toward the course.")
@@ -227,6 +231,10 @@ func _capture() -> void:
 					camera_position.x, camera_position.z
 				) + CannonGolfCourseCameraRig.CAMERA_TERRAIN_CLEARANCE - 0.01:
 			push_error("Collision-edge capture placed the planning camera inside terrain.")
+			quit(1)
+			return
+		if not _camera_boom_is_clear(game):
+			push_error("Collision-edge capture put the overview boom through terrain.")
 			quit(1)
 			return
 	if game != null and requested_state == "shortcuts" \
@@ -364,3 +372,15 @@ func _capture() -> void:
 		return
 	print("Captured Cannon Golf '%s' state to %s." % [requested_state, output_path])
 	quit(0)
+
+
+func _camera_boom_is_clear(game: CannonGolfGame) -> bool:
+	var focus := game._camera_rig.planning_focus()
+	for step in range(25):
+		var point := focus.lerp(game._camera.global_position, float(step) / 24.0)
+		if not game._course_builder.prepared_course.local_bounds.has_point(Vector2(point.x, point.z)):
+			continue
+		if point.y + 0.05 < game._course_builder.height_at_local(point.x, point.z) \
+				+ CannonGolfOverviewCameraSolver.BOOM_RADIUS:
+			return false
+	return true

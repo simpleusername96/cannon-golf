@@ -42,11 +42,19 @@ func _run() -> void:
 			rig.zoom_by_steps(-1.0)
 		rig.snap_to_planning()
 		_assert_true(camera.global_position.is_finite(), "Six zoom-out steps must stay finite.")
+		var pre_pan_distance := rig.resolved_planning_distance()
 		var old_focus := rig.planning_focus()
 		_assert_true(rig.pan_drag(Vector2.ZERO, Vector2(80.0, -30.0)), "Left drag must pan.")
-		_assert_true(rig.orbit(Vector2(80.0, -30.0)), "Right drag must orbit.")
 		rig.snap_to_planning()
 		_assert_true(not rig.planning_focus().is_equal_approx(old_focus), "Pan must move the overview pivot.")
+		_assert_true(
+			absf(rig.resolved_planning_distance() - pre_pan_distance) <= 0.05,
+			"Pan must translate the overview without changing its framing distance."
+		)
+		_assert_camera_boom_clear(rig, camera, builder, "Panned overview")
+		_assert_true(rig.orbit(Vector2(80.0, -30.0)), "Right drag must orbit.")
+		rig.snap_to_planning()
+		_assert_camera_boom_clear(rig, camera, builder, "Orbited overview")
 
 		_assert_true(rig.set_view(&"cannon"), "Cannon first-person must be available.")
 		rig.snap_to_planning()
@@ -57,14 +65,26 @@ func _run() -> void:
 			"Cannon view must use the exact launcher eye and launch direction."
 		)
 		var stored_view := rig.view_mode
+		var stored_transform := camera.global_transform
 		var target := RigidBody3D.new()
 		target.position = builder.launcher.position + Vector3(0.0, 12.0, -20.0)
 		target.linear_velocity = builder.launcher.launch_direction() * 20.0
 		root.add_child(target)
 		_assert_true(rig.follow(target), "Fire target must enter follow.")
-		rig.update(1.0 / 60.0)
+		for _follow_step in range(90):
+			rig.update(1.0 / 60.0)
+		var follow_distance := camera.global_position.distance_to(target.global_position)
+		_assert_true(
+			follow_distance >= 17.0 and follow_distance <= 23.0,
+			"Shot follow must retain normal ball and terrain context."
+		)
+		_assert_camera_boom_clear(rig, camera, builder, "Shot follow")
 		rig.return_to_planning(true)
 		_assert_true(rig.view_mode == stored_view, "Tab return must restore the prior view.")
+		_assert_true(
+			camera.global_transform.is_equal_approx(stored_transform),
+			"Tab return must restore the exact stored planning pose."
+		)
 		target.queue_free()
 		builder.queue_free()
 		camera.queue_free()
@@ -80,3 +100,23 @@ func _assert_true(condition: bool, message: String) -> void:
 		return
 	_failed = true
 	push_error(message)
+
+
+func _assert_camera_boom_clear(
+		rig: CannonGolfCourseCameraRig,
+		camera: Camera3D,
+		builder: CannonGolfCourseBuilder,
+		label: String
+) -> void:
+	var follow_target := rig.follow_target()
+	var focus := rig.planning_focus() if follow_target == null \
+			else follow_target.global_position + Vector3.UP * 2.0
+	for step in range(25):
+		var point := focus.lerp(camera.global_position, float(step) / 24.0)
+		if not builder.prepared_course.local_bounds.has_point(Vector2(point.x, point.z)):
+			continue
+		_assert_true(
+			point.y + 0.05 >= builder.height_at_local(point.x, point.z) \
+					+ CannonGolfOverviewCameraSolver.BOOM_RADIUS,
+			"%s boom must remain outside terrain." % label
+		)

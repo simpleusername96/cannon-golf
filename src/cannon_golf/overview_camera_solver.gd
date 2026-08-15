@@ -1,7 +1,7 @@
 class_name CannonGolfOverviewCameraSolver
 extends RefCounted
 
-const FRAME_MARGIN := 1.18
+const FRAME_MARGIN := 1.08
 const CLOSE_DISTANCE := 28.0
 const FAR_DISTANCE_SCALE := 1.18
 const BOOM_RADIUS := 1.25
@@ -12,6 +12,7 @@ static func resolve_pose(
 		camera: Camera3D,
 		bounds: AABB,
 		focus: Vector3,
+		framing_focus: Vector3,
 		base_offset: Vector3,
 		orbit_degrees: Vector2,
 		zoom: float
@@ -27,15 +28,17 @@ static func resolve_pose(
 	var viewport_size := camera.get_viewport().get_visible_rect().size
 	var pose := TerrainCameraFramer.framed_pose_around(
 		bounds,
-		focus,
-		focus + orbit_direction * maxf(base_offset.length(), 1.0),
-		focus,
+		framing_focus,
+		framing_focus + orbit_direction * maxf(base_offset.length(), 1.0),
+		framing_focus,
 		camera.fov,
 		viewport_size.x / maxf(viewport_size.y, 1.0),
 		FRAME_MARGIN
 	)
 	var framed_position: Vector3 = pose[0]
-	var framed_offset := framed_position - focus
+	# Fit against the authored reset pivot, then translate that fixed boom to the
+	# explored pivot. Panning must not silently zoom as the pivot nears an edge.
+	var framed_offset := framed_position - framing_focus
 	var framed_distance := maxf(framed_offset.length(), CLOSE_DISTANCE)
 	var distance := framed_distance
 	if zoom >= 0.0:
@@ -66,7 +69,11 @@ static func sweep_boom(
 	query.collide_with_bodies = true
 	query.exclude = exclusions
 	var fractions := camera.get_world_3d().direct_space_state.cast_motion(query)
-	if fractions.is_empty() or fractions[0] >= 0.999:
+	if fractions.size() < 2:
+		return fallback
+	if fractions[0] >= 0.999:
 		return desired
 	var safe_fraction := maxf(0.0, fractions[0] - BOOM_MARGIN / motion.length())
-	return fallback if safe_fraction < 0.05 else origin + motion * safe_fraction
+	# A blocked spring arm collapses along its own boom. Returning a stale camera
+	# position can put the new line of sight through terrain after a pan.
+	return origin + motion * safe_fraction

@@ -10,6 +10,8 @@ const CLOSE_ZOOM := 10.0
 const OVERVIEW_ZOOM := -6.0
 const CLOSE_INSPECTION_DISTANCE := 28.0
 const CAMERA_TERRAIN_CLEARANCE := 1.25
+const FOLLOW_DISTANCE := 18.0
+const FOLLOW_HEIGHT := 8.0
 const ORBIT_DEGREES_PER_PIXEL := Vector2(0.075, 0.06)
 const PAN_RESPONSE := 0.30
 const MAXIMUM_PAN_EVENT_SPAN_RATIO := 0.02
@@ -35,6 +37,7 @@ var _cannon_eye := Vector3.ZERO
 var _cannon_direction := Vector3.FORWARD
 var _planning_position := Vector3.ZERO
 var _planning_focus := Vector3.ZERO
+var _rendered_focus := Vector3.ZERO
 var _last_valid_position := Vector3.ZERO
 var _pose_dirty := true
 var _pose_builds := 0
@@ -71,6 +74,8 @@ func configure(
 	orbit_degrees = Vector2.ZERO
 	_follow_target = null
 	_return_snapshot.clear()
+	_rendered_focus = _base_focus
+	_last_valid_position = camera.global_position
 	_pose_dirty = true
 	_pose_builds = 0
 	_apply_fov()
@@ -191,6 +196,7 @@ func follow(target: Node3D) -> bool:
 	if camera_mode != MODE_FOLLOW:
 		_return_snapshot = {"view": view_mode, "pan": pan_offset, "zoom": zoom, "orbit": orbit_degrees}
 	_follow_target = target
+	_follow_direction = _target_horizontal_direction(target, _cannon_direction)
 	camera_mode = MODE_FOLLOW
 	_camera.fov = _default_fov
 	return true
@@ -267,13 +273,17 @@ func _apply_planning(delta: float) -> void:
 	var weight := 1.0 if delta >= 0.999 else 1.0 - exp(-delta * 5.5)
 	var candidate := _camera.global_position.lerp(_planning_position, weight)
 	if view_mode == &"oblique":
+		var next_focus := _rendered_focus.lerp(_planning_focus, weight)
 		candidate = OverviewSolver.sweep_boom(
-			_camera, _planning_focus, candidate, _collision_exclusions, _last_valid_position
+			_camera, next_focus, candidate, _collision_exclusions, _last_valid_position
 		)
+		candidate = _validated_camera_position(candidate, _last_valid_position, next_focus)
+		_rendered_focus = next_focus
+	else:
+		_rendered_focus = candidate + _cannon_direction * 20.0
 	_last_valid_position = candidate
 	_camera.global_position = candidate
-	var look_target := _planning_focus if view_mode == &"oblique" else candidate + _cannon_direction * 20.0
-	_camera.look_at(look_target, Vector3.UP)
+	_camera.look_at(_rendered_focus, Vector3.UP)
 
 
 func _resolve_pose(size: Vector2) -> void:
@@ -283,7 +293,8 @@ func _resolve_pose(size: Vector2) -> void:
 	else:
 		_planning_focus = planning_focus()
 		var pose := OverviewSolver.resolve_pose(
-			_camera, _frame_bounds, _planning_focus, _course.oblique_offset, orbit_degrees, zoom
+			_camera, _frame_bounds, _planning_focus, _terrain_safe_focus(_base_focus),
+			_course.oblique_offset, orbit_degrees, zoom
 		)
 		_planning_position = pose[0]
 		_planning_focus = pose[1]
@@ -294,17 +305,22 @@ func _resolve_pose(size: Vector2) -> void:
 
 func _apply_follow(delta: float) -> void:
 	var focus := _follow_target.get_global_transform_interpolated().origin
-	if _follow_target is RigidBody3D:
-		var velocity: Vector3 = (_follow_target as RigidBody3D).linear_velocity
-		velocity.y = 0.0
-		if velocity.length() > 0.5:
-			_follow_direction = velocity.normalized()
-	var desired := focus - _follow_direction * 12.0 + Vector3.UP * 6.0
-	desired = OverviewSolver.sweep_boom(
-		_camera, focus + Vector3.UP * 2.0, desired, _collision_exclusions, _camera.global_position
+	_follow_direction = _target_horizontal_direction(_follow_target, _follow_direction)
+	var desired := focus - _follow_direction * FOLLOW_DISTANCE + Vector3.UP * FOLLOW_HEIGHT
+	var weight := 1.0 - exp(-delta * 4.2)
+	var next_focus := _rendered_focus.lerp(focus + Vector3.UP * 0.4, weight)
+	var candidate := _camera.global_position.lerp(desired, weight)
+	candidate = OverviewSolver.sweep_boom(
+		_camera, focus + Vector3.UP * 2.0, candidate,
+		_collision_exclusions, _last_valid_position
 	)
-	_camera.global_position = _camera.global_position.lerp(desired, 1.0 - exp(-delta * 4.2))
-	_camera.look_at(focus + Vector3.UP * 0.4, Vector3.UP)
+	candidate = _validated_camera_position(
+		candidate, _last_valid_position, focus + Vector3.UP * 2.0
+	)
+	_last_valid_position = candidate
+	_rendered_focus = next_focus
+	_camera.global_position = candidate
+	_camera.look_at(_rendered_focus, Vector3.UP)
 
 
 func _restore_snapshot() -> void:
@@ -337,6 +353,37 @@ func _terrain_height(position: Vector3) -> float:
 		return -INF
 	var sampled: Variant = _height_sampler.call(position.x, position.z)
 	return float(sampled) if (sampled is float or sampled is int) and is_finite(float(sampled)) else -INF
+
+
+func _validated_camera_position(
+		candidate: Vector3, fallback: Vector3, safe_origin: Vector3
+) -> Vector3:
+	if _camera_position_is_terrain_safe(candidate):
+		return candidate
+	if _camera_position_is_terrain_safe(fallback):
+		return fallback
+	return safe_origin
+
+
+func _camera_position_is_terrain_safe(position: Vector3) -> bool:
+	if not position.is_finite():
+		return false
+	for offset in terrain_footprint_offsets():
+		var sample_position := position + Vector3(offset.x, 0.0, offset.y)
+		var height := _terrain_height(sample_position)
+		if is_finite(height) and position.y < height + CAMERA_TERRAIN_CLEARANCE:
+			return false
+	return true
+
+
+func _target_horizontal_direction(target: Node3D, fallback: Vector3) -> Vector3:
+	if target is RigidBody3D:
+		var velocity: Vector3 = (target as RigidBody3D).linear_velocity
+		velocity.y = 0.0
+		if velocity.length() > 0.5:
+			return velocity.normalized()
+	var horizontal := Vector3(fallback.x, 0.0, fallback.z)
+	return horizontal.normalized() if not horizontal.is_zero_approx() else Vector3.FORWARD
 
 
 func _apply_fov() -> void:

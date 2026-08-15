@@ -86,15 +86,18 @@ Preconditions:
 
 Source owners: `src/cannon_golf/course_camera_rig.gd`, `src/cannon_golf/overview_camera_solver.gd`, `tests/cannon_golf_camera_test.gd`, `tests/capture_cannon_golf_frame.gd`
 
-- [ ] **1.1** Pan, orbit, planning transitions, and shot follow move without framing pumps or look-direction pops.
+- [x] **1.1** Pan, orbit, planning transitions, and shot follow move without framing pumps or look-direction pops.
   - Change: separate fixed reset framing focus from the current pan focus; interpolate the rendered focus with the rendered camera position; initialize follow direction for every target and tune the existing follow offset for terrain context.
   - Accept: the focused camera test proves pan preserves requested boom distance, planning motion is finite and continuous, every follow starts from its own direction, and `Tab` still restores the exact stored planning state.
-- [ ] **1.2** The existing swept boom fails closed and checks the pose actually shown.
+  - Evidence: the fixed reset pivot now owns framing distance, rendered focus and position share one exponential weight, follow resets from the target velocity, and the focused camera contract exits zero.
+- [x] **1.2** The existing swept boom fails closed and checks the pose actually shown.
   - Change: return the current collision-safe boom point instead of a stale off-boom fallback, preserve the positive margin and exclusions, and sweep after interpolation for both planning and follow.
   - Accept: close zoom plus ordinary pan/orbit keeps every camera footprint sample above terrain and never returns a stale pose after a block.
-- [ ] **1.3** Representative camera states render clearly.
+  - Evidence: the solver collapses to the collision-safe point on its current boom; the rig validates the rendered camera footprint and focused camera boom sampling passes.
+- [x] **1.3** Representative camera states render clearly.
   - Change: extend only the capture assertions needed to verify the known close-pan and follow defects.
   - Accept: 1280×720 captures for close-pan course 4, collision-edge course 7, and follow course 1 show readable terrain and no near-plane obstruction; scripted state assertions pass.
+  - Evidence: `phase1-final-panned-course-4.png`, `phase1-final-collision-course-7.png`, and `phase1-final-follow-course-1.png` rendered at 1280×720 and passed native-pixel inspection.
 
 Batch gate:
 
@@ -196,9 +199,9 @@ Implementation-local discoveries may be handled inside the locked contract when 
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 1, Conventional camera behavior.
-- Next task: 1.1, make panning and follow move without framing pumps or look-direction pops.
-- Last completed gate: Discovery Closure Gate; current camera test command exits zero and baseline captures reproduce the visual failures.
+- Current phase: Phase 2, Distinct but simple course macro shapes.
+- Next task: 2.1, replace the mirrored zigzag with conservative course-specific route motifs.
+- Last completed gate: Phase 1 camera test and three rendered-state captures passed on the corrected high-oblique rig.
 - Update rule: after a checkpoint passes, record concise evidence, check the task, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions
