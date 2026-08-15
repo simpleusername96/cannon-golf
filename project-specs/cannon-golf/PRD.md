@@ -152,12 +152,14 @@ cannon composition.
   existing `0..100` interval retains its `-80..+80` degree mapping around the
   generated course shot axis, while continued adjustment reaches every bearing.
   All three visible values start at `50` on every course. The
-  prototype maps legal power to approximately `34.3..147.0 m/s`. This is the
-  previous range multiplied by `sqrt(1.5)` so the same power percentages remain
-  useful after the accepted horizontal course expansion. Ball-local gravity, damping,
-  motion thresholds, and dwell thresholds are time-scaled so established course
-  paths resolve at roughly twice their former pace instead of doubling spatial
-  range. The player cannot steer the ball in flight.
+  prototype maps legal power to approximately `68.6..293.9 m/s`. The horizontal
+  range compensation and a `4.0` ball-local motion scale keep the same power
+  percentages useful while making motion twice as fast as the preceding build.
+  Gravity, damping, and safe-motion thresholds derive from that same local scale.
+  Analytic course checks use a normalized substep so the prepared spatial routes
+  remain unchanged; engine time, one-second goal dwell, two-second outside-goal
+  rest, and the pre-contact safety guard remain real-time rules. The player
+  cannot steer the ball in flight.
 - Reason: the game is about planning and result-based correction.
 
 ### FR-2: First-impact history
@@ -230,6 +232,9 @@ cannon composition.
   frames, or implies a next goal. Fire immediately follows the newest ball.
   `Tab` restores the exact overview or cannon state stored before follow; a
   second launch retargets follow without replacing that stored state.
+  Confirming any goal ends Shot Follow immediately and restores that exact
+  stored planning state; it must not retarget or hold the camera at the goal
+  plate.
   Overview interaction uses left-drag pan, right-drag orbit, the mouse wheel or
   compact actions for distance, and arrow keys for pan. Ten logarithmic
   zoom-in actions move from reset framing to a `28 m` desired minimum distance;
@@ -264,7 +269,8 @@ cannon composition.
 
 - Requirement: the interface may reuse Paint Mountain's warm paper-white,
   navy, blue-accent, Korean-first, edge-aligned overlay system. Coverage UI and
-  paint-specific labels must not survive into the new game.
+  paint-specific labels must not survive into the new game. The final
+  stage-clear action is a centered modal at every supported viewport size.
 - Reason: the HUD language remains useful while the world composition and rules
   change substantially.
 

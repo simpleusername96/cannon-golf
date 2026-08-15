@@ -26,7 +26,8 @@ func _run() -> void:
 		)
 		_assert_true(rig.set_planning_context(
 			builder.presentation_bounds(), builder.course.content_bounds.get_center(),
-			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction()
+			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction(),
+			builder.launcher.yaw_degrees
 		), "Camera context must accept the launcher pose.")
 		rig.snap_to_planning()
 		_assert_true(camera.global_position.is_finite(), "Reset overview must be finite.")
@@ -77,6 +78,66 @@ func _run() -> void:
 					and rad_to_deg(camera_forward.angle_to(builder.launcher.launch_direction())) < 0.1,
 			"Cannon view must use the exact launcher eye and launch direction."
 		)
+		for vertical_sign in [-1.0, 1.0]:
+			var previous_up := Vector3.ZERO
+			for absolute_angle in [87.0, 88.0, 89.0, 90.0]:
+				builder.launcher.set_setup(162.0, vertical_sign * absolute_angle, 50.0)
+				_assert_true(
+					rig.set_cannon_pose(
+						builder.launcher.first_person_eye_position(),
+						builder.launcher.launch_direction(),
+						builder.launcher.yaw_degrees
+					),
+					"Near-vertical cannon aim must provide a valid camera pose."
+				)
+				rig.snap_to_planning()
+				camera_forward = -camera.global_transform.basis.z
+				var camera_up := camera.global_transform.basis.y
+				_assert_true(
+					camera.global_transform.basis.is_finite() \
+							and rad_to_deg(
+								camera_forward.angle_to(builder.launcher.launch_direction())
+							) < 0.1,
+					"Exact vertical cannon aim must retain a finite, aligned camera basis."
+				)
+				if not previous_up.is_zero_approx():
+					_assert_true(
+						rad_to_deg(previous_up.angle_to(camera_up)) < 2.0,
+						"Near-vertical cannon aim must not introduce a camera-roll jump."
+					)
+				previous_up = camera_up
+		builder.launcher.set_setup(50.0, 90.0, 50.0)
+		rig.set_cannon_pose(
+			builder.launcher.first_person_eye_position(),
+			builder.launcher.launch_direction(),
+			builder.launcher.yaw_degrees
+		)
+		rig.snap_to_planning()
+		builder.launcher.set_setup(162.0, 90.0, 50.0)
+		rig.set_cannon_pose(
+			builder.launcher.first_person_eye_position(),
+			builder.launcher.launch_direction(),
+			builder.launcher.yaw_degrees
+		)
+		rig.snap_to_planning()
+		var vertical_reaim_up := camera.global_transform.basis.y
+		builder.launcher.set_setup(162.0, 89.0, 50.0)
+		rig.set_cannon_pose(
+			builder.launcher.first_person_eye_position(),
+			builder.launcher.launch_direction(),
+			builder.launcher.yaw_degrees
+		)
+		rig.snap_to_planning()
+		_assert_true(
+			rad_to_deg(vertical_reaim_up.angle_to(camera.global_transform.basis.y)) < 2.0,
+			"Yaw changes at exact vertical aim must remain continuous when pitch resumes."
+		)
+		builder.launcher.set_setup(50.0, 50.0, 50.0)
+		rig.set_cannon_pose(
+			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction(),
+			builder.launcher.yaw_degrees
+		)
+		rig.snap_to_planning()
 		var stored_view := rig.view_mode
 		var stored_transform := camera.global_transform
 		var target := RigidBody3D.new()

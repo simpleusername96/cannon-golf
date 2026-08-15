@@ -69,14 +69,18 @@ coefficients, stage data formats, or code ownership.
   distribution, branch choice, and device placement.
 - Use a true first-person view at the selected cannon source to show its actual
   launch direction. A small reticle and a world-space aim halo make yaw and
-  elevation readable without implying a target or next goal. The halo floats
-  slightly above the launcher base: a horizontal ring and compact perimeter
-  tick show yaw, while a laterally offset dotted vertical arc and bead show
-  elevation. It must not draw a center-origin line or wedge that can read as a
-  second barrel. Keep it visible in both overview/planning and cannon views. Use
-  unshaded high-contrast geometry with enough ordinary-view screen thickness;
-  a narrow no-depth-tested accent may preserve readability without turning the
-  whole instrument into a screen overlay.
+  elevation readable without implying a target or next goal. In overview, the
+  halo floats clearly above the launcher and uses a large deep-navy horizontal
+  ring plus compact perimeter tick for yaw. Its laterally offset dotted vertical
+  arc stays completely above the ground plane, and one bead marks elevation.
+  Cannon view uses a compact presentation of the same instrument ahead along
+  the real launch direction. It must not draw a center-origin line or wedge that
+  can read as a second barrel. Keep it visible in both overview/planning and
+  cannon views. Use unshaded high-contrast geometry with enough ordinary-view
+  screen thickness; narrow no-depth-tested ring and dot accents may preserve
+  readability without turning the broad instrument into a screen overlay. Exact
+  vertical cannon aim must keep a finite, stable camera basis without reducing
+  the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In overview, left-drag pans, right-drag orbits around the bounded course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -94,7 +98,9 @@ coefficients, stage data formats, or code ownership.
   exploration camera. Overview remains the complete-course planning owner.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
-  exact stored pre-follow state. Aim and Fire remain usable while a ball lives.
+  exact stored pre-follow state. A confirmed goal also returns there immediately
+  and never flies or holds the camera at its plate. Aim and Fire remain usable
+  while a ball lives.
 - Camera changes must preserve stage identity, selected cannon source, selected
   device, and launch parameters.
 - Whatever exploration controls are selected must not move gameplay objects,
@@ -218,6 +224,8 @@ coefficients, stage data formats, or code ownership.
   keyboard focus. Put full course reset, settings, course selection, and
   main-menu navigation in the pause overlay.
 - Use one primary action per state. During launch setup, that action is Fire.
+- After the final goal confirms, place the existing stage-clear panel at the
+  viewport center and focus its one primary result action.
 - Horizontal aim, vertical angle, power, device stock, the goal tally, and menu
   are valid only when they support a current decision. Do not persist course
   prose, a progress card, camera-state labels, feedback copy, permanently

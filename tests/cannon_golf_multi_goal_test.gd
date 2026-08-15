@@ -10,11 +10,54 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	await _assert_confirmation_restores_planning_pose()
 	await _assert_free_order(4, [2, 0, 1])
 	await _assert_free_order(9, [5, 1, 4, 0, 3, 2])
 	if not _failed:
 		print("Cannon Golf player-directed multi-goal contract passed.")
 	quit(1 if _failed else 0)
+
+
+func _assert_confirmation_restores_planning_pose() -> void:
+	var game := GAME_SCENE.instantiate() as CannonGolfGame
+	game.initial_course_index = CannonGolfCourseCatalog.index_of(&"deep_relay")
+	root.add_child(game)
+	await process_frame
+	await process_frame
+	_assert(game._course_builder.goals.size() > 1, "Camera regression fixture needs multiple goals.")
+	game.zoom_planning(CannonGolfCourseCameraRig.CLOSE_ZOOM)
+	game.orbit_planning(Vector2(96.0, -34.0))
+	game.pan_planning(Vector2(1.0, 0.0))
+	game._camera_rig.update(1.0)
+	var expected_transform := game._camera.global_transform
+	var launcher_before := game._course_builder.launcher.global_position
+	_assert(game.fire(), "Camera regression fixture must launch its retained ball.")
+	var retained_ball := game.current_ball
+	_assert(game.fire(), "Camera regression fixture must launch its confirming ball.")
+	var winning_ball := game.current_ball
+	var goal := game._course_builder.goal_at(0)
+	winning_ball.global_position = goal.global_position + Vector3.UP * CannonGolfBall.RADIUS
+	winning_ball.linear_velocity = Vector3.ZERO
+	winning_ball.angular_velocity = Vector3.ZERO
+	game._confirm_goal(winning_ball, 0)
+	_assert(
+		game._camera_rig.camera_mode == &"planning" \
+				and game._camera.global_transform.is_equal_approx(expected_transform),
+		"Intermediate confirmation must restore the exact saved planning pose immediately."
+	)
+	_assert(
+		winning_ball.freeze and winning_ball.linear_velocity.is_zero_approx() \
+				and winning_ball.angular_velocity.is_zero_approx() \
+				and game.active_balls().has(retained_ball),
+		"Camera restoration must keep the confirmed winner fixed and every other live ball active."
+	)
+	_assert(
+		game._course_builder.launcher.global_position.is_equal_approx(launcher_before) \
+				and game.can_fire(),
+		"Intermediate confirmation must not move the cannon or block the next launch."
+	)
+	game.queue_free()
+	await process_frame
 
 
 func _assert_free_order(course_index: int, completion_order: Array[int]) -> void:

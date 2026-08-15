@@ -603,6 +603,31 @@ in `OPEN_QUESTIONS.md`.
 - Deferred devices must not be used to explain, hide, or compensate for weak
   basic terrain composition or camera behavior.
 
+### D-043 — Stabilize goal confirmation and strengthen pace and aim feedback
+
+- Status: accepted on 2026-08-15; supersedes D-028 and D-039's prior launch-speed
+  values and D-038's short result hold for confirmed goals. It strengthens the
+  halo readability clauses in D-039 and D-040.
+- Ball motion uses a `4.0` local time scale, twice the pace of the preceding
+  build. Legal speed is approximately `68.6..293.9 m/s`; gravity, damping, and
+  motion thresholds derive from the same owner. The wall-clock analytic horizon
+  is halved and its substep is normalized to the `2.0` course-authoring scale,
+  so prepared spatial routes stay exact without rebaking. Engine time and the
+  real-second settlement, outside-rest, and pre-contact safety rules do not change.
+- Confirming any goal freezes and retains its ball, preserves all other live
+  balls on an intermediate result, and immediately restores the exact stored
+  planning pose. Confirmation never retargets or holds Shot Follow at the goal
+  plate and never moves the cannon.
+- The final stage-clear panel uses the viewport center at every supported size;
+  the existing action, focus, copy, theme, and modal ownership remain unchanged.
+- In aerial planning, the yaw-and-elevation halo is a large deep-navy
+  world-space instrument clearly above the launcher. The full dotted elevation
+  scale remains above local ground, while narrow no-depth accents keep both axes
+  readable over terrain. Cannon first-person uses a compact forward presentation
+  of the same two-axis instrument. Exact vertical cannon aim uses a stable
+  horizontal look-at reference rather than a colinear world-up vector. Neither
+  presentation draws a trajectory, center-origin wedge, or second-barrel silhouette.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

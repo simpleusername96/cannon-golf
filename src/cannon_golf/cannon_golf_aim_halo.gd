@@ -3,18 +3,25 @@ extends Node3D
 
 ## World-space aim instrument kept separate from the launcher silhouette.
 
-const FLOAT_HEIGHT := 0.72
-const RADIUS := 6.4
-const RING_THICKNESS := 0.52
-const ARC_RADIUS := 4.4
-const ARC_LATERAL_OFFSET := 2.6
-const ARC_SAMPLE_COUNT := 9
-const CANNON_MARKER_SCALE := 0.12
-const PRESENTATION_TOP_HEIGHT := FLOAT_HEIGHT \
-		+ sin(deg_to_rad(CannonGolfBallistics.MAXIMUM_ELEVATION_DEGREES)) * ARC_RADIUS \
-		+ 0.35
+const FLOAT_HEIGHT := 12.0
+const RADIUS := 13.0
+const RING_THICKNESS := 1.50
+const RING_ACCENT_THICKNESS := 0.28
+const ARC_RADIUS := 18.0
+const ARC_LATERAL_OFFSET := 8.5
+const ARC_BASE_HEIGHT := 1.0
+const ARC_SAMPLE_COUNT := 17
+const ARC_DOT_RADIUS := 0.90
+const ELEVATION_BEAD_RADIUS := 1.60
+const CANNON_FORWARD_DISTANCE := 14.0
+const CANNON_PRESENTATION_SCALE := 0.14
+const PRESENTATION_TOP_HEIGHT := FLOAT_HEIGHT + ARC_BASE_HEIGHT + ARC_RADIUS \
+		+ ELEVATION_BEAD_RADIUS
 
 var _elevation_degrees := 50.0
+var _cannon_view_active := false
+var _launch_direction := Vector3.FORWARD
+var _cannon_eye_offset := Vector3.ZERO
 var _elevation_bead: MeshInstance3D
 
 
@@ -27,7 +34,12 @@ func _ready() -> void:
 	_update_elevation_bead()
 
 
-func set_angles(yaw_degrees: float, elevation_degrees: float) -> void:
+func set_angles(
+		yaw_degrees: float,
+		elevation_degrees: float,
+		launch_direction: Vector3
+) -> void:
+	_launch_direction = launch_direction.normalized()
 	rotation_degrees.y = -yaw_degrees
 	_elevation_degrees = clampf(
 		elevation_degrees,
@@ -35,6 +47,7 @@ func set_angles(yaw_degrees: float, elevation_degrees: float) -> void:
 		CannonGolfBallistics.MAXIMUM_ELEVATION_DEGREES
 	)
 	_update_elevation_bead()
+	_update_presentation_transform()
 
 
 func indicated_elevation_degrees() -> float:
@@ -49,14 +62,19 @@ func presentation_top_height() -> float:
 	return PRESENTATION_TOP_HEIGHT
 
 
-func set_cannon_view_active(active: bool) -> void:
-	var marker_scale := Vector3.ONE * (CANNON_MARKER_SCALE if active else 1.0)
-	(get_node_or_null("YawTick") as MeshInstance3D).scale = marker_scale
-	(get_node_or_null("ElevationBead") as MeshInstance3D).scale = marker_scale
-	var elevation_arc := get_node_or_null("ElevationArc") as Node3D
-	if elevation_arc != null:
-		for dot in elevation_arc.get_children():
-			(dot as MeshInstance3D).scale = marker_scale
+func set_cannon_view_active(active: bool, cannon_eye_offset: Vector3) -> void:
+	_cannon_view_active = active
+	_cannon_eye_offset = cannon_eye_offset
+	_update_presentation_transform()
+
+
+func _update_presentation_transform() -> void:
+	if not _cannon_view_active:
+		position = Vector3.UP * FLOAT_HEIGHT
+		scale = Vector3.ONE
+		return
+	position = _cannon_eye_offset + _launch_direction * CANNON_FORWARD_DISTANCE
+	scale = Vector3.ONE * CANNON_PRESENTATION_SCALE
 
 
 func _build_visuals() -> void:
@@ -65,7 +83,8 @@ func _build_visuals() -> void:
 	# The wide guide stays depth-tested so it retains a believable relationship to
 	# the launch surface. Only the compact active markers ignore depth, which keeps
 	# yaw and elevation legible when terrain or the first-person camera occludes it.
-	var guide_material := _material(Color("49C9E8"), false)
+	var guide_material := _material(Color("0E1A29"), false)
+	var readability_material := _material(Color("0E1A29"), true)
 	var active_material := _material(Color("FFD05C"), true)
 
 	var ring := MeshInstance3D.new()
@@ -80,10 +99,24 @@ func _build_visuals() -> void:
 	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(ring)
 
+	# A narrow no-depth accent keeps the horizontal scale legible in full-course
+	# views without turning the broad world-space ring into a screen overlay.
+	var ring_accent := MeshInstance3D.new()
+	ring_accent.name = "YawRingAccent"
+	var ring_accent_mesh := TorusMesh.new()
+	ring_accent_mesh.inner_radius = RADIUS - RING_ACCENT_THICKNESS
+	ring_accent_mesh.outer_radius = RADIUS
+	ring_accent_mesh.rings = 40
+	ring_accent_mesh.ring_segments = 8
+	ring_accent_mesh.material = readability_material
+	ring_accent.mesh = ring_accent_mesh
+	ring_accent.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(ring_accent)
+
 	var yaw_tick := MeshInstance3D.new()
 	yaw_tick.name = "YawTick"
 	var tick_mesh := BoxMesh.new()
-	tick_mesh.size = Vector3(0.92, 0.30, 1.32)
+	tick_mesh.size = Vector3(3.50, 1.0, 5.50)
 	tick_mesh.material = active_material
 	yaw_tick.mesh = tick_mesh
 	yaw_tick.position = Vector3(0.0, 0.08, -RADIUS + 0.52)
@@ -103,11 +136,11 @@ func _build_visuals() -> void:
 		var dot := MeshInstance3D.new()
 		dot.name = "ElevationDot%02d" % index
 		var dot_mesh := SphereMesh.new()
-		dot_mesh.radius = 0.20
-		dot_mesh.height = 0.40
+		dot_mesh.radius = ARC_DOT_RADIUS
+		dot_mesh.height = ARC_DOT_RADIUS * 2.0
 		dot_mesh.radial_segments = 8
 		dot_mesh.rings = 4
-		dot_mesh.material = guide_material
+		dot_mesh.material = readability_material
 		dot.mesh = dot_mesh
 		dot.position = _arc_position(angle)
 		dot.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -116,8 +149,8 @@ func _build_visuals() -> void:
 	_elevation_bead = MeshInstance3D.new()
 	_elevation_bead.name = "ElevationBead"
 	var bead_mesh := SphereMesh.new()
-	bead_mesh.radius = 0.38
-	bead_mesh.height = 0.76
+	bead_mesh.radius = ELEVATION_BEAD_RADIUS
+	bead_mesh.height = ELEVATION_BEAD_RADIUS * 2.0
 	bead_mesh.radial_segments = 12
 	bead_mesh.rings = 6
 	bead_mesh.material = active_material
@@ -135,7 +168,7 @@ func _arc_position(angle_degrees: float) -> Vector3:
 	var angle := deg_to_rad(angle_degrees)
 	return Vector3(
 		ARC_LATERAL_OFFSET,
-		sin(angle) * ARC_RADIUS,
+		ARC_BASE_HEIGHT + (sin(angle) + 1.0) * 0.5 * ARC_RADIUS,
 		-cos(angle) * ARC_RADIUS
 	)
 

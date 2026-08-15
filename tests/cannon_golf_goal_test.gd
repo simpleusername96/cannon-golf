@@ -19,16 +19,42 @@ func _run() -> void:
 	_assert_true(not goal.contains_ball(Vector3(14.0, 3.0, -8.0), CannonGolfBall.RADIUS), "Outside ball must not be contained.")
 	_assert_true(is_equal_approx(goal.settle_seconds, 1.0), "Goal dwell must be one continuous second.")
 	_assert_true(goal.motion_is_safe(Vector3(0.2, 0.1, 0.2), Vector3(0.0, 0.8, 0.0)), "Slow motion must be safe.")
-	_assert_true(goal.motion_is_safe(Vector3(1.2, 0.0, 0.0), Vector3.ZERO), "Equivalent time-scaled safe motion must settle.")
-	_assert_true(not goal.motion_is_safe(Vector3(2.5, 0.0, 0.0), Vector3.ZERO), "Fast translation must not settle.")
-	_assert_true(not goal.motion_is_safe(Vector3.ZERO, Vector3(0.0, 5.0, 0.0)), "Fast rotation must not settle.")
 	_assert_true(
-		goal.motion_allows_settlement_drag(Vector3(4.0, 0.0, 0.0), Vector3(0.0, 16.0, 0.0)),
+		goal.motion_is_safe(
+			Vector3.RIGHT * goal.maximum_linear_speed * 0.8,
+			Vector3.UP * goal.maximum_angular_speed * 0.8
+		),
+		"Equivalent time-scaled safe motion must settle."
+	)
+	_assert_true(
+		not goal.motion_is_safe(
+			Vector3.RIGHT * goal.maximum_linear_speed * 1.01,
+			Vector3.ZERO
+		),
+		"Fast translation must not settle."
+	)
+	_assert_true(
+		not goal.motion_is_safe(
+			Vector3.ZERO,
+			Vector3.UP * goal.maximum_angular_speed * 1.01
+		),
+		"Fast rotation must not settle."
+	)
+	_assert_true(
+		goal.motion_allows_settlement_drag(
+			Vector3.RIGHT * goal.capture_entry_linear_speed,
+			Vector3.UP * goal.capture_entry_angular_speed
+		),
 		"A contained low-energy ball must be admitted to settlement drag."
 	)
 	_assert_true(
-		not goal.motion_allows_settlement_drag(Vector3(4.1, 0.0, 0.0), Vector3.ZERO) \
-				and not goal.motion_allows_settlement_drag(Vector3.ZERO, Vector3(0.0, 16.1, 0.0)),
+		not goal.motion_allows_settlement_drag(
+			Vector3.RIGHT * goal.capture_entry_linear_speed * 1.01,
+			Vector3.ZERO
+		) and not goal.motion_allows_settlement_drag(
+			Vector3.ZERO,
+			Vector3.UP * goal.capture_entry_angular_speed * 1.01
+		),
 		"A fast translating or spinning ball must retain ordinary drag."
 	)
 	var drag_ball := CannonGolfBall.new()
@@ -41,8 +67,14 @@ func _run() -> void:
 	drag_ball.set_settlement_drag(true)
 	_assert_true(
 		drag_ball.settlement_drag_is_active() \
-				and is_equal_approx(drag_ball.linear_damp, 1.2) \
-				and is_equal_approx(drag_ball.angular_damp, 2.4),
+				and is_equal_approx(
+					drag_ball.linear_damp,
+					CannonGolfBall.SETTLEMENT_LINEAR_DAMP
+				) \
+				and is_equal_approx(
+					drag_ball.angular_damp,
+					CannonGolfBall.SETTLEMENT_ANGULAR_DAMP
+				),
 		"Settlement drag must apply the bounded ball-local values."
 	)
 	drag_ball.set_settlement_drag(false)
@@ -102,7 +134,7 @@ func _assert_physical_plate(course: CannonGolfCourseData) -> void:
 		center + Vector3.UP * (
 			builder.goal.rim_height + CannonGolfBall.RADIUS + 0.20
 		),
-		Vector3(96.0, 24.0, 0.0)
+		Vector3(48.0, 12.0, 0.0) * CannonGolfBallistics.MOTION_TIME_SCALE
 	)
 	builder.add_child(fast_ball)
 	var exited := false

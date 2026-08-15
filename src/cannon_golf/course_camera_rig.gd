@@ -36,6 +36,7 @@ var _height_sampler := Callable()
 var _collision_exclusions: Array[RID] = []
 var _cannon_eye := Vector3.ZERO
 var _cannon_direction := Vector3.FORWARD
+var _cannon_heading := Vector3.FORWARD
 var _planning_position := Vector3.ZERO
 var _planning_focus := Vector3.ZERO
 var _rendered_focus := Vector3.ZERO
@@ -67,7 +68,9 @@ func configure(
 	_height_sampler = height_sampler
 	_collision_exclusions = collision_exclusions.duplicate()
 	_cannon_eye = course.cannon_position + Vector3.UP * 2.55
-	_cannon_direction = _yaw_forward(course.shot_axis_yaw_degrees)
+	_set_cannon_direction(
+		_yaw_forward(course.shot_axis_yaw_degrees), course.shot_axis_yaw_degrees
+	)
 	view_mode = &"oblique"
 	camera_mode = MODE_PLANNING
 	pan_offset = Vector3.ZERO
@@ -102,7 +105,8 @@ func set_planning_context(
 		frame_bounds: AABB,
 		focus: Vector3,
 		cannon_eye: Vector3,
-		cannon_direction: Vector3
+		cannon_direction: Vector3,
+		cannon_yaw_degrees: float = NAN
 ) -> bool:
 	if not frame_bounds.has_volume() or not focus.is_finite() or not cannon_eye.is_finite() \
 			or not cannon_direction.is_finite() or cannon_direction.is_zero_approx():
@@ -110,7 +114,7 @@ func set_planning_context(
 	_frame_bounds = frame_bounds
 	_base_focus = focus
 	_cannon_eye = cannon_eye
-	_cannon_direction = cannon_direction.normalized()
+	_set_cannon_direction(cannon_direction, cannon_yaw_degrees)
 	pan_offset = Vector3.ZERO
 	zoom = DEFAULT_ZOOM
 	orbit_degrees = Vector2.ZERO
@@ -119,17 +123,23 @@ func set_planning_context(
 	return true
 
 
-func set_cannon_pose(eye: Vector3, direction: Vector3) -> bool:
+func set_cannon_pose(
+		eye: Vector3,
+		direction: Vector3,
+		cannon_yaw_degrees: float = NAN
+) -> bool:
 	if not eye.is_finite() or not direction.is_finite() or direction.is_zero_approx():
 		return false
 	_cannon_eye = eye
-	_cannon_direction = direction.normalized()
+	_set_cannon_direction(direction, cannon_yaw_degrees)
 	_pose_dirty = true
 	return true
 
 
 func set_cannon_yaw(world_yaw_degrees: float) -> bool:
-	return set_cannon_pose(_cannon_eye, _yaw_forward(world_yaw_degrees))
+	return set_cannon_pose(
+		_cannon_eye, _yaw_forward(world_yaw_degrees), world_yaw_degrees
+	)
 
 
 func pan(screen_direction: Vector2) -> void:
@@ -301,7 +311,10 @@ func _apply_planning(delta: float) -> void:
 		_rendered_focus = candidate + _cannon_direction * 20.0
 	_last_valid_position = candidate
 	_camera.global_position = candidate
-	_camera.look_at(_rendered_focus, Vector3.UP)
+	_camera.look_at(
+		_rendered_focus,
+		_cannon_view_up() if view_mode == &"cannon" else Vector3.UP
+	)
 
 
 func _resolve_pose(size: Vector2) -> void:
@@ -319,6 +332,24 @@ func _resolve_pose(size: Vector2) -> void:
 	_viewport_size = size
 	_pose_dirty = false
 	_pose_builds += 1
+
+
+func _set_cannon_direction(direction: Vector3, cannon_yaw_degrees: float = NAN) -> void:
+	_cannon_direction = direction.normalized()
+	if is_finite(cannon_yaw_degrees):
+		_cannon_heading = _yaw_forward(cannon_yaw_degrees)
+		return
+	var horizontal := Vector3(_cannon_direction.x, 0.0, _cannon_direction.z)
+	if not horizontal.is_zero_approx():
+		_cannon_heading = horizontal.normalized()
+
+
+func _cannon_view_up() -> Vector3:
+	# Pitch world up around the current horizontal heading. This stays continuous
+	# through vertical aim and never gives look_at() colinear direction/up vectors.
+	var vertical := clampf(_cannon_direction.y, -1.0, 1.0)
+	var horizontal_weight := sqrt(maxf(1.0 - vertical * vertical, 0.0))
+	return (Vector3.UP * horizontal_weight - _cannon_heading * vertical).normalized()
 
 
 func _apply_follow(delta: float) -> void:

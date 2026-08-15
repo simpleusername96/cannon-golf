@@ -18,7 +18,8 @@ const COURSE_MINIMUM_ELEVATION_DEGREES := 10.0
 const COURSE_MAXIMUM_ELEVATION_DEGREES := 68.0
 const MINIMUM_POWER_PERCENT := 10.0
 const MAXIMUM_POWER_PERCENT := 100.0
-const MOTION_TIME_SCALE := 2.0
+const MOTION_TIME_SCALE := 4.0
+const COURSE_AUTHORING_TIME_SCALE := 2.0
 const HORIZONTAL_RANGE_SCALE := 1.5
 const SPEED_RANGE_SCALE := sqrt(HORIZONTAL_RANGE_SCALE)
 const MINIMUM_SPEED := 14.0 * MOTION_TIME_SCALE * SPEED_RANGE_SCALE
@@ -30,8 +31,13 @@ const MUZZLE_CLEARANCE_FACTOR := 1.2
 const LINEAR_DAMP := 0.10 * MOTION_TIME_SCALE
 const GRAVITY_Y := -9.8 * MOTION_TIME_SCALE * MOTION_TIME_SCALE
 const PHYSICS_STEP_SECONDS := 1.0 / 60.0
-const MAXIMUM_FLIGHT_SECONDS := 10.0
-const MAXIMUM_STEPS := 600
+# Prepared course geometry was authored with the 2x recurrence. A normalized
+# analytic substep preserves those spatial paths while the live ball covers
+# them in half the wall-clock time at the new 4x pace.
+const ANALYTIC_STEP_SECONDS := PHYSICS_STEP_SECONDS \
+		* COURSE_AUTHORING_TIME_SCALE / MOTION_TIME_SCALE
+const MAXIMUM_FLIGHT_SECONDS := 5.0
+const MAXIMUM_STEPS := roundi(MAXIMUM_FLIGHT_SECONDS / ANALYTIC_STEP_SECONDS)
 const REQUIRED_RANGE_MARGIN := 8.0
 const REQUIRED_YAW_MARGIN_DEGREES := 8.0
 const REQUIRED_HEIGHT_MARGIN := 8.0
@@ -109,7 +115,8 @@ static func launch_velocity(
 
 ## Returns minimum and maximum reachable height relative to the cannon root at
 ## one radial horizontal distance. Legal whole-degree elevation and power values
-## share the same damped 60 Hz recurrence as the live rigid body.
+## use the normalized damped recurrence that preserves prepared course-space
+## paths; the live rigid body remains the final runtime authority.
 static func reachable_height_interval(horizontal_distance: float) -> Vector2:
 	if horizontal_distance <= 0.0 or horizontal_distance > maximum_horizontal_range():
 		return Vector2(INF, -INF)
@@ -276,7 +283,7 @@ static func _damped_motion_cache() -> Dictionary:
 		_motion_cache = CannonBallistics.build_damped_motion_cache(
 			LINEAR_DAMP,
 			GRAVITY_Y,
-			PHYSICS_STEP_SECONDS,
+			ANALYTIC_STEP_SECONDS,
 			MAXIMUM_STEPS
 		)
 	return _motion_cache

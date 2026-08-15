@@ -3,6 +3,8 @@ extends Node3D
 
 const AIM_HALO_SCRIPT := preload("res://src/cannon_golf/cannon_golf_aim_halo.gd")
 const VISUAL_SCALE := 2.0
+const FIRST_PERSON_EYE_RISE := 0.65
+const FIRST_PERSON_EYE_BACK_OFFSET := 0.35
 
 var shot_axis_yaw_degrees := 0.0
 var horizontal_aim := 50.0
@@ -94,8 +96,7 @@ func launch_origin() -> Vector3:
 
 func first_person_eye_position() -> Vector3:
 	var root_position := global_position if is_inside_tree() else position
-	return root_position + Vector3.UP * (CannonGolfBallistics.YAW_PIVOT_HEIGHT + 0.65) \
-			- launch_direction() * 0.35
+	return root_position + _first_person_eye_offset()
 
 
 func aim_halo_radius() -> float:
@@ -111,7 +112,7 @@ func set_first_person_visuals_hidden(hidden: bool) -> void:
 	if _visual_root != null:
 		_visual_root.visible = not hidden
 	if _aim_halo != null:
-		_aim_halo.set_cannon_view_active(hidden)
+		_aim_halo.set_cannon_view_active(hidden, _first_person_eye_offset())
 
 
 func _build_visuals() -> void:
@@ -191,7 +192,12 @@ func _apply_visuals() -> void:
 	_yaw_pivot.rotation.y = -deg_to_rad(yaw_degrees)
 	_elevation_pivot.rotation.x = deg_to_rad(elevation_degrees)
 	if _aim_halo != null:
-		_aim_halo.set_angles(yaw_degrees, elevation_degrees)
+		_aim_halo.set_angles(yaw_degrees, elevation_degrees, launch_direction())
+
+
+func _first_person_eye_offset() -> Vector3:
+	return Vector3.UP * (CannonGolfBallistics.YAW_PIVOT_HEIGHT + FIRST_PERSON_EYE_RISE) \
+			- launch_direction() * FIRST_PERSON_EYE_BACK_OFFSET
 
 
 func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:

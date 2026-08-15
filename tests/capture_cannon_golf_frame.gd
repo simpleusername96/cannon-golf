@@ -134,6 +134,20 @@ func _capture() -> void:
 			50.0
 		)
 		game.set_planning_view(&"cannon")
+	elif requested_state == "halo_overview_extreme":
+		game._on_setup_changed(
+			CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM,
+			-45.0,
+			50.0
+		)
+		game.zoom_planning(CannonGolfCourseCameraRig.OVERVIEW_ZOOM)
+	elif requested_state == "halo_cannon_down":
+		game._on_setup_changed(
+			CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM,
+			CannonGolfBallistics.MINIMUM_ELEVATION_DEGREES,
+			50.0
+		)
+		game.set_planning_view(&"cannon")
 	elif requested_state == "rapid_fire":
 		for shot_index in range(6):
 			game._on_setup_changed(50.0 + float(shot_index), 50.0, 50.0)
@@ -185,7 +199,8 @@ func _capture() -> void:
 		await process_frame
 	if game != null and requested_state in [
 		"planning", "cannon", "explored", "panned", "zoom_close", "zoom_far",
-		"collision_edge", "shortcuts", "unrestricted_aim",
+		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
+		"halo_cannon_down",
 		"relay_initial", "relay_overview",
 	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
@@ -196,6 +211,37 @@ func _capture() -> void:
 		if game._camera_rig.orbit_degrees.is_zero_approx() \
 				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM):
 			push_error("Explored capture did not retain an orbit and zoom change.")
+			quit(1)
+			return
+	if game != null and requested_state == "halo_cannon_down":
+		var halo := game._course_builder.launcher.get_node_or_null("AimHalo") as Node3D
+		var halo_screen_position := game._camera.unproject_position(halo.global_position) \
+				if halo != null else Vector2.INF
+		var marker_nodes: Array[Node3D] = []
+		if halo != null:
+			marker_nodes.assign([
+				halo.get_node_or_null("YawRingAccent"),
+				halo.get_node_or_null("YawTick"),
+				halo.get_node_or_null("ElevationBead"),
+			])
+			var elevation_arc := halo.get_node_or_null("ElevationArc") as Node3D
+			if elevation_arc != null:
+				for dot in elevation_arc.get_children():
+					marker_nodes.append(dot as Node3D)
+		var markers_visible := marker_nodes.size() >= 20
+		var viewport_rect := Rect2(Vector2.ZERO, Vector2(root.size))
+		for marker in marker_nodes:
+			markers_visible = markers_visible and marker != null \
+					and marker.is_visible_in_tree() and marker.global_transform.is_finite() \
+					and not game._camera.is_position_behind(marker.global_position) \
+					and viewport_rect.has_point(
+						game._camera.unproject_position(marker.global_position)
+					)
+		if halo == null or not halo.is_visible_in_tree() \
+				or not halo.global_transform.is_finite() \
+				or game._camera.is_position_behind(halo.global_position) \
+				or not viewport_rect.has_point(halo_screen_position) or not markers_visible:
+			push_error("Exact-down cannon halo must remain finite and visible in the viewport.")
 			quit(1)
 			return
 	if game != null and requested_state == "panned":
@@ -273,18 +319,34 @@ func _capture() -> void:
 		var confirmed := game.confirmed_ball
 		var confirmed_mesh := confirmed.get_node_or_null("GolfBallMesh") as MeshInstance3D \
 				if confirmed != null else null
+		var result_overlay := game._hud.get_node("Root/ResultOverlay") as Control
 		var result_panel := game._hud.get_node("Root/ResultOverlay/Panel") as Control
+		var result_primary := game._hud.get_node("%ResultPrimary") as Button
 		var ball_screen_position := game._camera.unproject_position(confirmed.global_position) \
 				if confirmed != null else Vector2.ZERO
 		var viewport_rect := Rect2(Vector2.ZERO, Vector2(root.size))
+		var panel_center_delta := result_panel.get_global_rect().get_center().distance_to(
+			result_overlay.get_global_rect().get_center()
+		)
 		if confirmed == null or not is_instance_valid(confirmed) \
 				or not confirmed.is_inside_tree() or confirmed.is_queued_for_deletion() \
 				or confirmed_mesh == null or not confirmed_mesh.is_visible_in_tree() \
-				or not game._camera_rig.is_following(confirmed) \
+				or game._camera_rig.camera_mode != &"planning" \
 				or game._camera.is_position_behind(confirmed.global_position) \
 				or not viewport_rect.has_point(ball_screen_position) \
-				or result_panel.get_global_rect().has_point(ball_screen_position):
-			push_error("Clear capture did not retain an unobstructed visible confirmed ball.")
+				or panel_center_delta > 1.0 \
+				or not result_overlay.visible or not result_primary.has_focus():
+			push_error(
+				"Clear state invalid: camera=%s center_delta=%.2f overlay=%s focus=%s ball=%s behind=%s viewport=%s." % [
+					game._camera_rig.camera_mode,
+					panel_center_delta,
+					result_overlay.visible,
+					result_primary.has_focus(),
+					ball_screen_position,
+					game._camera.is_position_behind(confirmed.global_position),
+					viewport_rect,
+				]
+			)
 			quit(1)
 			return
 	if game != null and requested_state == "relay_initial":

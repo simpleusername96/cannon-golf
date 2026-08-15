@@ -547,7 +547,8 @@ func _sync_cannon_camera_pose() -> void:
 		return
 	_camera_rig.set_cannon_pose(
 		launcher.first_person_eye_position(),
-		launcher.launch_direction()
+		launcher.launch_direction(),
+		launcher.yaw_degrees
 	)
 
 
@@ -642,15 +643,17 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	completed_goal_indices.sort()
 	_course_builder.set_goal_completed(goal_index, true)
 	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
-	# A different concurrent ball may currently own Shot Follow. Retarget the
-	# result hold to the ball that actually settled before cleaning up the others.
-	_camera_rig.follow(winning_ball)
-	_course_builder.launcher.set_first_person_visuals_hidden(false)
-	_hud.set_camera_mode(&"follow")
 	_remove_live_ball(winning_ball, false, false)
+	# Confirmation is already durable in the world. Restore the exact planning
+	# snapshot immediately instead of flying the camera toward the frozen plate.
+	_camera_rig.return_to_planning(true)
+	_course_builder.launcher.set_first_person_visuals_hidden(
+		_camera_rig.view_mode == &"cannon"
+	)
+	_hud.set_view(_camera_rig.view_mode)
+	_hud.set_camera_mode(&"planning")
 	if completed_goal_indices.size() < _course_builder.leg_count():
 		_refresh_launch_state()
-		_schedule_follow_return(winning_ball)
 		_hud.hide_clear()
 		_sync_launcher_sources()
 		_refresh_hud_availability()
@@ -663,7 +666,6 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	_live_shots.clear()
 	current_ball = null
 	launch_state = LaunchState.CLEARED
-	_schedule_follow_return(winning_ball)
 	_refresh_hud_availability()
 	_hud.show_clear(
 		_course_builder.course,
@@ -679,7 +681,8 @@ func _set_camera_context_for_leg(index: int) -> bool:
 		_course_builder.frame_bounds_for_leg(index),
 		_course_builder.course.planning_focus,
 		_course_builder.launcher.first_person_eye_position(),
-		_course_builder.launcher.launch_direction()
+		_course_builder.launcher.launch_direction(),
+		_course_builder.launcher.yaw_degrees
 	)
 
 
@@ -688,21 +691,9 @@ func _set_camera_context_for_launcher() -> bool:
 		_course_builder.presentation_bounds(),
 		_course_builder.course.content_bounds.get_center(),
 		_course_builder.launcher.first_person_eye_position(),
-		_course_builder.launcher.launch_direction()
+		_course_builder.launcher.launch_direction(),
+		_course_builder.launcher.yaw_degrees
 	)
-
-
-func _schedule_follow_return(ball: CannonGolfBall) -> void:
-	_return_after_settlement(ball)
-
-
-func _return_after_settlement(ball: CannonGolfBall) -> void:
-	await get_tree().create_timer(0.5).timeout
-	if _camera_rig.is_following(ball):
-		_camera_rig.return_to_planning()
-		_course_builder.launcher.set_first_person_visuals_hidden(_camera_rig.view_mode == &"cannon")
-		_hud.set_view(_camera_rig.view_mode)
-		_hud.set_camera_mode(&"planning")
 
 
 func select_launcher_source(goal_index: int) -> bool:

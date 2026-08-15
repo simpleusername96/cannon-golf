@@ -152,9 +152,6 @@ func _run() -> void:
 	)
 
 	game.set_planning_view(&"cannon")
-	game.pan_planning(Vector2(1.0, -1.0))
-	stored_pan = game.planning_pan
-	stored_view = game.planning_view
 	for index in range(5):
 		game._impact_history.stamp(Vector3(float(index), 6.0, -12.0), Vector3.UP)
 	var oldest_color := game._impact_history.oldest_color()
@@ -165,12 +162,28 @@ func _run() -> void:
 	game._on_setup_changed(57.0, 45.0, 70.0)
 	_assert_true(game.fire(), "Shot two must coexist before either confirms.")
 	second_ball = game.current_ball
+	_assert_true(
+		game.return_to_planning_view(),
+		"Final confirmation coverage must restore the current cannon planning view."
+	)
+	game._camera_rig.update(1.0)
+	stored_pan = game.planning_pan
+	stored_view = game.planning_view
+	var stored_clear_transform := game._camera.global_transform
+	_assert_true(
+		stored_view == &"cannon" and game.toggle_shot_camera(),
+		"Final confirmation coverage must start from a saved cannon pose."
+	)
 	first_ball.global_position = game._course_builder.goal.global_position + Vector3.UP * 0.6
 	game._confirm_goal(first_ball)
 	_assert_true(game.launch_state == CannonGolfGame.LaunchState.CLEARED, "Either live ball may confirm the course.")
 	_assert_true(game.confirmed_ball == first_ball and first_ball.freeze, "The winning ball must remain frozen and visible.")
 	_assert_true(second_ball.is_queued_for_deletion(), "Confirmation must remove other unconfirmed live balls.")
-	_assert_true(game._camera_rig.is_following(first_ball), "Success presentation must follow the winning ball.")
+	_assert_true(
+		game._camera_rig.camera_mode == &"planning" \
+				and game._camera.global_transform.is_equal_approx(stored_clear_transform),
+		"Success presentation must restore the exact stored planning pose immediately."
+	)
 	await process_frame
 	await process_frame
 	await process_frame

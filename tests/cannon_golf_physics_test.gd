@@ -30,7 +30,6 @@ func _initialize() -> void:
 
 func _on_contact(_contact_ball: CannonGolfBall, _position: Vector3, normal: Vector3) -> void:
 	_contacts += 1
-	_incoming_down_speed = maxf(_incoming_down_speed, 12.0)
 	_assert_true(normal.dot(Vector3.UP) > 0.8, "Floor contact normal must point upward.")
 
 
@@ -47,13 +46,15 @@ func _on_frame() -> void:
 			"The live collider and rendered ball must share the accepted 2.0 m radius."
 		)
 		_assert_true(
-			is_equal_approx(_ball.linear_damp, 0.20) \
-					and is_equal_approx(_ball.angular_damp, 0.84) \
-					and is_equal_approx(_ball.gravity_scale, 4.0) \
+			is_equal_approx(_ball.linear_damp, 0.40) \
+					and is_equal_approx(_ball.angular_damp, 1.68) \
+					and is_equal_approx(_ball.gravity_scale, 16.0) \
 					and is_equal_approx(CannonGolfBall.MAXIMUM_FLIGHT_SECONDS, 15.0),
-			"The live ball must apply temporal scaling and the fifteen-second no-contact guard."
+			"The live ball must apply the four-times motion scale and fifteen-second no-contact guard."
 		)
-	if _contacts > 0 and is_instance_valid(_ball):
+	if _contacts == 0 and is_instance_valid(_ball):
+		_incoming_down_speed = maxf(_incoming_down_speed, -_ball.linear_velocity.y)
+	elif is_instance_valid(_ball):
 		_maximum_rebound_speed = maxf(_maximum_rebound_speed, _ball.linear_velocity.y)
 	if _frames < 360:
 		return
