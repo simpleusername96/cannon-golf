@@ -223,8 +223,8 @@ func _build_flag() -> void:
 
 
 func _build_air_marker() -> void:
-	var amber := _material(Color("F2A33A"), 0.0, 0.82)
-	var dark := _material(Color("13243A"), 0.08, 0.72)
+	var amber := _air_marker_material(Color("F2A33A"), 0.0, 0.82)
+	var dark := _air_marker_material(Color("13243A"), 0.08, 0.72)
 	var arrow := Node3D.new()
 	arrow.name = "GoalAirArrow"
 	arrow.position.y = _marker_top_height
@@ -310,4 +310,14 @@ func _material(color: Color, metallic: float, roughness: float) -> StandardMater
 	material.albedo_color = color
 	material.metallic = metallic
 	material.roughness = roughness
+	return material
+
+
+## The arrow is a distant locator for a physical plate. It must remain visible
+## when steep terrain hides the plate itself from the current planning angle.
+func _air_marker_material(
+	color: Color, metallic: float, roughness: float
+) -> StandardMaterial3D:
+	var material := _material(color, metallic, roughness)
+	material.no_depth_test = true
 	return material

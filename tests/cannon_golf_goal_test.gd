@@ -12,6 +12,7 @@ func _run() -> void:
 	_assert_true(goal.find_children("*", "StaticBody3D", true, false).size() == 1, "Goal must own one physical plate body.")
 	_assert_true(goal.find_children("GoalPlateFloorCollision", "CollisionShape3D", true, false).size() == 1, "Goal plate must own one floor collision.")
 	_assert_true(goal.find_children("GoalPlateWallCollision*", "CollisionShape3D", true, false).size() == 13, "Goal plate must leave a three-segment incoming opening.")
+	_assert_true(_air_marker_ignores_terrain_depth(goal), "An incomplete goal locator must remain visible through occluding terrain.")
 	_assert_true(goal.contains_ball(Vector3(3.0, 3.0, -8.0), CannonGolfBall.RADIUS), "Centered ball must be inside.")
 	_assert_true(not goal.contains_ball(Vector3(14.0, 3.0, -8.0), CannonGolfBall.RADIUS), "Outside ball must not be contained.")
 	_assert_true(is_equal_approx(goal.settle_seconds, 1.0), "Goal dwell must be one continuous second.")
@@ -128,3 +129,15 @@ func _visible_rim_marker_count(goal: CannonGolfSettlementGoal) -> int:
 				and child.visible:
 			count += 1
 	return count
+
+
+func _air_marker_ignores_terrain_depth(goal: CannonGolfSettlementGoal) -> bool:
+	var marker_parts := goal.find_children("GoalAirArrow*", "MeshInstance3D", true, false)
+	if marker_parts.size() != 3:
+		return false
+	for part in marker_parts:
+		var mesh_instance := part as MeshInstance3D
+		var material := mesh_instance.mesh.surface_get_material(0) as StandardMaterial3D
+		if material == null or not material.no_depth_test:
+			return false
+	return true
