@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-15
 canonical_for: Current product requirements for the provisional Cannon Golf project
 scope: Game concept and observable player experience; three-course prototype implemented and later device progression specified
 source: User direction recorded on 2026-08-12
@@ -23,7 +23,11 @@ puzzle. The copied Paint Mountain runtime is reusable technical material only.
 This specification replaces surface coverage as the product goal. The isolated
 `cannon_golf` runtime now implements a ten-course prepared catalog with
 player-chosen multi-goal routes. Later device requirements remain specified but
-unimplemented.
+unimplemented. The current foundation phase must first make the basic terrain
+catalog meaningfully varied and make overview, cannon, and shot-follow camera
+behavior coherent in ordinary play. Bounce-pad implementation starts only
+after that foundation is accepted; damping, airflow, and gravity follow the
+core bounce-pad progression.
 
 ## Summary
 

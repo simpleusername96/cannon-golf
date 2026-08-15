@@ -590,6 +590,19 @@ in `OPEN_QUESTIONS.md`.
   does not remove other live balls. Completing the final goal may clean up
   remaining unconfirmed balls as part of ending the course.
 
+### D-042 — Finish the basic terrain and camera foundation before devices
+
+- Status: accepted on 2026-08-15; clarifies the implementation sequence for
+  D-014 through D-016 without removing those later product requirements.
+- The current foundation phase is limited to making the connected-heightfield
+  course catalog meaningfully varied and making overview, cannon first-person,
+  Shot Follow, and their transitions coherent in ordinary play.
+- Do not begin bounce-pad implementation until that terrain and camera
+  foundation is accepted. Damping pads, airflow devices, and gravity zones
+  remain later expansion work after the core bounce-pad progression.
+- Deferred devices must not be used to explain, hide, or compensate for weak
+  basic terrain composition or camera behavior.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
