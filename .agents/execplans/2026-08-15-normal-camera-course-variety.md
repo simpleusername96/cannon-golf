@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-15
 scope: Normal overview and shot-follow camera behavior plus visible macro variety across the ten prepared connected-heightfield courses
 related:
@@ -111,17 +111,20 @@ Preconditions:
 
 - Phase 1 acceptance checks and batch gate pass.
 
-Source owners: `src/cannon_golf/trajectory_course_generator.gd`, a small route-motif owner under `src/cannon_golf/`, `tests/cannon_golf_terrain_test.gd`
+Source owners: `src/cannon_golf/trajectory_course_generator.gd`, `src/cannon_golf/course_route_motifs.gd`, `tests/cannon_golf_course_variety_test.gd`, `tests/cannon_golf_terrain_test.gd`
 
-- [ ] **2.1** The ten routes no longer repeat one uniform mirrored zigzag.
+- [x] **2.1** The ten routes no longer repeat one uniform mirrored zigzag.
   - Change: add conservative deterministic lateral station motifs per current course and place goal depth from each authored leg's `route_interval`.
   - Accept: a semantic route signature test proves all ten route station sequences are distinct and later multi-goal routes are not the legacy uniform mirror pattern; every ballistic setup is still constructible.
-- [ ] **2.2** The ten terrains no longer reuse five macro height profiles.
+  - Evidence: reflection-canonical lateral/depth signatures are unique for all ten planned and prepared routes, every prepared route exactly matches its deterministic plan, and all ten plans retain constructible setups.
+- [x] **2.2** The ten terrains no longer reuse five macro height profiles.
   - Change: select one named macro profile per catalog index using the existing wave and Gaussian primitives, then retain all current feature, smoothing, projection, corridor, and support stages.
   - Accept: a lightweight macro descriptor gate distinguishes all ten prepared heightfields without relying on payload hashes alone.
-- [ ] **2.3** Every revised course still meets existing physical and authored contracts.
+  - Evidence: ten named source profiles and coarse value-bearing 3×4 prepared heightfield descriptors are unique across the catalog.
+- [x] **2.3** Every revised course still meets existing physical and authored contracts.
   - Change: increment the generator algorithm version and rebake all ten prepared artifacts through the canonical script.
   - Accept: the bake completes inside its bounded wrapper and terrain, slope, range, artifact identity, course build, and catalog smoke contracts pass.
+  - Evidence: the final all-course bake exited zero with deterministic algorithm version 9 recorded in every artifact; terrain, slope, range, artifact identity, course-build, catalog-smoke, and focused variety contracts all exited zero.
 
 Batch gate:
 
@@ -137,10 +140,10 @@ Preconditions:
 
 Source owners: `tests/capture_cannon_golf_frame.gd`, `.godot/capture-temp/` disposable evidence
 
-- [ ] **3.1** Early, middle, and late reset overviews clearly expose different route and terrain silhouettes.
+- [x] **3.1** Early, middle, and late reset overviews clearly expose different route and terrain silhouettes.
   - Change: capture planning views for courses 0, 3, 6, and 9 at 1280×720 and one late course at 1600×900.
   - Accept: manual pixel inspection confirms distinct macro shapes, complete-course fit, readable goals, no clipped HUD, and no sky- or slab-dominant composition.
-- [ ] **3.2** The corrected camera states remain readable on the rebaked terrain.
+- [x] **3.2** The corrected camera states remain readable on the rebaked terrain.
   - Change: recapture the Phase 1 close-pan, collision-edge, and follow states after the final bake.
   - Accept: each scripted assertion passes and side-by-side inspection shows the baseline obstructions are absent.
 
@@ -158,15 +161,18 @@ Preconditions:
 
 Source owners: task-owned changed files, focused Cannon Golf tests, project import/build path
 
-- [ ] **4.1** Focused and integration contracts pass once against final inputs.
+- [x] **4.1** Focused and integration contracts pass once against final inputs.
   - Change: run the camera, terrain, slope, range, artifact, build, catalog, app-flow, and UI contract tests through the bounded wrapper.
   - Accept: every named test exits zero, the wrapper leaves no owned process, and no new Godot error or crash log is created.
-- [ ] **4.2** The multi-file quality audit finds no competing owner, catch-all growth, broken contract, or reachable failure path.
+  - Evidence: camera, input, course-variety, terrain, slope, range, artifact, course-build, catalog-smoke, solution, app-flow, and UI-contract checks all exited zero; every wrapper report recorded zero owned processes and zero user-log growth.
+- [x] **4.2** The multi-file quality audit finds no competing owner, catch-all growth, broken contract, or reachable failure path.
   - Change: run the repository quality audit over task-owned diffs and apply only small safe in-scope corrections.
   - Accept: all blocking findings are resolved or reported with exact evidence; no new dependency, device system, camera mode, or UI owner appears.
-- [ ] **4.3** Task-owned work is committed coherently.
+  - Evidence: the final read-only audit found no ownership or serialization blocker; its camera fallback and center-line-only coverage findings were resolved with a terrain-safe nine-point boom footprint and revalidated in the focused camera test and three rendered states.
+- [x] **4.3** Task-owned work is committed coherently.
   - Change: verify the staged diff excludes pre-existing theme, menu, course-select, UI-contract, and unrelated UID changes; create scoped commits with explanatory bodies; mark this plan `done` after all gates pass.
   - Accept: `git status --short` clearly separates any remaining user changes, and task commits contain only files owned by this contract.
+  - Evidence: camera foundation `f58d968`, prepared course variety `939b219`, and final close-camera safety `98f2efe` contain only task-owned files; pre-existing theme, menu, course-select, UI-contract, and unrelated UID changes remain outside them.
 
 ## Validation and Rework Controls
 
@@ -199,9 +205,9 @@ Implementation-local discoveries may be handled inside the locked contract when 
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 2, Distinct but simple course macro shapes.
-- Next task: 2.1, replace the mirrored zigzag with conservative course-specific route motifs.
-- Last completed gate: Phase 1 camera test and three rendered-state captures passed on the corrected high-oblique rig.
+- Current phase: Complete.
+- Next task: None; await user play feedback on the normal camera and rebaked catalog.
+- Last completed gate: task-owned camera, route, terrain, artifact, test, and plan changes were committed without staging the user's pre-existing worktree changes.
 - Update rule: after a checkpoint passes, record concise evidence, check the task, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions
