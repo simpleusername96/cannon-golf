@@ -220,7 +220,7 @@ Source owners: `project-specs/cannon-golf/PRD.md`, `project-specs/cannon-golf/DE
   - Change: append one accepted decision for disposable resolved balls, terrain-owned goal basins, the partial launch arc with connected direction arrow, literal tenfold macro relief, separated route/terrain envelopes, stable completed-goal geometry, and continued device deferral; minimally align PRD/design rules and mark the retained-ball/old-terrain entries in `OPEN_QUESTIONS.md` resolved by the new decision while preserving their historical text.
   - Accept: no current canonical requirement or unresolved question still prescribes retained confirmed balls, a physical goal fence, a closed-ring halo, or the 60–160 metre relief schedule as current behaviour; D-042 remains explicitly unchanged.
   - Guard: preserve historic decision text as history and use current product terms such as `impact mark`, not inherited coverage language.
-- [ ] **1.2** Replace node-backed completion state
+- [x] **1.2** Replace node-backed completion state
   - Change: make completed goal indices/identities and count the source of truth; remove `confirmed_ball`/`confirmed_balls` node retention and feed launcher-source selection from the completed goal's stored floor position rather than a deleted ball.
   - Accept: tally, next goal, launcher relocation/source choice, intermediate completion, final clear, save/session reset, and UI state operate after the winning ball node is gone; the selected source sits on the goal floor and passes terrain/barrel/muzzle-clearance checks.
   - Guard: do not serialize live node references or infer completion from scene children.
@@ -240,11 +240,11 @@ Preconditions:
 
 Source owners: `src/cannon_golf/cannon_golf_game.gd`, `src/cannon_golf/golf_ball.gd`, `src/cannon_golf/impact_history.gd`, `src/cannon_golf/course_builder.gd`, `src/cannon_golf/cannon_golf_aim_halo.gd`, `src/cannon_golf/cannon_golf_launcher.gd`, `src/cannon_golf/cannon_aim_reticle.gd`, `tests/cannon_golf_session_test.gd`, `tests/cannon_golf_multi_goal_test.gd`, `tests/cannon_golf_live_ball_lifecycle_test.gd`, `tests/cannon_golf_ballistics_test.gd`, `tests/capture_cannon_golf_frame.gd`
 
-- [ ] **2.1** Remove every resolved ball while retaining only its first-contact mark
+- [x] **2.1** Remove every resolved ball while retaining only its first-contact mark
   - Change: route failed-rest, out-of-bounds, retry/reset, intermediate confirmation, and final confirmation through explicit task-owned resolution that releases the ball node after dependent bookkeeping is complete.
   - Accept: a failed stationary ball disappears after the existing two-real-second dwell; a confirmed ball disappears immediately after confirmation state commits; its first-contact mark remains subject to the existing five-mark FIFO limit; unrelated live balls persist and remain independently controllable after an intermediate confirmation; final stage clear may remove every remaining live ball as accepted by D-041.
   - Guard: do not add a global live-ball limit, absolute contacted-ball timeout, or extra settlement mark.
-- [ ] **2.2** Encode the resolved-ball regression contract
+- [x] **2.2** Encode the resolved-ball regression contract
   - Change: replace tests that require retained frozen balls with completed-index, node-removal, five-mark-limit, intermediate-live-ball, and final-clear cleanup assertions.
   - Accept: focused tests fail on a retained confirmed node, a prematurely missing non-evicted mark, an intermediate-confirmation removal of another ball, or stale node-backed progress.
 - [ ] **2.3** Replace the halo with the selected partial launch arc and arrow
@@ -397,14 +397,14 @@ Implementation-local discoveries may be handled without replanning only when the
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 1 is in progress. Task 1.1 aligned the canonical product records with D-044 and the user's partial-arc direction.
-- Next task: **1.2** Replace node-backed completed-goal state and remove the confirmed ball after bookkeeping.
+- Current phase: Phase 1 passed; Phase 2 is in progress. Completed-goal indices now own progress, every resolved ball is released, unrelated live balls and impact marks remain independent, and focused session/multi-goal/relay/lifecycle tests pass.
+- Next task: **2.3** Replace the ring/dotted halo with the partial launch arc and connected tangent arrow.
 - Evidence completed during planning:
   - read the current PRD, design rules, decisions, relevant active/done plans, code owners, tests, recent history, and representative captures;
   - traced failed and confirmed ball resolution, impact marks, goal construction/state changes, aim geometry/materials, terrain generation/conditioning, and camera-bound coupling;
   - compared Godot geometry/material and terrain-generation references;
   - identified task-pre-existing modified/untracked files and corrected the unsupported earlier ownership description.
-- Task 1.1 is complete; runtime state work has not started.
+- Tasks 1.1, 1.2, 2.1, and 2.2 are complete. Focused Godot checks passed on 2026-08-16 with no log growth or owned-process leak.
 - Update rule: after each phase gate, record concise evidence, check completed tasks, and advance this pointer before continuing.
 
 ## Completion and Stop Conditions

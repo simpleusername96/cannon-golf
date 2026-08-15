@@ -113,14 +113,5 @@ func settlement_drag_is_active() -> bool:
 	return _settlement_drag_active
 
 
-func lock_as_confirmed() -> void:
-	set_settlement_drag(false)
-	linear_velocity = Vector3.ZERO
-	angular_velocity = Vector3.ZERO
-	freeze = true
-	collision_layer = 0
-	collision_mask = 0
-
-
 func has_reported_first_contact() -> bool:
 	return _first_contact_emitted

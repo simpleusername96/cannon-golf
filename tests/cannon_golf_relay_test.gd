@@ -40,7 +40,7 @@ func _run() -> void:
 			game._course_builder.launcher.position.x,
 			game._course_builder.launcher.position.z
 		).is_equal_approx(Vector2(second_goal.position.x, second_goal.position.z)),
-		"The selected goal source must use the exact plate center."
+		"The selected goal source must use the exact basin-floor center."
 	)
 	game._on_setup_changed(64.0, 52.0, 71.0)
 	_assert(game.fire(), "The selected completed-goal source must fire.")
@@ -62,8 +62,8 @@ func _run() -> void:
 	_assert(
 		game.launch_state == CannonGolfGame.LaunchState.CLEARED \
 				and game.completed_goal_indices == [0, 1] \
-				and game.confirmed_ball_count() == 2,
-		"Completing the remaining goal must clear and retain both balls."
+				and game.completed_goal_count() == 2,
+		"Completing the remaining goal must clear with both goal identities recorded."
 	)
 	game.reset_course()
 	_assert(

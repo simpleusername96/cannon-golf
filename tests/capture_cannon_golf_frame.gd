@@ -316,35 +316,25 @@ func _capture() -> void:
 			quit(1)
 			return
 	if game != null and requested_state == "clear":
-		var confirmed := game.confirmed_ball
-		var confirmed_mesh := confirmed.get_node_or_null("GolfBallMesh") as MeshInstance3D \
-				if confirmed != null else null
 		var result_overlay := game._hud.get_node("Root/ResultOverlay") as Control
 		var result_panel := game._hud.get_node("Root/ResultOverlay/Panel") as Control
 		var result_primary := game._hud.get_node("%ResultPrimary") as Button
-		var ball_screen_position := game._camera.unproject_position(confirmed.global_position) \
-				if confirmed != null else Vector2.ZERO
-		var viewport_rect := Rect2(Vector2.ZERO, Vector2(root.size))
 		var panel_center_delta := result_panel.get_global_rect().get_center().distance_to(
 			result_overlay.get_global_rect().get_center()
 		)
-		if confirmed == null or not is_instance_valid(confirmed) \
-				or not confirmed.is_inside_tree() or confirmed.is_queued_for_deletion() \
-				or confirmed_mesh == null or not confirmed_mesh.is_visible_in_tree() \
+		if game.completed_goal_count() != 1 \
+				or game.active_ball_count() != 0 or game._ball_root.get_child_count() != 0 \
 				or game._camera_rig.camera_mode != &"planning" \
-				or game._camera.is_position_behind(confirmed.global_position) \
-				or not viewport_rect.has_point(ball_screen_position) \
 				or panel_center_delta > 1.0 \
 				or not result_overlay.visible or not result_primary.has_focus():
 			push_error(
-				"Clear state invalid: camera=%s center_delta=%.2f overlay=%s focus=%s ball=%s behind=%s viewport=%s." % [
+				"Clear state invalid: camera=%s center_delta=%.2f overlay=%s focus=%s completed=%d balls=%d." % [
 					game._camera_rig.camera_mode,
 					panel_center_delta,
 					result_overlay.visible,
 					result_primary.has_focus(),
-					ball_screen_position,
-					game._camera.is_position_behind(confirmed.global_position),
-					viewport_rect,
+					game.completed_goal_count(),
+					game._ball_root.get_child_count(),
 				]
 			)
 			quit(1)
@@ -368,7 +358,7 @@ func _capture() -> void:
 		if game.active_course().course_id != &"deep_relay" \
 				or game.completed_goal_indices != [0] \
 				or game.selected_launcher_goal_index != 0 \
-				or game.confirmed_ball_count() != 1 \
+				or game.completed_goal_count() != 1 \
 				or game.launch_state != CannonGolfGame.LaunchState.PLANNING \
 				or game._camera_rig.camera_mode != &"planning" \
 				or not game.can_fire() \

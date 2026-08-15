@@ -177,7 +177,7 @@ func _run() -> void:
 	first_ball.global_position = game._course_builder.goal.global_position + Vector3.UP * 0.6
 	game._confirm_goal(first_ball)
 	_assert_true(game.launch_state == CannonGolfGame.LaunchState.CLEARED, "Either live ball may confirm the course.")
-	_assert_true(game.confirmed_ball == first_ball and first_ball.freeze, "The winning ball must remain frozen and visible.")
+	_assert_true(first_ball.is_queued_for_deletion(), "The resolved winning ball must be removed from the map.")
 	_assert_true(second_ball.is_queued_for_deletion(), "Confirmation must remove other unconfirmed live balls.")
 	_assert_true(
 		game._camera_rig.camera_mode == &"planning" \
@@ -187,14 +187,10 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	await process_frame
-	var confirmed_mesh := first_ball.get_node_or_null("GolfBallMesh") as MeshInstance3D \
-			if is_instance_valid(first_ball) else null
 	_assert_true(
-		is_instance_valid(first_ball) and first_ball.is_inside_tree() \
-				and not first_ball.is_queued_for_deletion() \
-				and first_ball.get_parent() == game._ball_root \
-				and confirmed_mesh != null and confirmed_mesh.is_visible_in_tree(),
-		"The confirmed ball and its visible mesh must survive deferred cleanup."
+		not is_instance_valid(first_ball) and game._ball_root.get_child_count() == 0 \
+				and game.completed_goal_count() == 1,
+		"Deferred cleanup must leave completed-goal state without retained ball nodes."
 	)
 	_assert_true(game.active_ball_count() == 0 and not game.fire(), "A cleared goal must reject later launches.")
 	_assert_true(game.planning_view == stored_view and game.planning_pan.is_equal_approx(stored_pan), "Clear must preserve planning context.")

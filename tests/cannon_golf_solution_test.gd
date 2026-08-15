@@ -21,7 +21,7 @@ func _run() -> void:
 			var default_result := await _replay(course_index, false, default_leg_index)
 			_assert_true(
 				not bool(default_result.cleared) \
-						and int(default_result.confirmed_count) == default_leg_index,
+						and int(default_result.completed_count) == default_leg_index,
 				"Default setup must miss relay leg %d for %s, not advance it." % [
 					default_leg_index + 1, default_result.course_id,
 				]
@@ -80,7 +80,7 @@ func _replay(course_index: int, use_solution: bool, default_leg_index: int = 0) 
 			_assert_true(
 				game.launch_state == CannonGolfGame.LaunchState.PLANNING \
 						and game.active_leg_index == leg_index + 1 \
-						and game.confirmed_ball_count() == leg_index + 1,
+						and game.completed_goal_count() == leg_index + 1,
 				"Solution witness must confirm relay leg %d before replaying the next leg for %s; state %d; outcome %s; ball %s; velocity %s." % [
 					leg_index + 1,
 					course.course_id,
@@ -101,7 +101,7 @@ func _replay(course_index: int, use_solution: bool, default_leg_index: int = 0) 
 		"ball": str(game.current_ball.global_position) if game.current_ball != null else "none",
 		"velocity": str(game.current_ball.linear_velocity) if game.current_ball != null else "none",
 		"completed_legs": completed_legs,
-		"confirmed_count": game.confirmed_ball_count(),
+		"completed_count": game.completed_goal_count(),
 	}
 	game.queue_free()
 	await process_frame

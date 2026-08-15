@@ -31,8 +31,8 @@ func _assert_confirmation_restores_planning_pose() -> void:
 	game._camera_rig.update(1.0)
 	var expected_transform := game._camera.global_transform
 	var launcher_before := game._course_builder.launcher.global_position
-	_assert(game.fire(), "Camera regression fixture must launch its retained ball.")
-	var retained_ball := game.current_ball
+	_assert(game.fire(), "Camera regression fixture must launch its unrelated live ball.")
+	var unrelated_ball := game.current_ball
 	_assert(game.fire(), "Camera regression fixture must launch its confirming ball.")
 	var winning_ball := game.current_ball
 	var goal := game._course_builder.goal_at(0)
@@ -46,10 +46,9 @@ func _assert_confirmation_restores_planning_pose() -> void:
 		"Intermediate confirmation must restore the exact saved planning pose immediately."
 	)
 	_assert(
-		winning_ball.freeze and winning_ball.linear_velocity.is_zero_approx() \
-				and winning_ball.angular_velocity.is_zero_approx() \
-				and game.active_balls().has(retained_ball),
-		"Camera restoration must keep the confirmed winner fixed and every other live ball active."
+		winning_ball.is_queued_for_deletion() and not game.active_balls().has(winning_ball) \
+				and game.active_balls().has(unrelated_ball),
+		"Camera restoration must release the resolved winner and keep every other live ball active."
 	)
 	_assert(
 		game._course_builder.launcher.global_position.is_equal_approx(launcher_before) \
@@ -73,7 +72,7 @@ func _assert_free_order(course_index: int, completion_order: Array[int]) -> void
 	_assert(game.selected_launcher_goal_index == -1, "Every course must begin at Start.")
 	_assert(not game.select_launcher_source(0), "An incomplete goal cannot become a cannon source.")
 	_assert(game.fire() and game.fire(), "Concurrent setup must accept multiple live balls.")
-	var retained_ball := game.current_ball
+	var unrelated_ball := game.current_ball
 	for goal_index in completion_order:
 		var launcher_before := game._course_builder.launcher.position
 		_assert(game.fire(), "Every free-order attempt must be immediately playable.")
@@ -98,7 +97,7 @@ func _assert_free_order(course_index: int, completion_order: Array[int]) -> void
 		)
 		if game.completed_goal_indices.size() == 1:
 			_assert(
-				game.active_balls().has(retained_ball),
+				game.active_balls().has(unrelated_ball),
 				"An intermediate confirmation must preserve every other live ball."
 			)
 		if game.completed_goal_indices.size() < completion_order.size():
@@ -120,7 +119,7 @@ func _assert_free_order(course_index: int, completion_order: Array[int]) -> void
 			_assert_defaults(game, "A newly selected cannon source")
 	_assert(
 		game.launch_state == CannonGolfGame.LaunchState.CLEARED \
-				and game.confirmed_ball_count() == completion_order.size(),
+				and game.completed_goal_count() == completion_order.size(),
 		"Only completion of every goal may clear a multi-goal course."
 	)
 	game.queue_free()

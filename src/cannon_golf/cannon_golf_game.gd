@@ -43,8 +43,6 @@ var planning_zoom: float:
 	get:
 		return _camera_rig.zoom
 var current_ball: CannonGolfBall
-var confirmed_ball: CannonGolfBall
-var confirmed_balls: Array[CannonGolfBall] = []
 var completed_goal_indices: Array[int] = []
 var selected_launcher_goal_index := -1
 ## Retained only for offline per-leg certification compatibility.
@@ -473,7 +471,7 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 	)
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
-	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
+	_hud.set_goal_progress(completed_goal_indices.size(), _course_builder.leg_count())
 	_sync_launcher_sources()
 	_refresh_hud_availability()
 	_hud.hide_clear()
@@ -507,8 +505,6 @@ func _clear_balls() -> void:
 		_ball_root.remove_child(child)
 		child.free()
 	current_ball = null
-	confirmed_ball = null
-	confirmed_balls.clear()
 	completed_goal_indices.clear()
 	_active_balls.clear()
 	_live_shots.clear()
@@ -635,17 +631,15 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 		goal_index = _goal_index_for_ball(winning_ball, winning_shot)
 	if goal_index < 0 or completed_goal_indices.has(goal_index):
 		return
-	winning_ball.lock_as_confirmed()
 	last_launch_outcome = &"confirmed"
-	confirmed_ball = winning_ball
-	confirmed_balls.append(winning_ball)
 	completed_goal_indices.append(goal_index)
 	completed_goal_indices.sort()
 	_course_builder.set_goal_completed(goal_index, true)
-	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
-	_remove_live_ball(winning_ball, false, false)
-	# Confirmation is already durable in the world. Restore the exact planning
-	# snapshot immediately instead of flying the camera toward the frozen plate.
+	_hud.set_goal_progress(completed_goal_indices.size(), _course_builder.leg_count())
+	# Completion is goal-index state. Release the resolved ball after bookkeeping;
+	# its first-contact mark remains owned independently by ImpactHistory.
+	_remove_live_ball(winning_ball, true, false)
+	# Restore the exact planning snapshot instead of flying toward the basin.
 	_camera_rig.return_to_planning(true)
 	_course_builder.launcher.set_first_person_visuals_hidden(
 		_camera_rig.view_mode == &"cannon"
@@ -809,5 +803,5 @@ func active_course() -> CannonGolfCourseData:
 	return _course_builder.course
 
 
-func confirmed_ball_count() -> int:
-	return confirmed_balls.size()
+func completed_goal_count() -> int:
+	return completed_goal_indices.size()
