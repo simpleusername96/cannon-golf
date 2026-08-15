@@ -40,8 +40,21 @@ func _run() -> void:
 		rig.reset_planning_view()
 		for _step in range(6):
 			rig.zoom_by_steps(-1.0)
-		rig.snap_to_planning()
+			rig.snap_to_planning()
 		_assert_true(camera.global_position.is_finite(), "Six zoom-out steps must stay finite.")
+		rig.reset_planning_view()
+		rig.zoom_by_steps(CannonGolfCourseCameraRig.CLOSE_ZOOM)
+		var close_drag_start := rig.planning_focus()
+		_assert_true(
+			rig.pan_drag(Vector2.ZERO, Vector2(120.0, 0.0)),
+			"A drag immediately after close zoom must pan."
+		)
+		var close_drag_distance := rig.planning_focus().distance_to(close_drag_start)
+		_assert_true(
+			close_drag_distance <= CannonGolfCourseCameraRig.CLOSE_INSPECTION_DISTANCE * 0.08,
+			"Close-view drag sensitivity must use the requested zoom, not a stale overview pose."
+		)
+		rig.snap_to_planning()
 		var pre_pan_distance := rig.resolved_planning_distance()
 		var old_focus := rig.planning_focus()
 		_assert_true(rig.pan_drag(Vector2.ZERO, Vector2(80.0, -30.0)), "Left drag must pan.")
@@ -113,10 +126,12 @@ func _assert_camera_boom_clear(
 			else follow_target.global_position + Vector3.UP * 2.0
 	for step in range(25):
 		var point := focus.lerp(camera.global_position, float(step) / 24.0)
-		if not builder.prepared_course.local_bounds.has_point(Vector2(point.x, point.z)):
-			continue
-		_assert_true(
-			point.y + 0.05 >= builder.height_at_local(point.x, point.z) \
-					+ CannonGolfOverviewCameraSolver.BOOM_RADIUS,
-			"%s boom must remain outside terrain." % label
-		)
+		for offset in rig.terrain_footprint_offsets():
+			var sample := point + Vector3(offset.x, 0.0, offset.y)
+			if not builder.prepared_course.local_bounds.has_point(Vector2(sample.x, sample.z)):
+				continue
+			_assert_true(
+				point.y + 0.05 >= builder.height_at_local(sample.x, sample.z) \
+						+ CannonGolfOverviewCameraSolver.BOOM_RADIUS,
+				"%s boom footprint must remain outside terrain." % label
+			)

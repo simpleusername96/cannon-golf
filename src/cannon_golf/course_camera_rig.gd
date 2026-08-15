@@ -9,6 +9,7 @@ const DEFAULT_ZOOM := 0.0
 const CLOSE_ZOOM := 10.0
 const OVERVIEW_ZOOM := -6.0
 const CLOSE_INSPECTION_DISTANCE := 28.0
+const CLOSE_FOCUS_SURFACE_WEIGHT := 0.55
 const CAMERA_TERRAIN_CLEARANCE := 1.25
 const FOLLOW_DISTANCE := 18.0
 const FOLLOW_HEIGHT := 8.0
@@ -144,8 +145,13 @@ func pan(screen_direction: Vector2) -> void:
 func pan_drag(_screen_position: Vector2, relative: Vector2) -> bool:
 	if _camera == null or relative.is_zero_approx():
 		return false
-	var viewport_height := maxf(_camera.get_viewport().get_visible_rect().size.y, 1.0)
-	var distance := maxf(_camera.global_position.distance_to(planning_focus()), 1.0)
+	var viewport_size := _camera.get_viewport().get_visible_rect().size
+	if _pose_dirty or not viewport_size.is_equal_approx(_viewport_size):
+		_resolve_pose(viewport_size)
+	var viewport_height := maxf(viewport_size.y, 1.0)
+	# Use the requested boom, not the still-interpolating rendered camera. A drag
+	# immediately after zoom must have close-view sensitivity, not stale overview sensitivity.
+	var distance := maxf(_planning_position.distance_to(_planning_focus), 1.0)
 	var units_per_pixel := 2.0 * distance * tan(deg_to_rad(_camera.fov) * 0.5) / viewport_height
 	var right := _camera.global_transform.basis.x
 	right.y = 0.0
@@ -227,7 +233,18 @@ func follow_target() -> Node3D:
 
 
 func planning_focus() -> Vector3:
-	return _terrain_safe_focus(_base_focus + pan_offset)
+	var focus := _base_focus + pan_offset
+	var height := _terrain_height(focus)
+	if not is_finite(height):
+		return focus
+	var surface_focus_y := height + 2.0
+	var overview_focus_y := maxf(focus.y, surface_focus_y)
+	focus.y = lerpf(
+		overview_focus_y,
+		surface_focus_y,
+		clampf(zoom / CLOSE_ZOOM, 0.0, 1.0) * CLOSE_FOCUS_SURFACE_WEIGHT
+	)
+	return _terrain_safe_position(focus)
 
 
 func resolved_planning_distance() -> float:
@@ -274,11 +291,12 @@ func _apply_planning(delta: float) -> void:
 	var candidate := _camera.global_position.lerp(_planning_position, weight)
 	if view_mode == &"oblique":
 		var next_focus := _rendered_focus.lerp(_planning_focus, weight)
+		var boom_origin := _terrain_safe_position(next_focus)
 		candidate = OverviewSolver.sweep_boom(
-			_camera, next_focus, candidate, _collision_exclusions, _last_valid_position
+			_camera, boom_origin, candidate, _collision_exclusions, _last_valid_position
 		)
-		candidate = _validated_camera_position(candidate, _last_valid_position, next_focus)
-		_rendered_focus = next_focus
+		candidate = _validated_camera_position(candidate, _last_valid_position, boom_origin)
+		_rendered_focus = boom_origin
 	else:
 		_rendered_focus = candidate + _cannon_direction * 20.0
 	_last_valid_position = candidate
@@ -310,12 +328,13 @@ func _apply_follow(delta: float) -> void:
 	var weight := 1.0 - exp(-delta * 4.2)
 	var next_focus := _rendered_focus.lerp(focus + Vector3.UP * 0.4, weight)
 	var candidate := _camera.global_position.lerp(desired, weight)
+	var boom_origin := _terrain_safe_position(focus + Vector3.UP * 2.0)
 	candidate = OverviewSolver.sweep_boom(
-		_camera, focus + Vector3.UP * 2.0, candidate,
+		_camera, boom_origin, candidate,
 		_collision_exclusions, _last_valid_position
 	)
 	candidate = _validated_camera_position(
-		candidate, _last_valid_position, focus + Vector3.UP * 2.0
+		candidate, _last_valid_position, boom_origin
 	)
 	_last_valid_position = candidate
 	_rendered_focus = next_focus
@@ -344,7 +363,20 @@ func _terrain_safe_focus(focus: Vector3) -> Vector3:
 	var height := _terrain_height(focus)
 	if is_finite(height):
 		focus.y = maxf(focus.y, height + 2.0)
-	return focus
+	return _terrain_safe_position(focus)
+
+
+## Raises only enough to keep the existing boom-radius footprint above the
+## connected heightfield. This is the fail-closed pivot for a blocked sweep.
+func _terrain_safe_position(position: Vector3) -> Vector3:
+	if not position.is_finite():
+		return position
+	for offset in terrain_footprint_offsets():
+		var sample_position := position + Vector3(offset.x, 0.0, offset.y)
+		var height := _terrain_height(sample_position)
+		if is_finite(height):
+			position.y = maxf(position.y, height + CAMERA_TERRAIN_CLEARANCE)
+	return position
 
 
 func _terrain_height(position: Vector3) -> float:
@@ -362,7 +394,7 @@ func _validated_camera_position(
 		return candidate
 	if _camera_position_is_terrain_safe(fallback):
 		return fallback
-	return safe_origin
+	return _terrain_safe_position(safe_origin)
 
 
 func _camera_position_is_terrain_safe(position: Vector3) -> bool:

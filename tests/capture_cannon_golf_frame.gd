@@ -97,7 +97,7 @@ func _capture() -> void:
 		game.zoom_planning(CannonGolfCourseCameraRig.CLOSE_ZOOM)
 		panned_start_focus = game._camera_rig.planning_focus()
 		for _drag_index in range(4):
-			game.pan_planning_drag(Vector2(760.0, 360.0), Vector2(120.0, 0.0))
+			game.pan_planning_drag(Vector2(760.0, 360.0), Vector2(-700.0, -700.0))
 			game._camera_rig.update(1.0)
 		panned_end_focus = game._camera_rig.planning_focus()
 	elif requested_state == "zoom_close":
@@ -378,9 +378,13 @@ func _camera_boom_is_clear(game: CannonGolfGame) -> bool:
 	var focus := game._camera_rig.planning_focus()
 	for step in range(25):
 		var point := focus.lerp(game._camera.global_position, float(step) / 24.0)
-		if not game._course_builder.prepared_course.local_bounds.has_point(Vector2(point.x, point.z)):
-			continue
-		if point.y + 0.05 < game._course_builder.height_at_local(point.x, point.z) \
-				+ CannonGolfOverviewCameraSolver.BOOM_RADIUS:
-			return false
+		for offset in game._camera_rig.terrain_footprint_offsets():
+			var sample := point + Vector3(offset.x, 0.0, offset.y)
+			if not game._course_builder.prepared_course.local_bounds.has_point(
+				Vector2(sample.x, sample.z)
+			):
+				continue
+			if point.y + 0.05 < game._course_builder.height_at_local(sample.x, sample.z) \
+					+ CannonGolfOverviewCameraSolver.BOOM_RADIUS:
+				return false
 	return true
