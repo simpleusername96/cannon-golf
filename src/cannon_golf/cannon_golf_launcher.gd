@@ -1,8 +1,8 @@
 class_name CannonGolfLauncher
 extends Node3D
 
-const VISUAL_SCALE := 1.6
-const DIRECTION_RING_RADIUS := 5.5
+const AIM_HALO_SCRIPT := preload("res://src/cannon_golf/cannon_golf_aim_halo.gd")
+const VISUAL_SCALE := 2.0
 
 var shot_axis_yaw_degrees := 0.0
 var horizontal_aim := 50.0
@@ -14,7 +14,7 @@ var _yaw_pivot: Node3D
 var _elevation_pivot: Node3D
 var _muzzle: Marker3D
 var _visual_root: Node3D
-var _direction_cue: Node3D
+var _aim_halo: Node3D
 
 
 func _ready() -> void:
@@ -98,13 +98,20 @@ func first_person_eye_position() -> Vector3:
 			- launch_direction() * 0.35
 
 
-func direction_cue_radius() -> float:
-	return DIRECTION_RING_RADIUS
+func aim_halo_radius() -> float:
+	return _aim_halo.presentation_radius() if _aim_halo != null else AIM_HALO_SCRIPT.RADIUS
+
+
+func aim_halo_top_height() -> float:
+	return _aim_halo.presentation_top_height() \
+			if _aim_halo != null else AIM_HALO_SCRIPT.PRESENTATION_TOP_HEIGHT
 
 
 func set_first_person_visuals_hidden(hidden: bool) -> void:
 	if _visual_root != null:
 		_visual_root.visible = not hidden
+	if _aim_halo != null:
+		_aim_halo.visible = not hidden
 
 
 func _build_visuals() -> void:
@@ -113,7 +120,6 @@ func _build_visuals() -> void:
 	var dark := _material(Color("0E1A29"), 0.46, 0.36)
 	var white := _material(Color("F2EFE8"), 0.12, 0.5)
 	var blue := _material(Color("2584FF"), 0.18, 0.3)
-	var amber := _material(Color("F2A33A"), 0.04, 0.72)
 	_visual_root = Node3D.new()
 	_visual_root.name = "LauncherVisualRoot"
 	_visual_root.scale = Vector3.ONE * VISUAL_SCALE
@@ -174,30 +180,9 @@ func _build_visuals() -> void:
 	_muzzle.position.z = -CannonGolfBallistics.BARREL_LENGTH / VISUAL_SCALE
 	_elevation_pivot.add_child(_muzzle)
 
-	_direction_cue = Node3D.new()
-	_direction_cue.name = "DirectionCue"
-	_direction_cue.position.y = 0.12
-	add_child(_direction_cue)
-	var ring := MeshInstance3D.new()
-	ring.name = "DirectionRing"
-	var ring_mesh := TorusMesh.new()
-	ring_mesh.inner_radius = DIRECTION_RING_RADIUS - 0.22
-	ring_mesh.outer_radius = DIRECTION_RING_RADIUS
-	ring_mesh.rings = 32
-	ring_mesh.ring_segments = 8
-	ring_mesh.material = dark
-	ring.mesh = ring_mesh
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_direction_cue.add_child(ring)
-	var wedge := MeshInstance3D.new()
-	wedge.name = "DirectionWedge"
-	var wedge_mesh := PrismMesh.new()
-	wedge_mesh.size = Vector3(1.8, 0.24, 6.8)
-	wedge_mesh.material = amber
-	wedge.mesh = wedge_mesh
-	wedge.position.z = -3.4
-	wedge.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_direction_cue.add_child(wedge)
+	_aim_halo = AIM_HALO_SCRIPT.new()
+	_aim_halo.name = "AimHalo"
+	add_child(_aim_halo)
 
 
 func _apply_visuals() -> void:
@@ -205,8 +190,8 @@ func _apply_visuals() -> void:
 		return
 	_yaw_pivot.rotation.y = -deg_to_rad(yaw_degrees)
 	_elevation_pivot.rotation.x = deg_to_rad(elevation_degrees)
-	if _direction_cue != null:
-		_direction_cue.rotation.y = -deg_to_rad(yaw_degrees)
+	if _aim_halo != null:
+		_aim_halo.set_angles(yaw_degrees, elevation_degrees)
 
 
 func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:

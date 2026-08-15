@@ -520,6 +520,26 @@ in `OPEN_QUESTIONS.md`.
   remains at each plate. A separate thick matte downward 3D arrow replaces only
   the thin cyan airborne stem/diamond and hides after confirmation.
 
+### D-039 — Separate horizontal course scale, readable object scale, and ballistic reach
+
+- Status: accepted on 2026-08-15; supersedes D-035's horizontal-scale sequence
+  and D-028's `28..120 m/s` speed range. It does not change D-035's relief
+  sequence or D-037's `2.0 m` ball radius.
+- Stretch the ten current courses horizontally by `1.5` without multiplying
+  height. Their explicit horizontal scales are
+  `1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25`; minimum relief
+  remains `60, 65, 80, 90, 100, 112, 124, 136, 148, 160` metres. The larger
+  horizontal run makes the same height hierarchy less steep.
+- Multiply canonical launch-speed endpoints by `sqrt(1.5)`, to approximately
+  `34.3..147.0 m/s`, so an equivalent power percentage retains comparable
+  horizontal reach. Keep ball radius at `2.0 m`; increase only the cannon's
+  visual scale from `1.6` to `2.0` for overview readability without moving its
+  physical launch origin.
+- Replace the launcher-attached direction wedge with an aim halo that floats
+  slightly above the base. A horizontal ring and perimeter tick show yaw; a
+  laterally offset dotted vertical arc and bead show elevation. The halo hides
+  in cannon first-person view and must not create a second-barrel silhouette.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

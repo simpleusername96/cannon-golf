@@ -18,7 +18,7 @@ const AUTHORING_CONSTRAINT_RECIPE := 1
 @export_category("Generated Terrain")
 @export var generation_profile: StageGenerationProfile
 @export var terrain_seed: int = StageProgressionData.CANONICAL_TERRAIN_SEED
-@export_range(0.25, 1.0, 0.01) var terrain_horizontal_scale := 1.0
+@export_range(0.25, 2.5, 0.01) var terrain_horizontal_scale := 1.0
 @export_range(0.08, 1.50, 0.01) var terrain_vertical_scale := 0.45
 @export var terrain_origin := Vector3(0.0, -4.0, 0.0)
 @export_range(0.05, 0.45, 0.01) var goal_route_t := 0.18

@@ -316,6 +316,16 @@ func _capture() -> void:
 			push_error("Relay overview capture did not frame the complete generated course.")
 			quit(1)
 			return
+	if game != null and requested_state == "halo_close":
+		var launcher := game._course_builder.launcher
+		var forward := launcher.launch_direction()
+		forward.y = 0.0
+		forward = forward.normalized()
+		var side := Vector3.UP.cross(forward).normalized()
+		game.set_process(false)
+		game._camera.global_position = launcher.global_position \
+				- forward * 15.0 + side * 9.0 + Vector3.UP * 12.0
+		game._camera.look_at(launcher.global_position + Vector3.UP * 1.8, Vector3.UP)
 	# Compatibility rendering can publish the terrain frame before every font
 	# atlas and Control batch has reached the viewport texture. Wait for several
 	# completed draws so delivery evidence records a stable composed frame.

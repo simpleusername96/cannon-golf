@@ -147,7 +147,9 @@ cannon composition.
   angle `10..68` degrees, and power `10..100`. Horizontal aim `50` follows the
   generated course shot axis; the endpoints map linearly to `-80..+80` degrees
   from that axis. All three visible values start at `50` on every course. The
-  prototype maps legal power to `28..120 m/s`. Ball-local gravity, damping,
+  prototype maps legal power to approximately `34.3..147.0 m/s`. This is the
+  previous range multiplied by `sqrt(1.5)` so the same power percentages remain
+  useful after the accepted horizontal course expansion. Ball-local gravity, damping,
   motion thresholds, and dwell thresholds are time-scaled so established course
   paths resolve at roughly twice their former pace instead of doubling spatial
   range. The player cannot steer the ball in flight.
@@ -319,9 +321,10 @@ cannon composition.
   placement legality, and certified solution witnesses.
 - Current catalog baseline: deterministic generation retains the connected
   triangulated mountain topology, but goals are separate physical plates over a
-  shallow fitted support footprint. The first two teaching courses remain at
-  the `210 x 120` metre baseline. Later course horizontal scale increases by
-  catalog position up to approximately `315 x 480` metres for course 10, while
+  shallow fitted support footprint. The first two teaching courses use a
+  `315 x 180` metre baseline. Later course horizontal scale increases through
+  `1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25`, reaching
+  approximately `473 x 720` metres for course 10, while
   minimum playable relief increases from `60` to `160` metres. That relief must
   read as macro peaks, shelves, ridges, and valleys rather than local goal
   excavation. Goal elevations may rise or descend across the authored layout. The launch

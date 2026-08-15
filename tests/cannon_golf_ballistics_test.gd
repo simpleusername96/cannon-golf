@@ -19,25 +19,49 @@ func _initialize() -> void:
 		"Vertical angle and power clamping must be stable."
 	)
 	_assert_true(
-		is_equal_approx(CannonGolfBallistics.MINIMUM_SPEED, 28.0) \
-				and is_equal_approx(CannonGolfBallistics.MAXIMUM_SPEED, 120.0),
-		"Canonical launch-speed endpoints must be the accepted doubled 28..120 m/s range."
+		is_equal_approx(CannonGolfBallistics.MINIMUM_SPEED, 28.0 * sqrt(1.5)) \
+				and is_equal_approx(CannonGolfBallistics.MAXIMUM_SPEED, 120.0 * sqrt(1.5)),
+		"Canonical launch-speed endpoints must compensate for the 1.5x horizontal range."
 	)
 	_assert_true(
-		is_equal_approx(CannonGolfBallistics.BALL_RADIUS, 1.0) \
+		is_equal_approx(CannonGolfBallistics.BALL_RADIUS, 2.0) \
 				and is_equal_approx(CannonGolfBallistics.BALL_RADIUS, CannonGolfBall.RADIUS),
-		"Ballistics and the live rigid body must share the accepted 0.75 m radius."
+		"Ballistics and the live rigid body must share the accepted 2.0 m radius."
 	)
 	_assert_true(
-		is_equal_approx(CannonGolfBallistics.launch_speed(100.0), 120.0) \
-				and is_equal_approx(CannonGolfBallistics.launch_speed(10.0), 37.2),
+		is_equal_approx(CannonGolfBallistics.launch_speed(100.0), 120.0 * sqrt(1.5)) \
+				and is_equal_approx(CannonGolfBallistics.launch_speed(10.0), 37.2 * sqrt(1.5)),
 		"Legal power endpoint speed mapping must stay exact and canonical."
 	)
 	var launcher := CannonGolfLauncher.new()
 	root.add_child(launcher)
+	await process_frame
 	launcher.position = Vector3(2.0, 1.0, 5.0)
 	launcher.shot_axis_yaw_degrees = 7.0
 	launcher.set_setup(63.0, 41.0, 62.0)
+	var halo := launcher.get_node_or_null("AimHalo")
+	_assert_true(halo != null and halo.position.y > 0.0, "The aim halo must float above the base.")
+	_assert_true(
+		halo.get_node_or_null("YawTick") != null,
+		"The aim halo must expose a compact perimeter yaw tick."
+	)
+	_assert_true(
+		halo.get_node_or_null("ElevationArc") != null \
+				and halo.get_node_or_null("ElevationBead") != null,
+		"The aim halo must expose a dotted elevation arc and active bead."
+	)
+	_assert_true(
+		halo.get_node_or_null("DirectionWedge") == null,
+		"The aim halo must not restore the second-barrel direction wedge."
+	)
+	_assert_true(
+		is_equal_approx(halo.rotation_degrees.y, -launcher.yaw_degrees) \
+				and is_equal_approx(halo.indicated_elevation_degrees(), 41.0),
+		"The halo must track both canonical launcher angles."
+	)
+	launcher.set_first_person_visuals_hidden(true)
+	_assert_true(not halo.visible, "Cannon first-person must hide the world-space aim halo.")
+	launcher.set_first_person_visuals_hidden(false)
 	var origin_a := launcher.launch_origin()
 	var velocity_a := launcher.launch_velocity()
 	var origin_b := launcher.launch_origin()

@@ -5,7 +5,7 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 6
+const ALGORITHM_VERSION := 7
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
 const PLATE_SUPPORT_DEPTH := 0.18
 const PLATE_TERRAIN_SHOULDER := 16.0

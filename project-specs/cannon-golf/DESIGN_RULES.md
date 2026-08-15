@@ -68,8 +68,12 @@ coefficients, stage data formats, or code ownership.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
 - Use a true first-person view at the selected cannon source to show its actual
-  launch direction. A small reticle and a world-space direction cue make yaw
-  and elevation readable without implying a target or next goal.
+  launch direction. A small reticle and a world-space aim halo make yaw and
+  elevation readable without implying a target or next goal. The halo floats
+  slightly above the launcher base: a horizontal ring and compact perimeter
+  tick show yaw, while a laterally offset dotted vertical arc and bead show
+  elevation. It must not draw a center-origin line or wedge that can read as a
+  second barrel.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In overview, left-drag pans, right-drag orbits around the bounded course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -108,12 +112,12 @@ coefficients, stage data formats, or code ownership.
 - Terrain must have visible thickness, contact shadows, clear walkable or
   rollable faces, and legible gaps. It must not look like a card, backdrop, or
   flat height strip.
-- The first two courses retain the original `210 x 120` metre generated mountain
+- The first two courses use a `315 x 180` metre generated mountain
   extent and must fit inside the real three-parameter launch envelope. Do not
   shrink or clip the mountain to make a shot appear feasible, and do not draw
   the envelope in normal play.
-- Later courses expand progressively from the early `210 x 120` metre teaching
-  scale to approximately `315 x 480` metres and `160` metres of relief. Their
+- Later courses expand progressively from the early `315 x 180` metre teaching
+  scale to approximately `473 x 720` metres and `160` metres of relief. Their
   height must read as distinct peaks, broad shelves, ridges, and natural valleys,
   not repeated local pits. Ordered legs may rise or descend.
 - Each stage needs a readable direct route or a readable reason why a device is

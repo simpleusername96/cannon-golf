@@ -8,7 +8,16 @@ var _failed := false
 func _initialize() -> void:
 	_assert_explicit_sample_rejection()
 	var payloads: Dictionary = {}
-	for course in CannonGolfCourseCatalog.all_courses():
+	var expected_horizontal_scales := [
+		1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25
+	]
+	var courses := CannonGolfCourseCatalog.all_courses()
+	for course_index in range(courses.size()):
+		var course := courses[course_index]
+		_assert_true(
+			is_equal_approx(course.terrain_horizontal_scale, expected_horizontal_scales[course_index]),
+			"Course horizontal scales must retain the accepted gentler progression."
+		)
 		var prepared := _prepared_for(course)
 		_assert_true(prepared != null, "%s must have a valid prepared course." % course.course_id)
 		if prepared == null:

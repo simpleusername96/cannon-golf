@@ -223,8 +223,10 @@ func presentation_bounds() -> AABB:
 			settlement_goal.global_position.z
 		))
 	if launcher != null:
-		var cue := launcher.direction_cue_radius()
-		bounds = bounds.expand(launcher.global_position + Vector3(cue, 3.0, cue))
+		var cue := launcher.aim_halo_radius()
+		bounds = bounds.expand(launcher.global_position + Vector3(
+			cue, launcher.aim_halo_top_height(), cue
+		))
 		bounds = bounds.expand(launcher.global_position + Vector3(-cue, 0.0, -cue))
 	return bounds
 
