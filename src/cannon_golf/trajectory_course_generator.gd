@@ -5,7 +5,7 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 8
+const ALGORITHM_VERSION := 9
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
 const PLATE_SUPPORT_DEPTH := 0.18
 const PLATE_TERRAIN_SHOULDER := 16.0
@@ -90,8 +90,7 @@ static func build(course: CannonGolfCourseData, deadline_msec: int = 0) -> Dicti
 	_apply_material(geometry.render_mesh, course)
 	var generated := _assemble_generated_course(
 		course, plan, layout, geometry, route_graph, heights, footprint,
-		cell_count, local_bounds,
-		Time.get_ticks_msec() - started_msec
+		cell_count, local_bounds
 	)
 	if generated == null or not generated.is_sealed() or _expired(deadline):
 		return {}
@@ -109,25 +108,26 @@ static func _plan_legs(
 	course: CannonGolfCourseData, course_index: int, local_bounds: Rect2
 ) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	if not CannonGolfCourseRouteMotifs.has_station_count(course_index, course.leg_count()):
+		return result
 	var lateral := minf(
 		65.0 + float(course_index % 3) * 5.0,
 		local_bounds.size.x * 0.36
 	)
 	if course.course_id == &"deep_relay":
 		lateral = minf(lateral, local_bounds.size.x * 0.285)
-	var z_step := local_bounds.size.y / float(course.leg_count() + 1)
 	var start_z := local_bounds.end.y - minf(18.0, local_bounds.size.y * 0.12)
 	var launcher := Vector3(
-		local_bounds.get_center().x + (-lateral if course_index % 2 == 0 else lateral),
+		local_bounds.get_center().x + lateral \
+				* CannonGolfCourseRouteMotifs.station_multiplier(course_index, 0),
 		course.terrain_origin.y + 8.05 + float(course_index % 3) * 2.0,
 		start_z
 	)
 	var initial_launcher_y := launcher.y
 	for leg_index in range(course.leg_count()):
 		var authored_leg := course.leg_at(leg_index)
-		var goal_x := local_bounds.get_center().x * 2.0 - launcher.x
-		var goal_z := start_z - float(leg_index + 1) * z_step
-		var distance := Vector2(launcher.x, launcher.z).distance_to(Vector2(goal_x, goal_z))
+		var goal_x := local_bounds.get_center().x + lateral \
+				* CannonGolfCourseRouteMotifs.station_multiplier(course_index, leg_index + 1)
 		var goal_radius := (authored_leg.bowl_radius_range.x + authored_leg.bowl_radius_range.y) * 0.5
 		var goal_recess := PLATE_SUPPORT_DEPTH
 		var goal_lip_height := clampf(
@@ -139,11 +139,19 @@ static func _plan_legs(
 			course, authored_leg, launcher.y, initial_launcher_y, course_index, leg_index,
 			goal_recess
 		)
-		var choice := _choose_setup(
-			distance, goal_radius, goal_recess, goal_lip_height, desired_landing_delta
+		var route_choice := _choose_route_setup(
+			authored_leg,
+			leg_index > 0 or (
+				course.course_id != &"deep_relay" and authored_leg.relative_rim_band == 0
+			),
+			launcher, goal_x, local_bounds, goal_radius,
+			goal_recess, goal_lip_height, desired_landing_delta
 		)
-		if choice.is_empty():
+		if route_choice.is_empty():
 			return []
+		var goal_z := float(route_choice.goal_z)
+		var distance := float(route_choice.distance)
+		var choice: Dictionary = route_choice.setup_choice
 		var relative_center_height := float(choice.center_height)
 		var goal_floor_y := launcher.y + relative_center_height \
 				- CannonGolfBallistics.BALL_RADIUS - LANDING_CENTER_CLEARANCE
@@ -166,6 +174,45 @@ static func _plan_legs(
 			"default_separation": choice.default_separation,
 		})
 		launcher = goal + Vector3.UP * 0.05
+	return result
+
+
+static func _choose_route_setup(
+		authored_leg: CannonGolfCourseLegData,
+		allow_interval_endpoints: bool,
+		launcher: Vector3,
+		goal_x: float,
+		local_bounds: Rect2,
+		goal_radius: float,
+		goal_recess: float,
+		goal_lip_height: float,
+		desired_landing_delta: float
+) -> Dictionary:
+	var midpoint := (authored_leg.route_interval.x + authored_leg.route_interval.y) * 0.5
+	var route_candidates := PackedFloat32Array([midpoint])
+	if allow_interval_endpoints:
+		route_candidates.append(authored_leg.route_interval.x)
+		route_candidates.append(authored_leg.route_interval.y)
+	var result := {}
+	var best_score := INF
+	for route_t in route_candidates:
+		var goal_z := lerpf(local_bounds.position.y, local_bounds.end.y, route_t)
+		var distance := Vector2(launcher.x, launcher.z).distance_to(Vector2(goal_x, goal_z))
+		var setup_choice := _choose_setup(
+			distance, goal_radius, goal_recess, goal_lip_height, desired_landing_delta
+		)
+		if setup_choice.is_empty():
+			continue
+		var score := absf(float(setup_choice.landing_delta) - desired_landing_delta)
+		if score >= best_score:
+			continue
+		best_score = score
+		result = {
+			"route_t": route_t,
+			"goal_z": goal_z,
+			"distance": distance,
+			"setup_choice": setup_choice,
+		}
 	return result
 
 
@@ -417,24 +464,47 @@ static func _natural_height(
 	var base := 7.0 + sin(canonical_point.x * 0.055 + phase) * 4.0 \
 			+ cos(canonical_point.y * 0.038 - phase * 0.7) * 5.0 \
 			+ sin((canonical_point.x + canonical_point.y) * 0.027 + phase * 1.7) * 3.0
-	var style := course_index % 5
-	if style == 0:
-		base += 38.0 * _gaussian(canonical_point, Vector2(-28.0, -65.0), Vector2(34.0, 82.0))
-		base += 22.0 * _gaussian(canonical_point, Vector2(45.0, -145.0), Vector2(30.0, 52.0))
-	elif style == 1:
-		base += 34.0 * _gaussian(canonical_point, Vector2(-70.0, -80.0), Vector2(30.0, 95.0))
-		base += 34.0 * _gaussian(canonical_point, Vector2(70.0, -80.0), Vector2(30.0, 95.0))
-		base -= 13.0 * _gaussian(canonical_point, Vector2(0.0, -75.0), Vector2(46.0, 105.0))
-	elif style == 2:
-		base += 31.0 * _gaussian(canonical_point, Vector2(18.0, -95.0), Vector2(58.0, 78.0))
-		# Preserve a broad stepped character without quantizing adjacent samples.
-		base += 3.0 * sin(canonical_point.x * 0.052 + canonical_point.y * 0.031)
-	elif style == 3:
-		base += 45.0 * _gaussian(canonical_point, Vector2(-48.0, -82.0), Vector2(26.0, 42.0))
-		base += 41.0 * _gaussian(canonical_point, Vector2(52.0, -130.0), Vector2(28.0, 46.0))
-	else:
-		base += 30.0 * _gaussian(canonical_point, Vector2(0.0, -110.0), Vector2(86.0, 120.0))
-		base -= 24.0 * _gaussian(canonical_point, Vector2(0.0, -105.0), Vector2(40.0, 62.0))
+	var profile := CannonGolfCourseRouteMotifs.macro_profile_name(course_index)
+	match profile:
+		&"ridge_spur":
+			base += 38.0 * _gaussian(canonical_point, Vector2(-28.0, -65.0), Vector2(34.0, 82.0))
+			base += 22.0 * _gaussian(canonical_point, Vector2(45.0, -145.0), Vector2(30.0, 52.0))
+		&"rising_bend":
+			base += 36.0 * _gaussian(canonical_point, Vector2(-58.0, -145.0), Vector2(38.0, 58.0))
+			base += 34.0 * _gaussian(canonical_point, Vector2(52.0, -48.0), Vector2(42.0, 62.0))
+			base -= 17.0 * _gaussian(canonical_point, Vector2(-2.0, -94.0), Vector2(50.0, 72.0))
+		&"summit_saddle":
+			base += 40.0 * _gaussian(canonical_point, Vector2(-52.0, -98.0), Vector2(30.0, 58.0))
+			base += 40.0 * _gaussian(canonical_point, Vector2(52.0, -98.0), Vector2(30.0, 58.0))
+			base -= 14.0 * _gaussian(canonical_point, Vector2(0.0, -98.0), Vector2(34.0, 54.0))
+		&"deep_relay":
+			base += 42.0 * _gaussian(canonical_point, Vector2(-72.0, -120.0), Vector2(42.0, 122.0))
+			base += 12.0 * sin(canonical_point.y * 0.030 - canonical_point.x * 0.018)
+		&"linked_basins":
+			base += 35.0 * _gaussian(canonical_point, Vector2(-58.0, -96.0), Vector2(34.0, 78.0))
+			base += 35.0 * _gaussian(canonical_point, Vector2(58.0, -96.0), Vector2(34.0, 78.0))
+			base += 24.0 * _gaussian(canonical_point, Vector2(0.0, -160.0), Vector2(76.0, 34.0))
+			base -= 21.0 * _gaussian(canonical_point, Vector2(0.0, -92.0), Vector2(46.0, 64.0))
+		&"terraced_peak":
+			base += 31.0 * _gaussian(canonical_point, Vector2(18.0, -95.0), Vector2(58.0, 78.0))
+			# Preserve a broad stepped character without quantizing adjacent samples.
+			base += 3.0 * sin(canonical_point.x * 0.052 + canonical_point.y * 0.031)
+		&"u_valley":
+			base += 34.0 * _gaussian(canonical_point, Vector2(-70.0, -80.0), Vector2(38.0, 105.0))
+			base += 34.0 * _gaussian(canonical_point, Vector2(70.0, -80.0), Vector2(38.0, 105.0))
+			base -= 18.0 * _gaussian(canonical_point, Vector2(0.0, -125.0), Vector2(52.0, 100.0))
+		&"twin_peaks":
+			base += 45.0 * _gaussian(canonical_point, Vector2(-48.0, -82.0), Vector2(26.0, 42.0))
+			base += 41.0 * _gaussian(canonical_point, Vector2(52.0, -130.0), Vector2(28.0, 46.0))
+		&"basin_garden":
+			base += 30.0 * _gaussian(canonical_point, Vector2(0.0, -110.0), Vector2(86.0, 120.0))
+			base -= 24.0 * _gaussian(canonical_point, Vector2(0.0, -105.0), Vector2(40.0, 62.0))
+		&"summit_chain":
+			base += 34.0 * _gaussian(canonical_point, Vector2(-62.0, -52.0), Vector2(28.0, 42.0))
+			base += 42.0 * _gaussian(canonical_point, Vector2(8.0, -110.0), Vector2(32.0, 48.0))
+			base += 36.0 * _gaussian(canonical_point, Vector2(66.0, -166.0), Vector2(30.0, 44.0))
+		_:
+			base += 38.0 * _gaussian(canonical_point, Vector2(-28.0, -65.0), Vector2(34.0, 82.0))
 	return base
 
 
@@ -789,8 +859,7 @@ static func _assemble_generated_course(
 	heights: PackedFloat32Array,
 	footprint: PackedByteArray,
 	cell_count: Vector2i,
-	local_bounds: Rect2,
-	elapsed_msec: int
+	local_bounds: Rect2
 ) -> CannonGolfGeneratedCourse:
 	var result := CannonGolfGeneratedCourse.new()
 	result.layout = layout
@@ -831,9 +900,11 @@ static func _assemble_generated_course(
 	if admission_points.is_empty():
 		return null
 	result.admission_points = admission_points
-	result.union_range_metrics = _measure_union_admission(admission_points, result.legs)
-	result.union_range_metrics["generation_msec"] = elapsed_msec
-	result.union_range_metrics["algorithm_version"] = ALGORITHM_VERSION
+	var union_range_metrics := _measure_union_admission(admission_points, result.legs)
+	# Persist only deterministic provenance; elapsed build time belongs to the
+	# transient build result and would make identical artifacts hash differently.
+	union_range_metrics["algorithm_version"] = ALGORITHM_VERSION
+	result.union_range_metrics = union_range_metrics
 	var minimum_height := _minimum_height(heights)
 	var maximum_height := _maximum_height(heights)
 	result.content_bounds = AABB(
