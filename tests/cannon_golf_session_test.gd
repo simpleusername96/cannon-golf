@@ -69,15 +69,24 @@ func _run() -> void:
 	)
 	_assert_true(second_ball.global_position.is_equal_approx(second_origin), "Shot two must use the edited origin.")
 	_assert_true(second_ball.linear_velocity.is_equal_approx(second_velocity), "Shot two must use the edited velocity.")
-	_assert_true(not game.fire(), "A third simultaneous live ball must be bounded.")
-	_assert_true(game._hud.get_node("%FireButton").disabled, "Fire must show the two-live-ball capacity state.")
+	_assert_true(game.fire(), "A third simultaneous live ball must launch without a capacity guard.")
+	var third_ball := game.current_ball
+	_assert_true(
+		game.active_ball_count() == 3 and not game._hud.get_node("%FireButton").disabled,
+		"Every accepted shot must coexist and Fire must remain available."
+	)
+	game._fail_ball(third_ball, &"out_of_bounds")
+	await process_frame
+	await process_frame
+	_assert_true(game.active_ball_count() == 2 and game.current_ball == second_ball, "Resolving shot three must retain both earlier balls.")
+	_assert_true(game.toggle_shot_camera(), "The surviving newest ball must remain available for Follow.")
 
 	game._fail_ball(first_ball, &"out_of_bounds")
 	await process_frame
 	await process_frame
 	_assert_true(game.active_ball_count() == 1, "Failure of shot one must remove only shot one.")
 	_assert_true(game.current_ball == second_ball and is_instance_valid(second_ball), "Shot two must survive shot one's failure.")
-	_assert_true(not game._hud.get_node("%FireButton").disabled, "A released slot must re-enable Fire.")
+	_assert_true(not game._hud.get_node("%FireButton").disabled, "Resolving one ball must leave Fire available.")
 
 	var retry_ball := game.current_ball
 	var retry_origin := launcher.launch_origin()

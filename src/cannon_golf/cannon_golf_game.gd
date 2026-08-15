@@ -16,7 +16,6 @@ enum LaunchState {
 const LOW_SPEED_FAILURE_SECONDS := 2.0
 const NEARLY_STILL_LINEAR_SPEED := 0.34 * CannonGolfBallistics.MOTION_TIME_SCALE
 const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
-const MAXIMUM_LIVE_BALLS := 2
 
 @export var initial_course_index := 0
 var initial_prepared_course: CannonGolfPreparedCourse
@@ -53,6 +52,7 @@ var active_leg_index := 0
 var last_launch_outcome: StringName = &""
 var _active_balls: Array[CannonGolfBall] = []
 var _live_shots: Dictionary = {}
+var _next_ball_id := 1
 var _planning_drag_active := false
 var _planning_drag_button: MouseButton = MOUSE_BUTTON_NONE
 
@@ -249,10 +249,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func fire() -> bool:
-	if launch_state == LaunchState.CLEARED or _active_balls.size() >= MAXIMUM_LIVE_BALLS:
+	if launch_state == LaunchState.CLEARED:
 		return false
 	var ball := CannonGolfBall.new()
-	ball.name = "ActiveGolfBall%02d" % (_active_balls.size() + 1)
+	ball.name = "ActiveGolfBall%04d" % _next_ball_id
+	_next_ball_id += 1
 	ball.configure(
 		_course_builder.course.play_bounds,
 		_course_builder.launcher.launch_origin(),
@@ -511,6 +512,7 @@ func _clear_balls() -> void:
 	completed_goal_indices.clear()
 	_active_balls.clear()
 	_live_shots.clear()
+	_next_ball_id = 1
 
 
 func _clear_marks() -> void:
@@ -645,20 +647,21 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	_camera_rig.follow(winning_ball)
 	_course_builder.launcher.set_first_person_visuals_hidden(false)
 	_hud.set_camera_mode(&"follow")
-	for live_ball in _active_balls.duplicate():
-		if live_ball != winning_ball and is_instance_valid(live_ball):
-			live_ball.queue_free()
-	_active_balls.clear()
-	_live_shots.clear()
-	current_ball = null
+	_remove_live_ball(winning_ball, false, false)
 	if completed_goal_indices.size() < _course_builder.leg_count():
-		launch_state = LaunchState.PLANNING
+		_refresh_launch_state()
 		_schedule_follow_return(winning_ball)
 		_hud.hide_clear()
 		_sync_launcher_sources()
 		_refresh_hud_availability()
 		_hud.focus_fire()
 		return
+	for live_ball in _active_balls:
+		if live_ball != null and is_instance_valid(live_ball):
+			live_ball.queue_free()
+	_active_balls.clear()
+	_live_shots.clear()
+	current_ball = null
 	launch_state = LaunchState.CLEARED
 	_schedule_follow_return(winning_ball)
 	_refresh_hud_availability()
@@ -746,7 +749,7 @@ func active_balls() -> Array[CannonGolfBall]:
 
 
 func can_fire() -> bool:
-	return launch_state != LaunchState.CLEARED and _active_balls.size() < MAXIMUM_LIVE_BALLS
+	return launch_state != LaunchState.CLEARED
 
 
 func _shot_state(ball: CannonGolfBall) -> CannonGolfLiveShotState:
@@ -803,7 +806,6 @@ func _refresh_launch_state() -> void:
 func _refresh_hud_availability() -> void:
 	_hud.set_launch_availability(
 		_active_balls.size(),
-		MAXIMUM_LIVE_BALLS,
 		launch_state == LaunchState.CLEARED
 	)
 

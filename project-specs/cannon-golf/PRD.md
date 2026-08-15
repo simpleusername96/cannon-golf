@@ -142,10 +142,12 @@ cannon composition.
 ### FR-1: Ballistic launch
 
 - Requirement: the stationary cannon must launch a physical ball from three
-  explicit pre-shot parameters: horizontal aim `0..100`, physical vertical
-  angle `10..68` degrees, and power `10..100`. Horizontal aim `50` follows the
-  generated course shot axis; the endpoints map linearly to `-80..+80` degrees
-  from that axis. All three visible values start at `50` on every course. The
+  explicit pre-shot parameters: circular horizontal aim, physical vertical
+  angle `-90..+90` degrees, and power `10..100`. Horizontal aim has no blind
+  sector: it wraps continuously through the complete 360-degree circle. The
+  existing `0..100` interval retains its `-80..+80` degree mapping around the
+  generated course shot axis, while continued adjustment reaches every bearing.
+  All three visible values start at `50` on every course. The
   prototype maps legal power to approximately `34.3..147.0 m/s`. This is the
   previous range multiplied by `sqrt(1.5)` so the same power percentages remain
   useful after the accepted horizontal course expansion. Ball-local gravity, damping,
@@ -266,10 +268,9 @@ cannon composition.
 
 - Requirement: the player must be able to retry a shot or stage without a long
   transition or consumable limit. A miss never creates a timer, life, ball-stock,
-  or shot-count game over. Aim controls become available immediately after a
-  launch, and the prototype permits up to two unconfirmed balls in active
-  simulation so an obviously failed attempt does not block the next launch.
-  Each ball resolves settlement and failure independently. A confirmation
+  or shot-count game over. Aim controls and Fire remain available immediately
+  after a launch regardless of how many unconfirmed balls are still active.
+  Each ball resolves settlement and failure independently. An intermediate confirmation
   completes whichever incomplete goal contains that ball; the course clears
   only when no incomplete goals remain.
   Identical launch/device state must produce materially similar first impacts.
@@ -426,9 +427,9 @@ cannon composition.
 
 - Applies to: FR-11.
 - Conditions for done: repeated misses never exhaust time, lives, balls, or
-  shots. The player can adjust and fire a second shot while the first remains
-  unresolved; a third simultaneous shot is blocked. Each ball resolves without
-  corrupting the others. A first confirmation clears only a one-goal course;
+  shots. The player can keep adjusting and firing while any number of earlier
+  balls remain unresolved; active-ball count never disables Fire. Each ball
+  resolves without corrupting or removing the others. A first confirmation clears only a one-goal course;
   a multi-goal course clears only after every goal confirms. Quick retry during
   flight replaces only the newest active ball with identical launch origin and
   velocity while retaining all prior impact marks and planning context; at a

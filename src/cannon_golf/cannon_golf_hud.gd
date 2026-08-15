@@ -55,7 +55,6 @@ signal result_primary_requested
 var _syncing := false
 var _pause_suspended := false
 var _active_shot_count := 0
-var _maximum_live_shots := 2
 var _cleared := false
 var _planning_view: StringName = &"oblique"
 var _camera_mode: StringName = &"planning"
@@ -129,16 +128,15 @@ func set_setup(horizontal_aim: float, elevation_degrees: float, power_percent: f
 	_refresh_setup_button_states()
 
 
-func set_launch_availability(active_shots: int, maximum_live_shots: int, cleared: bool) -> void:
+func set_launch_availability(active_shots: int, cleared: bool) -> void:
 	_active_shot_count = maxi(active_shots, 0)
-	_maximum_live_shots = maxi(maximum_live_shots, 1)
 	_cleared = cleared
 	_horizontal_slider.editable = not cleared
 	_elevation_slider.editable = not cleared
 	_power_slider.editable = not cleared
 	if cleared:
 		_end_step_hold()
-	_fire_button.disabled = _cleared or _active_shot_count >= _maximum_live_shots
+	_fire_button.disabled = _cleared
 	_retry_button.disabled = _cleared or _active_shot_count <= 0
 	_pause_retry.disabled = _cleared or _active_shot_count <= 0
 	_follow_button.disabled = _cleared or _active_shot_count <= 0
@@ -164,7 +162,7 @@ func set_launcher_sources(completed_goal_indices: Array[int], selected_goal_inde
 	_selected_launcher_source = selected_goal_index \
 			if _launcher_sources.has(selected_goal_index) else -1
 	_rebuild_launcher_source_items()
-	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
+	set_launch_availability(_active_shot_count, _cleared)
 
 
 func set_view(view_mode: StringName) -> void:
@@ -269,7 +267,7 @@ func apply_language(language: String) -> void:
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
 	_update_goal_progress_copy()
 	_rebuild_launcher_source_items()
-	set_launch_availability(_active_shot_count, _maximum_live_shots, _cleared)
+	set_launch_availability(_active_shot_count, _cleared)
 	_refresh_camera_buttons()
 
 
@@ -364,6 +362,11 @@ func _end_step_hold() -> void:
 func _step_slider(slider: HSlider, direction: float) -> void:
 	if slider == null or not slider.editable or _cleared:
 		return
+	if slider == _horizontal_slider:
+		slider.value = CannonGolfBallistics.canonical_horizontal_aim(
+			slider.value + direction * slider.step
+		)
+		return
 	slider.value = clampf(
 		slider.value + direction * slider.step,
 		slider.min_value,
@@ -374,6 +377,8 @@ func _step_slider(slider: HSlider, direction: float) -> void:
 func _can_step_slider(slider: HSlider, direction: float) -> bool:
 	if slider == null or not slider.editable or _cleared:
 		return false
+	if slider == _horizontal_slider:
+		return true
 	if direction < 0.0:
 		return slider.value > slider.min_value
 	if direction > 0.0:
@@ -382,8 +387,8 @@ func _can_step_slider(slider: HSlider, direction: float) -> bool:
 
 
 func _refresh_setup_button_states() -> void:
-	_horizontal_decrease.disabled = _cleared or _horizontal_slider.value <= _horizontal_slider.min_value
-	_horizontal_increase.disabled = _cleared or _horizontal_slider.value >= _horizontal_slider.max_value
+	_horizontal_decrease.disabled = _cleared
+	_horizontal_increase.disabled = _cleared
 	_elevation_decrease.disabled = _cleared or _elevation_slider.value <= _elevation_slider.min_value
 	_elevation_increase.disabled = _cleared or _elevation_slider.value >= _elevation_slider.max_value
 	_power_decrease.disabled = _cleared or _power_slider.value <= _power_slider.min_value

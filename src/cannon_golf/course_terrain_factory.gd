@@ -1394,7 +1394,8 @@ static func _admit_union_point(
 	var distance := horizontal_delta.length()
 	var bearing := rad_to_deg(atan2(horizontal_delta.x, -horizontal_delta.y))
 	var yaw_offset := wrapf(bearing - leg.shot_axis_yaw_degrees, -180.0, 180.0)
-	var yaw_margin := CannonGolfBallistics.MAXIMUM_YAW_OFFSET_DEGREES - absf(yaw_offset)
+	var yaw_margin := CannonGolfBallistics.COURSE_MAXIMUM_YAW_OFFSET_DEGREES \
+			- absf(yaw_offset)
 	var range_margin := CannonGolfBallistics.maximum_horizontal_range() - distance
 	var relative_height := point.y - leg.launcher_position.y
 	var distance_key := roundi(distance * 2.0)

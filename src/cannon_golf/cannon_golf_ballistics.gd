@@ -4,16 +4,18 @@ extends RefCounted
 ## Pure launch and range-admission contract for Cannon Golf.
 ##
 ## The generated shot axis is world data. Horizontal aim is the player's
-## centered parameter and is converted here so launch, terrain admission, and
-## tests cannot drift into separate ballistic models.
+## centered parameter. Player launch accepts every direction, while authored
+## course admission keeps its narrower certification envelope explicitly.
 
-const MINIMUM_HORIZONTAL_AIM := 0.0
-const MAXIMUM_HORIZONTAL_AIM := 100.0
+const MINIMUM_HORIZONTAL_AIM := -62.0
+const MAXIMUM_HORIZONTAL_AIM := 162.0
 const CENTER_HORIZONTAL_AIM := 50.0
-const MINIMUM_YAW_OFFSET_DEGREES := -80.0
-const MAXIMUM_YAW_OFFSET_DEGREES := 80.0
-const MINIMUM_ELEVATION_DEGREES := 10.0
-const MAXIMUM_ELEVATION_DEGREES := 68.0
+const HORIZONTAL_AIM_PERIOD := 225.0
+const COURSE_MAXIMUM_YAW_OFFSET_DEGREES := 80.0
+const MINIMUM_ELEVATION_DEGREES := -90.0
+const MAXIMUM_ELEVATION_DEGREES := 90.0
+const COURSE_MINIMUM_ELEVATION_DEGREES := 10.0
+const COURSE_MAXIMUM_ELEVATION_DEGREES := 68.0
 const MINIMUM_POWER_PERCENT := 10.0
 const MAXIMUM_POWER_PERCENT := 100.0
 const MOTION_TIME_SCALE := 2.0
@@ -41,7 +43,10 @@ static var _maximum_range := -1.0
 
 
 static func canonical_horizontal_aim(value: float) -> float:
-	return clampf(roundf(value), MINIMUM_HORIZONTAL_AIM, MAXIMUM_HORIZONTAL_AIM)
+	return posmod(
+		roundf(value) - MINIMUM_HORIZONTAL_AIM,
+		HORIZONTAL_AIM_PERIOD
+	) + MINIMUM_HORIZONTAL_AIM
 
 
 static func canonical_elevation(value: float) -> float:
@@ -53,11 +58,9 @@ static func canonical_power(value: float) -> float:
 
 
 static func yaw_offset_degrees(horizontal_aim: float) -> float:
-	return lerpf(
-		MINIMUM_YAW_OFFSET_DEGREES,
-		MAXIMUM_YAW_OFFSET_DEGREES,
-		canonical_horizontal_aim(horizontal_aim) / MAXIMUM_HORIZONTAL_AIM
-	)
+	# Preserve the accepted 0..100 -> -80..+80 mapping while allowing the
+	# player to continue around the full circle in the same one-unit steps.
+	return (canonical_horizontal_aim(horizontal_aim) - CENTER_HORIZONTAL_AIM) * 1.6
 
 
 static func world_yaw_degrees(shot_axis_yaw_degrees: float, horizontal_aim: float) -> float:
@@ -116,7 +119,8 @@ static func reachable_height_interval(horizontal_distance: float) -> Vector2:
 	var lowest := INF
 	var highest := -INF
 	for elevation_value in range(
-		int(MINIMUM_ELEVATION_DEGREES), int(MAXIMUM_ELEVATION_DEGREES) + 1
+		int(COURSE_MINIMUM_ELEVATION_DEGREES),
+		int(COURSE_MAXIMUM_ELEVATION_DEGREES) + 1
 	):
 		var elevation := deg_to_rad(float(elevation_value))
 		var horizontal_scale := cos(elevation)
@@ -186,7 +190,8 @@ static func maximum_horizontal_range() -> float:
 	var horizon_factor := float(horizontal_factors[MAXIMUM_STEPS])
 	_maximum_range = 0.0
 	for elevation_value in range(
-		int(MINIMUM_ELEVATION_DEGREES), int(MAXIMUM_ELEVATION_DEGREES) + 1
+		int(COURSE_MINIMUM_ELEVATION_DEGREES),
+		int(COURSE_MAXIMUM_ELEVATION_DEGREES) + 1
 	):
 		var horizontal_scale := cos(deg_to_rad(float(elevation_value)))
 		_maximum_range = maxf(
@@ -208,7 +213,7 @@ static func admit_world_point(
 	var yaw_offset := wrapf(bearing - shot_axis_yaw_degrees, -180.0, 180.0)
 	var interval := reachable_height_interval(distance)
 	var relative_height := point.y - cannon_position.y
-	var yaw_margin := MAXIMUM_YAW_OFFSET_DEGREES - absf(yaw_offset)
+	var yaw_margin := COURSE_MAXIMUM_YAW_OFFSET_DEGREES - absf(yaw_offset)
 	var range_margin := maximum_horizontal_range() - distance
 	var height_margin := minf(
 		relative_height - interval.x,

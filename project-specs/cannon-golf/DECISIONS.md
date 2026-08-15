@@ -570,6 +570,26 @@ in `OPEN_QUESTIONS.md`.
   pretending launcher/goal samples represent the whole map. Every authored
   launcher-to-goal corridor retains the full range, yaw, and height guards.
 
+### D-041 — Remove directional blind sectors and simultaneous-ball limits
+
+- Status: accepted on 2026-08-15; supersedes D-023's player-facing aim bounds,
+  D-026's two-ball concurrency limit and intermediate-confirmation cleanup, and
+  AC-8's third-shot block.
+- Horizontal aim wraps through a complete 360-degree circle. Existing authored
+  and saved values in `0..100` retain the established `-80..+80` degree mapping
+  around the course shot axis; continued adjustment beyond that interval reaches
+  every bearing without disabling either horizontal step control.
+- Vertical aim covers the complete non-duplicated directional range from
+  straight down at `-90` degrees through straight up at `+90` degrees. Power
+  remains bounded at `10..100` because it is launch strength, not direction.
+- Fire is unavailable only after course clear or while a separate modal state
+  owns input. Active unconfirmed ball count never disables Fire. Every accepted
+  Fire input creates a new ball, and each live ball keeps its own source, setup,
+  settlement, and resolution state.
+- On a multi-goal course, confirming one ball freezes and retains that ball but
+  does not remove other live balls. Completing the final goal may clean up
+  remaining unconfirmed balls as part of ending the course.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

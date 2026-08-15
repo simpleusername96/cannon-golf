@@ -94,7 +94,7 @@ func _run() -> void:
 			normal_primary_count += 1
 	_assert(normal_primary_count == 1, "Fire must be the only normal-play primary action.")
 	hud.set_view(&"cannon")
-	hud.set_launch_availability(1, 2, false)
+	hud.set_launch_availability(1, false)
 	await process_frame
 	var fire_button := hud.get_node("%FireButton") as Button
 	var action_dock := hud.get_node("Root/ActionDock") as Control
@@ -120,8 +120,8 @@ func _run() -> void:
 		not (hud.get_node("%FollowButton") as Button).tooltip_text.contains("Tab"),
 		"Planning mode must not claim that Tab enters Shot Follow."
 	)
-	hud.set_launch_availability(2, 2, false)
-	_assert(fire_button.disabled, "Two live balls must visibly disable Fire at capacity.")
+	hud.set_launch_availability(20, false)
+	_assert(not fire_button.disabled, "Live-ball count must never disable Fire.")
 
 	hud.set_goal_progress(1, 2)
 	hud.set_launcher_sources([1], -1)

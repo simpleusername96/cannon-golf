@@ -61,7 +61,9 @@ func _run() -> void:
 	await _push_space()
 	_assert_ball_count(game, 2, "The second physical Space press must add exactly one ball.")
 	await _push_space()
-	_assert_ball_count(game, 2, "Space must not bypass the two-live-ball capacity.")
+	_assert_ball_count(game, 3, "Every physical Space press must add another live ball.")
+	await _push_space()
+	_assert_ball_count(game, 4, "Rapid Fire must not impose a simultaneous-ball limit.")
 
 	var launcher := game._course_builder.launcher
 	var hud := game._hud
@@ -90,28 +92,31 @@ func _run() -> void:
 		"Holding a step button must repeat after the initial press."
 	)
 	game._on_setup_changed(initial_setup.x, initial_setup.y, initial_setup.z)
-	hud.set_setup(0.0, 10.0, 10.0)
-	for button_name in ["HorizontalDecrease", "ElevationDecrease", "PowerDecrease"]:
-		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable at its lower bound." % button_name)
-	hud.set_setup(100.0, 68.0, 100.0)
-	for button_name in ["HorizontalIncrease", "ElevationIncrease", "PowerIncrease"]:
-		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable at its upper bound." % button_name)
-	hud.set_setup(99.0, 68.0, 100.0)
+	hud.set_setup(CannonGolfBallistics.MINIMUM_HORIZONTAL_AIM, -90.0, 10.0)
+	_assert_true(not (hud.get_node("%HorizontalDecrease") as Button).disabled, "Horizontal aim must remain circular at its displayed lower edge.")
+	_assert_true((hud.get_node("%ElevationDecrease") as Button).disabled, "Elevation decrease must stop only at straight down.")
+	_assert_true((hud.get_node("%PowerDecrease") as Button).disabled, "Power decrease must stop at minimum power.")
+	hud.set_setup(CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM, 90.0, 100.0)
+	_assert_true(not (hud.get_node("%HorizontalIncrease") as Button).disabled, "Horizontal aim must remain circular at its displayed upper edge.")
+	_assert_true((hud.get_node("%ElevationIncrease") as Button).disabled, "Elevation increase must stop only at straight up.")
+	_assert_true((hud.get_node("%PowerIncrease") as Button).disabled, "Power increase must stop at maximum power.")
 	horizontal_increase.button_down.emit()
 	_assert_true(
-		is_equal_approx((hud.get_node("%HorizontalSlider") as HSlider).value, 100.0)
-			and hud._held_slider == null,
-		"Hold-repeat must stop immediately when its first step reaches a bound."
+		is_equal_approx(
+			(hud.get_node("%HorizontalSlider") as HSlider).value,
+			CannonGolfBallistics.MINIMUM_HORIZONTAL_AIM
+		) and hud._held_slider == hud.get_node("%HorizontalSlider"),
+		"Horizontal increase must wrap and keep repeating across the circular seam."
 	)
 	horizontal_increase.button_up.emit()
 	hud.set_setup(initial_setup.x, initial_setup.y, initial_setup.z)
-	hud.set_launch_availability(2, 2, true)
+	hud.set_launch_availability(4, true)
 	for button_name in [
 		"HorizontalDecrease", "HorizontalIncrease", "ElevationDecrease",
 		"ElevationIncrease", "PowerDecrease", "PowerIncrease",
 	]:
 		_assert_true((hud.get_node("%%%s" % button_name) as Button).disabled, "%s must disable after clear." % button_name)
-	hud.set_launch_availability(2, 2, false)
+	hud.set_launch_availability(4, false)
 
 	var pause_emissions := [0]
 	hud.pause_requested.connect(func() -> void: pause_emissions[0] += 1)

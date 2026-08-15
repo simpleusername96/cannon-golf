@@ -29,6 +29,8 @@ func _assert_free_order(course_index: int, completion_order: Array[int]) -> void
 	)
 	_assert(game.selected_launcher_goal_index == -1, "Every course must begin at Start.")
 	_assert(not game.select_launcher_source(0), "An incomplete goal cannot become a cannon source.")
+	_assert(game.fire() and game.fire(), "Concurrent setup must accept multiple live balls.")
+	var retained_ball := game.current_ball
 	for goal_index in completion_order:
 		var launcher_before := game._course_builder.launcher.position
 		_assert(game.fire(), "Every free-order attempt must be immediately playable.")
@@ -51,9 +53,14 @@ func _assert_free_order(course_index: int, completion_order: Array[int]) -> void
 					== CannonGolfSettlementGoal.VisualState.CONFIRMED,
 			"The confirmed goal must retain its completed world state."
 		)
+		if game.completed_goal_indices.size() == 1:
+			_assert(
+				game.active_balls().has(retained_ball),
+				"An intermediate confirmation must preserve every other live ball."
+			)
 		if game.completed_goal_indices.size() < completion_order.size():
 			_assert(
-				game.launch_state == CannonGolfGame.LaunchState.PLANNING,
+				game.launch_state != CannonGolfGame.LaunchState.CLEARED and game.can_fire(),
 				"A remaining incomplete goal must keep the course playable."
 			)
 			_assert(

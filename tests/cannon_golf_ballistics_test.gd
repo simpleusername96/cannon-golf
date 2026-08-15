@@ -9,14 +9,18 @@ func _initialize() -> void:
 	_assert_true(
 		is_equal_approx(CannonGolfBallistics.yaw_offset_degrees(0.0), -80.0) \
 				and is_equal_approx(CannonGolfBallistics.yaw_offset_degrees(100.0), 80.0),
-		"Horizontal endpoints must map to the full legal yaw fan."
+		"The established 0..100 setups must retain their prior yaw mapping."
 	)
 	_assert_true(
-		CannonGolfBallistics.canonical_elevation(-10.0) == 10.0 \
-				and CannonGolfBallistics.canonical_elevation(99.0) == 68.0 \
+		CannonGolfBallistics.canonical_horizontal_aim(163.0) \
+					== CannonGolfBallistics.MINIMUM_HORIZONTAL_AIM \
+				and CannonGolfBallistics.canonical_horizontal_aim(-63.0) \
+					== CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM \
+				and CannonGolfBallistics.canonical_elevation(-99.0) == -90.0 \
+				and CannonGolfBallistics.canonical_elevation(99.0) == 90.0 \
 				and CannonGolfBallistics.canonical_power(-1.0) == 10.0 \
 				and CannonGolfBallistics.canonical_power(101.0) == 100.0,
-		"Vertical angle and power clamping must be stable."
+		"Horizontal aim must wrap through 360 degrees while elevation covers the full sphere."
 	)
 	_assert_true(
 		is_equal_approx(CannonGolfBallistics.MINIMUM_SPEED, 28.0 * sqrt(1.5)) \

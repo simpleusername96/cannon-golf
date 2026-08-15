@@ -126,6 +126,22 @@ func _capture() -> void:
 			push_error("Two-live capture could not launch its second ball.")
 			quit(1)
 			return
+		game.return_to_planning_view()
+	elif requested_state == "unrestricted_aim":
+		game._on_setup_changed(
+			CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM,
+			-45.0,
+			50.0
+		)
+		game.set_planning_view(&"cannon")
+	elif requested_state == "rapid_fire":
+		for shot_index in range(6):
+			game._on_setup_changed(50.0 + float(shot_index), 50.0, 50.0)
+			if not game.fire():
+				push_error("Rapid-fire capture rejected shot %d." % (shot_index + 1))
+				quit(1)
+				return
+		game.return_to_planning_view()
 	elif requested_state == "fired_explored":
 		game.set_planning_view(&"cannon")
 		game.orbit_planning(Vector2(190.0, -62.0))
@@ -169,7 +185,7 @@ func _capture() -> void:
 		await process_frame
 	if game != null and requested_state in [
 		"planning", "cannon", "explored", "panned", "zoom_close", "zoom_far",
-		"collision_edge", "shortcuts",
+		"collision_edge", "shortcuts", "unrestricted_aim",
 		"relay_initial", "relay_overview",
 	]:
 		if game.launch_state != CannonGolfGame.LaunchState.PLANNING or game.current_ball != null:
@@ -226,6 +242,13 @@ func _capture() -> void:
 	if game != null and requested_state == "two_live":
 		if game.active_ball_count() != 2 or game._camera_rig.camera_mode != &"planning":
 			push_error("Two-live capture did not retain two balls in planning view.")
+			quit(1)
+			return
+	if game != null and requested_state == "rapid_fire":
+		var rapid_fire_button := game._hud.get_node("%FireButton") as Button
+		if game.active_ball_count() != 6 or not game.can_fire() or rapid_fire_button.disabled \
+				or game._camera_rig.camera_mode != &"planning":
+			push_error("Rapid-fire capture did not retain six live balls with Fire available.")
 			quit(1)
 			return
 	if game != null and requested_state == "fired_explored":

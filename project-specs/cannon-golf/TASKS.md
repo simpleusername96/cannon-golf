@@ -50,8 +50,8 @@ promoted to an active plan.
   visible confirmed ball and prevent later displacement.
 - [x] Provide unlimited unsuccessful launches without a timer, life, ball-stock,
   or shot-count game over.
-- [x] Retire each unsuccessful ball when it resolves, allow the next launch up
-  to the two-live-ball limit, and preserve every confirmed settled ball.
+- [x] Retire each unsuccessful ball only when it resolves, allow unrestricted
+  concurrent launches, and preserve every confirmed settled ball.
 - [x] Give the standard ball a predictable energy-losing rebound on ordinary
   hard terrain.
 - [x] Replace continuous paint behavior with one first-contact history mark per
