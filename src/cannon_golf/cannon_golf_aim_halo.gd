@@ -5,10 +5,11 @@ extends Node3D
 
 const FLOAT_HEIGHT := 0.72
 const RADIUS := 6.4
-const RING_THICKNESS := 0.18
+const RING_THICKNESS := 0.52
 const ARC_RADIUS := 4.4
 const ARC_LATERAL_OFFSET := 2.6
 const ARC_SAMPLE_COUNT := 9
+const CANNON_MARKER_SCALE := 0.12
 const PRESENTATION_TOP_HEIGHT := FLOAT_HEIGHT \
 		+ sin(deg_to_rad(CannonGolfBallistics.MAXIMUM_ELEVATION_DEGREES)) * ARC_RADIUS \
 		+ 0.35
@@ -48,11 +49,24 @@ func presentation_top_height() -> float:
 	return PRESENTATION_TOP_HEIGHT
 
 
+func set_cannon_view_active(active: bool) -> void:
+	var marker_scale := Vector3.ONE * (CANNON_MARKER_SCALE if active else 1.0)
+	(get_node_or_null("YawTick") as MeshInstance3D).scale = marker_scale
+	(get_node_or_null("ElevationBead") as MeshInstance3D).scale = marker_scale
+	var elevation_arc := get_node_or_null("ElevationArc") as Node3D
+	if elevation_arc != null:
+		for dot in elevation_arc.get_children():
+			(dot as MeshInstance3D).scale = marker_scale
+
+
 func _build_visuals() -> void:
 	if get_node_or_null("YawRing") != null:
 		return
-	var guide_material := _material(Color("24354A"), 0.24, 0.62)
-	var active_material := _material(Color("F2A33A"), 0.02, 0.68)
+	# The wide guide stays depth-tested so it retains a believable relationship to
+	# the launch surface. Only the compact active markers ignore depth, which keeps
+	# yaw and elevation legible when terrain or the first-person camera occludes it.
+	var guide_material := _material(Color("49C9E8"), false)
+	var active_material := _material(Color("FFD05C"), true)
 
 	var ring := MeshInstance3D.new()
 	ring.name = "YawRing"
@@ -69,7 +83,7 @@ func _build_visuals() -> void:
 	var yaw_tick := MeshInstance3D.new()
 	yaw_tick.name = "YawTick"
 	var tick_mesh := BoxMesh.new()
-	tick_mesh.size = Vector3(0.78, 0.24, 1.05)
+	tick_mesh.size = Vector3(0.92, 0.30, 1.32)
 	tick_mesh.material = active_material
 	yaw_tick.mesh = tick_mesh
 	yaw_tick.position = Vector3(0.0, 0.08, -RADIUS + 0.52)
@@ -89,8 +103,8 @@ func _build_visuals() -> void:
 		var dot := MeshInstance3D.new()
 		dot.name = "ElevationDot%02d" % index
 		var dot_mesh := SphereMesh.new()
-		dot_mesh.radius = 0.13
-		dot_mesh.height = 0.26
+		dot_mesh.radius = 0.20
+		dot_mesh.height = 0.40
 		dot_mesh.radial_segments = 8
 		dot_mesh.rings = 4
 		dot_mesh.material = guide_material
@@ -102,8 +116,8 @@ func _build_visuals() -> void:
 	_elevation_bead = MeshInstance3D.new()
 	_elevation_bead.name = "ElevationBead"
 	var bead_mesh := SphereMesh.new()
-	bead_mesh.radius = 0.32
-	bead_mesh.height = 0.64
+	bead_mesh.radius = 0.38
+	bead_mesh.height = 0.76
 	bead_mesh.radial_segments = 12
 	bead_mesh.rings = 6
 	bead_mesh.material = active_material
@@ -126,9 +140,10 @@ func _arc_position(angle_degrees: float) -> Vector3:
 	)
 
 
-func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:
+func _material(color: Color, no_depth_test: bool) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = color
-	material.metallic = metallic
-	material.roughness = roughness
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.no_depth_test = no_depth_test
+	material.render_priority = 1 if no_depth_test else 0
 	return material

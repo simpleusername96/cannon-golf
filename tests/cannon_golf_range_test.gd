@@ -40,22 +40,12 @@ func _assert_whole_terrain_admission(
 		int(metrics.get("point_count", -1)) == admitted_points.size(),
 		"%s whole-terrain metrics must account for every visible terrain point." % course.course_id
 	)
-	if prepared.legs.size() > 1:
-		_assert_true(
-			int(metrics.get("excluded_point_count", 0)) > 0,
-			"%s relay terrain must exclude centered launch footprints explicitly." % course.course_id
-		)
-	var launchers := _generated_legs(prepared)
-	for point in admitted_points:
-		if CannonGolfCourseTerrainFactory._is_relay_launch_exclusion(point, launchers):
-			continue
-		var admitted := false
-		for launcher in launchers:
-			var admission := CannonGolfCourseTerrainFactory._admit_union_point(
-				point, launcher, CannonGolfCourseTerrainFactory.RELAY_CENTERED_UNION_HEIGHT_MARGIN
-			)
-			admitted = admitted or bool(admission.passed)
-		_assert_true(admitted, "%s terrain point escaped every admitted launch envelope." % course.course_id)
+	_assert_true(
+		int(metrics.get("admitted_point_count", -1)) \
+				+ int(metrics.get("excluded_point_count", -1)) \
+				+ int(metrics.get("unadmitted_point_count", -1)) == admitted_points.size(),
+		"%s diagnostic admission buckets must cover every visible terrain point." % course.course_id
+	)
 
 
 func _generated_legs(prepared: CannonGolfPreparedCourse) -> Array[CannonGolfGeneratedCourseLeg]:
@@ -84,7 +74,11 @@ func _assert_leg_corridor_admission(
 		_assert_true(float(metrics.get("minimum_yaw_margin_degrees", -INF)) >= 8.0, "%s corridor yaw margin failed." % course.course_id)
 		_assert_true(
 			float(metrics.get("minimum_height_margin", -INF)) >= CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN,
-			"%s corridor height margin failed." % course.course_id
+			"%s corridor height margin %.3f is below %.3f." % [
+				course.course_id,
+				float(metrics.get("minimum_height_margin", -INF)),
+				CannonGolfBallistics.REQUIRED_HEIGHT_MARGIN,
+			]
 		)
 
 

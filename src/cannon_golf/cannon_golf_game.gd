@@ -11,7 +11,9 @@ enum LaunchState {
 	CLEARED,
 }
 
-const LOW_SPEED_FAILURE_SECONDS := 1.25 / CannonGolfBallistics.MOTION_TIME_SCALE
+## Rest uses the physics callback's wall-clock delta. Cannon Golf applies its
+## motion multiplier directly to ball parameters rather than to this timer.
+const LOW_SPEED_FAILURE_SECONDS := 2.0
 const NEARLY_STILL_LINEAR_SPEED := 0.34 * CannonGolfBallistics.MOTION_TIME_SCALE
 const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
 const MAXIMUM_LIVE_BALLS := 2
@@ -104,9 +106,7 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 	var goal_index := _goal_index_for_ball(ball, shot)
 	var goal := _course_builder.goal_at(goal_index)
 	if goal != null:
-		if shot.entered_goal_index < 0:
-			shot.entered_goal_index = goal_index
-		shot.entered_goal = true
+		shot.settlement_goal_index = goal_index
 		shot.reset_low_speed()
 		if not ball.settlement_drag_is_active() \
 				and goal.motion_allows_settlement_drag(
@@ -119,15 +119,13 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 			if shot.settle_elapsed >= goal.settle_seconds:
 				_confirm_goal(ball, goal_index)
 		else:
-			shot.reset_settlement()
-	elif shot.entered_goal:
-		if ball.settlement_drag_is_active():
-			ball.set_settlement_drag(false)
-		_fail_ball(ball, &"bounced_out")
+			shot.reset_settlement_dwell()
 	else:
 		if ball.settlement_drag_is_active():
 			ball.set_settlement_drag(false)
-		shot.reset_settlement()
+		# Rebounding out cancels only the current settlement attempt. The live
+		# ball can later re-enter this plate or select another incomplete plate.
+		shot.clear_settlement_candidate()
 		var nearly_still := ball.has_reported_first_contact() \
 				and ball.linear_velocity.length() < NEARLY_STILL_LINEAR_SPEED \
 				and ball.angular_velocity.length() < NEARLY_STILL_ANGULAR_SPEED
@@ -142,10 +140,11 @@ func _update_live_ball(ball: CannonGolfBall, delta: float) -> void:
 func _goal_index_for_ball(ball: CannonGolfBall, shot: CannonGolfLiveShotState) -> int:
 	if ball == null or shot == null:
 		return -1
-	if shot.entered_goal_index >= 0:
-		var entered_goal := _course_builder.goal_at(shot.entered_goal_index)
-		return shot.entered_goal_index if entered_goal != null \
-				and entered_goal.contains_rebound_column(
+	if shot.settlement_goal_index >= 0 \
+			and not completed_goal_indices.has(shot.settlement_goal_index):
+		var candidate_goal := _course_builder.goal_at(shot.settlement_goal_index)
+		return shot.settlement_goal_index if candidate_goal != null \
+				and candidate_goal.contains_rebound_column(
 					ball.global_position, CannonGolfBall.RADIUS
 				) else -1
 	for goal_index in range(_course_builder.goals.size()):
@@ -594,16 +593,6 @@ func _on_first_surface_contact(
 func _on_ball_launch_ended(ball: CannonGolfBall, reason: StringName) -> void:
 	if launch_state == LaunchState.CLEARED:
 		return
-	var shot := _shot_state(ball)
-	# A late but valid arrival must finish the goal's settlement check. The ball
-	# can still fail by leaving the rebound column, so this does not turn contact
-	# alone into confirmation.
-	var timeout_goal_index := _goal_index_for_ball(ball, shot) if shot != null else -1
-	if reason == &"timeout" and shot != null and timeout_goal_index >= 0:
-		shot.entered_goal = true
-		shot.entered_goal_index = timeout_goal_index
-		shot.reset_low_speed()
-		return
 	_fail_ball(ball, reason)
 
 
@@ -651,6 +640,11 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	completed_goal_indices.sort()
 	_course_builder.set_goal_completed(goal_index, true)
 	_hud.set_goal_progress(confirmed_balls.size(), _course_builder.leg_count())
+	# A different concurrent ball may currently own Shot Follow. Retarget the
+	# result hold to the ball that actually settled before cleaning up the others.
+	_camera_rig.follow(winning_ball)
+	_course_builder.launcher.set_first_person_visuals_hidden(false)
+	_hud.set_camera_mode(&"follow")
 	for live_ball in _active_balls.duplicate():
 		if live_ball != winning_ball and is_instance_valid(live_ball):
 			live_ball.queue_free()

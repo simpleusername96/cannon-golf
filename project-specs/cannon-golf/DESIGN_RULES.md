@@ -73,7 +73,10 @@ coefficients, stage data formats, or code ownership.
   slightly above the launcher base: a horizontal ring and compact perimeter
   tick show yaw, while a laterally offset dotted vertical arc and bead show
   elevation. It must not draw a center-origin line or wedge that can read as a
-  second barrel.
+  second barrel. Keep it visible in both overview/planning and cannon views. Use
+  unshaded high-contrast geometry with enough ordinary-view screen thickness;
+  a narrow no-depth-tested accent may preserve readability without turning the
+  whole instrument into a screen overlay.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In overview, left-drag pans, right-drag orbits around the bounded course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -120,6 +123,12 @@ coefficients, stage data formats, or code ownership.
   scale to approximately `473 x 720` metres and `160` metres of relief. Their
   height must read as distinct peaks, broad shelves, ridges, and natural valleys,
   not repeated local pits. Ordered legs may rise or descend.
+- Course generation must widen semantic landforms with the accepted horizontal
+  scale and must not create hard multi-metre height steps. On the final shared
+  render/collision height array, p95 adjacent-sample slope is at most `42`
+  degrees, maximum slope is at most `60` degrees, at most `3%` of samples exceed
+  `45` degrees, and relief remains within `target..target + 16 m`. Preserve broad
+  peaks and protected start/goal supports while enforcing these limits.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,
@@ -136,7 +145,8 @@ coefficients, stage data formats, or code ownership.
 - Terrain may fit a shallow support below the plate and blend back gradually,
   but it must not supply the goal wall or create a surrounding excavation.
 - Entering a goal is not enough: a ball that bounces out before settlement must
-  remain visibly unsuccessful.
+  remain visibly unresolved and live. Exiting cancels only that settlement
+  candidate; it must not delete the ball or prevent later re-entry.
 - A confirmed goal must show the settled ball clearly from every planning view,
   and the ball must not move when later shots occur.
 - All incomplete goals share the strongest available-goal flag and marker

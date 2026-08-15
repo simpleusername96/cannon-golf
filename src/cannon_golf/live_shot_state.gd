@@ -2,13 +2,13 @@ class_name CannonGolfLiveShotState
 extends RefCounted
 
 ## Per-ball attempt state. The game coordinates course-wide completion, while
-## each live ball independently owns goal entry and settlement timing.
+## each live ball independently owns a revocable settlement candidate and its
+## dwell timing.
 
 var ball: CannonGolfBall
 var settle_elapsed := 0.0
 var low_speed_elapsed := 0.0
-var entered_goal := false
-var entered_goal_index := -1
+var settlement_goal_index := -1
 var launcher_source_goal_index := -1
 var launch_setup := Vector3(50.0, 50.0, 50.0)
 var ending := false
@@ -25,7 +25,12 @@ func _init(
 	launch_setup = setup
 
 
-func reset_settlement() -> void:
+func clear_settlement_candidate() -> void:
+	settlement_goal_index = -1
+	settle_elapsed = 0.0
+
+
+func reset_settlement_dwell() -> void:
 	settle_elapsed = 0.0
 
 

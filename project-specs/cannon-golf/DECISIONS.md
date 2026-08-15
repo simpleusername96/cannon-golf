@@ -89,8 +89,8 @@ in `OPEN_QUESTIONS.md`.
 - Status: accepted.
 - Brief contact with a goal is not success. The ball must remain inside its hole
   or bounded landing zone under the configured settlement tolerance.
-- A ball that enters and bounces out before confirmation is an unsuccessful
-  launch.
+- A ball that enters and bounces out before confirmation has not completed the
+  goal, but the launch remains active under D-040.
 - After confirmation, the ball remains visibly present and cannot be knocked out
   or have its completed goal invalidated by a later shot.
 
@@ -99,7 +99,8 @@ in `OPEN_QUESTIONS.md`.
 - Status: accepted.
 - The game has no timer, lives, finite ball stock, or shot limit that ends a
   stage. A miss ends only the current launch and returns the player to planning.
-- An unsuccessful ball leaves active simulation when that launch resolves. A
+- An unsuccessful ball leaves active simulation only when that launch reaches a
+  resolution condition in D-040. A
   later launch may begin before then under the bounded concurrency in D-026;
   only confirmed settled balls persist after active launches resolve.
 - Stage success occurs after every required goal is confirmed.
@@ -537,8 +538,37 @@ in `OPEN_QUESTIONS.md`.
   physical launch origin.
 - Replace the launcher-attached direction wedge with an aim halo that floats
   slightly above the base. A horizontal ring and perimeter tick show yaw; a
-  laterally offset dotted vertical arc and bead show elevation. The halo hides
-  in cannon first-person view and must not create a second-barrel silhouette.
+  laterally offset dotted vertical arc and bead show elevation. The halo remains
+  visible in overview/planning and cannon first-person view and must not create a
+  second-barrel silhouette.
+
+### D-040 — Separate settlement candidacy, live-ball resolution, and terrain slope limits
+
+- Status: accepted on 2026-08-15; clarifies D-010 and D-011 and supersedes
+  D-039's halo-hiding clause and its assumption that horizontal stretch alone
+  makes every local landform acceptably gentle.
+- Goal overlap is a settlement candidate. Exiting before confirmation clears the
+  candidate, its dwell, and temporary settlement drag but leaves the ball live;
+  it may enter the same or another incomplete goal later.
+- Resolve a live ball on confirmed settlement, explicit out-of-bounds, manual
+  retry/reset, or two continuous real seconds of stable rest outside every
+  incomplete goal. A 15-second leak guard applies only before the first valid
+  surface contact. A contacted ball has no absolute lifetime timeout.
+- Keep the floating yaw-and-elevation halo visible in both planning views. Its
+  geometry is unshaded, high contrast, shadow-free, and thick enough in ordinary
+  captures; a narrow no-depth-tested accent may preserve readability.
+- Keep D-039's horizontal extents, object scale, and ballistic range. Instead of
+  another global expansion, widen semantic landform footprints with course
+  scale, remove hard multi-metre terrace quantization, constrain filtering around
+  start/goal supports, and certify the final shared render/collision height array.
+  Each course must have p95 adjacent-sample slope at most `42` degrees, maximum
+  slope at most `60` degrees, no more than `3%` of samples over `45` degrees, and
+  relief within its D-039 target through `target + 16` metres.
+- D-024's original two-course whole-mountain admission is not a hard generation
+  gate for the enlarged prepared catalog. Record every visible terrain point as
+  admitted, launcher-excluded, or unadmitted diagnostic evidence without
+  pretending launcher/goal samples represent the whole map. Every authored
+  launcher-to-goal corridor retains the full range, yaw, and height guards.
 
 ## Rationale
 

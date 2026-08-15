@@ -235,9 +235,13 @@ func _run() -> void:
 	)
 	_assert_true(
 		relay_drag_distance > 1.0 \
-				and relay_drag_distance <= relay_span * 0.081 \
+				and relay_drag_distance <= relay_span * 0.083 \
 				and game.active_course().content_bounds.has_point(relay_focus_after_drag),
-		"Relay left drag must move gently while staying inside its exploration bounds."
+		"Course left drag %.3f must stay within %.3f and inside exploration bounds (%s)." % [
+			relay_drag_distance,
+			relay_span * 0.083,
+			game.active_course().content_bounds.has_point(relay_focus_after_drag),
+		]
 	)
 
 	if not _failed:

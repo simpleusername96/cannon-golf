@@ -202,9 +202,12 @@ func _assert_goal_plate_support(
 	for direction: Vector2 in shoulder_directions:
 		var shoulder_point: Vector2 = Vector2(leg.goal_position.x, leg.goal_position.z) \
 				+ direction * (leg.goal_radius + FAST_GENERATOR.PLATE_TERRAIN_SHOULDER * 0.75)
+		var shoulder_height := prepared.height_at_local(shoulder_point.x, shoulder_point.y)
 		_assert_true(
-			absf(prepared.height_at_local(shoulder_point.x, shoulder_point.y) - support_y) <= 0.12,
-			"Every goal plate must have a broad visible terrain shoulder outside its wall."
+			absf(shoulder_height - support_y) <= 0.12,
+			"%s goal plate shoulder %s differs by %.3fm from its support." % [
+				prepared.course_id, direction, shoulder_height - support_y,
+			]
 		)
 
 

@@ -59,9 +59,44 @@ func _initialize() -> void:
 				and is_equal_approx(halo.indicated_elevation_degrees(), 41.0),
 		"The halo must track both canonical launcher angles."
 	)
+	var yaw_tick := halo.get_node_or_null("YawTick") as MeshInstance3D
+	var elevation_bead := halo.get_node_or_null("ElevationBead") as MeshInstance3D
+	var yaw_ring := halo.get_node_or_null("YawRing") as MeshInstance3D
+	var elevation_arc := halo.get_node_or_null("ElevationArc") as Node3D
+	var accent_material := yaw_tick.mesh.surface_get_material(0) as StandardMaterial3D
+	var bead_material := elevation_bead.mesh.surface_get_material(0) as StandardMaterial3D
+	var guide_material := yaw_ring.mesh.surface_get_material(0) as StandardMaterial3D
+	_assert_true(
+		accent_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
+				and accent_material.no_depth_test \
+				and bead_material.no_depth_test \
+				and guide_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
+				and not guide_material.no_depth_test,
+		"The halo must use an unshaded surface guide and compact no-depth active markers."
+	)
+	var all_halo_meshes: Array[MeshInstance3D] = [yaw_ring, yaw_tick, elevation_bead]
+	for arc_child in elevation_arc.get_children():
+		all_halo_meshes.append(arc_child as MeshInstance3D)
+	var shadows_disabled := true
+	for halo_mesh in all_halo_meshes:
+		shadows_disabled = shadows_disabled \
+				and halo_mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_assert_true(
+		shadows_disabled,
+		"Every halo guide and active marker must remain shadow-free."
+	)
 	launcher.set_first_person_visuals_hidden(true)
-	_assert_true(not halo.visible, "Cannon first-person must hide the world-space aim halo.")
+	_assert_true(
+		halo.visible and not launcher.get_node("LauncherVisualRoot").visible \
+				and yaw_tick.scale.is_equal_approx(Vector3.ONE * halo.CANNON_MARKER_SCALE) \
+				and elevation_bead.scale.is_equal_approx(Vector3.ONE * halo.CANNON_MARKER_SCALE),
+		"Cannon first-person must hide only the physical launcher while retaining the aim halo."
+	)
 	launcher.set_first_person_visuals_hidden(false)
+	_assert_true(
+		yaw_tick.scale.is_equal_approx(Vector3.ONE) and elevation_bead.scale.is_equal_approx(Vector3.ONE),
+		"Returning to planning must restore ordinary world-space marker scale."
+	)
 	var origin_a := launcher.launch_origin()
 	var velocity_a := launcher.launch_velocity()
 	var origin_b := launcher.launch_origin()

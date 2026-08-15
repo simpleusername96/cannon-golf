@@ -5,7 +5,9 @@ signal first_surface_contact(ball: CannonGolfBall, world_position: Vector3, worl
 signal launch_ended(ball: CannonGolfBall, reason: StringName)
 
 const RADIUS := CannonGolfBallistics.BALL_RADIUS
-const MAXIMUM_FLIGHT_SECONDS := CannonGolfBallistics.MAXIMUM_FLIGHT_SECONDS
+## This is a leak guard for shots that have not yet made a valid surface
+## contact. Contacted balls resolve through the live-shot state machine.
+const MAXIMUM_FLIGHT_SECONDS := 15.0
 const ORDINARY_ANGULAR_DAMP := 0.42 * CannonGolfBallistics.MOTION_TIME_SCALE
 const SETTLEMENT_LINEAR_DAMP := 0.60 * CannonGolfBallistics.MOTION_TIME_SCALE
 const SETTLEMENT_ANGULAR_DAMP := 1.20 * CannonGolfBallistics.MOTION_TIME_SCALE
@@ -67,7 +69,7 @@ func _physics_process(delta: float) -> void:
 	_elapsed += delta
 	if not play_bounds.has_point(global_position):
 		end_launch(&"out_of_bounds")
-	elif _elapsed >= MAXIMUM_FLIGHT_SECONDS:
+	elif not _first_contact_emitted and _elapsed >= MAXIMUM_FLIGHT_SECONDS:
 		end_launch(&"timeout")
 
 

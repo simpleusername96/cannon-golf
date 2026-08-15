@@ -22,6 +22,7 @@ func _run() -> void:
 	game._camera_rig.zoom_by_steps(-2.0)
 	var stored_pan := game.planning_pan
 	var stored_zoom := game.planning_zoom
+	var stored_view := game.planning_view
 	for index in range(5):
 		game._impact_history.stamp(Vector3(float(index), 6.0, -12.0), Vector3.UP)
 	var mark_identities := game._impact_history.mark_instance_ids()
@@ -30,13 +31,13 @@ func _run() -> void:
 	_assert_true(game.fire(), "The first live shot must launch.")
 	var first_ball := game.current_ball
 	_assert_true(first_ball != null and game.active_ball_count() == 1, "Shot one must remain live.")
-	_assert_true(game._camera_rig.camera_mode == &"planning", "Fire must preserve the planning camera.")
+	_assert_true(game._camera_rig.is_following(first_ball), "Fire must automatically follow the newest live ball.")
 	_assert_true(game._hud.get_node("%HorizontalSlider").editable, "Live flight must not lock horizontal aim.")
 	_assert_true(game._hud.get_node("%ElevationSlider").editable, "Live flight must not lock vertical aim.")
 	_assert_true(game._hud.get_node("%PowerSlider").editable, "Live flight must not lock power.")
 	_assert_true(not game._hud.get_node("%FireButton").disabled, "Shot two must remain immediately available.")
-	_assert_true(game.toggle_shot_camera(), "The explicit follow action must follow the newest live ball.")
-	_assert_true(game._camera_rig.is_following(first_ball), "Explicit follow must select shot one.")
+	_assert_true(game.toggle_shot_camera(), "The camera toggle must return automatic follow to planning.")
+	_assert_true(game._camera_rig.camera_mode == &"planning", "The camera toggle must restore planning.")
 	var tab := InputEventKey.new()
 	tab.keycode = KEY_TAB
 	tab.pressed = true
@@ -46,7 +47,7 @@ func _run() -> void:
 	_assert_true(game._camera_rig.camera_mode == &"planning", "Tab must not enter Shot Follow from planning.")
 	_assert_true(game.toggle_shot_camera(), "The explicit follow action must return to the newest live ball.")
 	_assert_true(game.return_to_planning_view(), "The explicit camera action must return to planning.")
-	_assert_true(game.planning_view == &"cannon", "Camera return must preserve planning view.")
+	_assert_true(game.planning_view == stored_view, "Camera return must preserve planning view.")
 	_assert_true(game.planning_pan.is_equal_approx(stored_pan), "Camera return must preserve planning pan.")
 	_assert_true(is_equal_approx(game.planning_zoom, stored_zoom), "Camera return must preserve planning zoom.")
 
@@ -63,8 +64,8 @@ func _run() -> void:
 	)
 	_assert_true(is_instance_valid(first_ball), "Launching shot two must not remove shot one.")
 	_assert_true(
-		game._camera_rig.is_following(first_ball) and not game._camera_rig.is_following(second_ball),
-		"Fire during Shot Follow must preserve the existing follow target."
+		game._camera_rig.is_following(second_ball) and not game._camera_rig.is_following(first_ball),
+		"Fire during Shot Follow must retarget the camera to the newest ball."
 	)
 	_assert_true(second_ball.global_position.is_equal_approx(second_origin), "Shot two must use the edited origin.")
 	_assert_true(second_ball.linear_velocity.is_equal_approx(second_velocity), "Shot two must use the edited velocity.")
@@ -86,7 +87,7 @@ func _run() -> void:
 	_assert_true(game.current_ball != retry_ball, "Quick retry must create a different ball.")
 	_assert_true(game.current_ball.global_position.is_equal_approx(retry_origin), "Quick retry must reuse the exact launch origin.")
 	_assert_true(game.current_ball.linear_velocity.is_equal_approx(retry_velocity), "Quick retry must reuse the exact launch velocity.")
-	_assert_true(game.planning_view == &"cannon" and game.planning_pan.is_equal_approx(stored_pan), "Quick retry must preserve planning context.")
+	_assert_true(game.planning_view == stored_view and game.planning_pan.is_equal_approx(stored_pan), "Quick retry must preserve planning context.")
 	_assert_true(game._impact_history.mark_instance_ids() == mark_identities, "Quick retry must preserve all five mark identities.")
 	var followed_retry_ball := game.current_ball
 	_assert_true(game.toggle_shot_camera(), "Retry follow preservation requires an explicit followed target.")
@@ -144,6 +145,7 @@ func _run() -> void:
 	game.set_planning_view(&"cannon")
 	game.pan_planning(Vector2(1.0, -1.0))
 	stored_pan = game.planning_pan
+	stored_view = game.planning_view
 	for index in range(5):
 		game._impact_history.stamp(Vector3(float(index), 6.0, -12.0), Vector3.UP)
 	var oldest_color := game._impact_history.oldest_color()
@@ -173,7 +175,7 @@ func _run() -> void:
 		"The confirmed ball and its visible mesh must survive deferred cleanup."
 	)
 	_assert_true(game.active_ball_count() == 0 and not game.fire(), "A cleared goal must reject later launches.")
-	_assert_true(game.planning_view == &"cannon" and game.planning_pan.is_equal_approx(stored_pan), "Clear must preserve planning context.")
+	_assert_true(game.planning_view == stored_view and game.planning_pan.is_equal_approx(stored_pan), "Clear must preserve planning context.")
 	if not _failed:
 		print("Cannon Golf multi-shot session contract passed.")
 	quit(1 if _failed else 0)

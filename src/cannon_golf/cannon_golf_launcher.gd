@@ -111,7 +111,7 @@ func set_first_person_visuals_hidden(hidden: bool) -> void:
 	if _visual_root != null:
 		_visual_root.visible = not hidden
 	if _aim_halo != null:
-		_aim_halo.visible = not hidden
+		_aim_halo.set_cannon_view_active(hidden)
 
 
 func _build_visuals() -> void:

@@ -130,8 +130,7 @@ cannon composition.
 ### Flow 3: Learn from a miss
 
 - Trigger: a launched ball first contacts terrain outside the intended route,
-  leaves a goal before settling, exits the playable course, or comes to rest
-  outside every incomplete goal.
+  exits the playable course, or comes to rest outside every incomplete goal.
 - Main steps: the game stamps one impact mark, makes it the darkest mark, fades
   earlier marks in visual priority, and returns control without an exact landing
   callout.
@@ -176,7 +175,12 @@ cannon composition.
   it provides support only; it must not be excavated into a cup or deep basin.
   A ball counts only after it remains inside the plate under the stage's
   position and safe-motion tolerances for one continuous second. Entering and
-  then bouncing out is an unsuccessful launch.
+  then bouncing out cancels that settlement attempt but leaves the ball live.
+  It may later re-enter the same or another incomplete goal. A live ball resolves
+  only on confirmation, explicit out-of-bounds, manual retry/reset, or after it
+  remains at rest outside every incomplete goal for two continuous real seconds.
+  A 15-second safety timeout applies only when the ball has never recorded a
+  valid surface contact; no absolute timeout applies after first contact.
 - Reason: success is controlled settlement, not brief trigger contact or target
   shooting.
 
@@ -325,7 +329,11 @@ cannon composition.
   `315 x 180` metre baseline. Later course horizontal scale increases through
   `1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25`, reaching
   approximately `473 x 720` metres for course 10, while
-  minimum playable relief increases from `60` to `160` metres. That relief must
+  target playable relief increases from `60` to `160` metres. Final relief must
+  remain between each target and `target + 16` metres. Across the final shared
+  render/collision height array, adjacent-sample slope p95 must be at most `42`
+  degrees, maximum slope at most `60` degrees, and at most `3%` of samples may
+  exceed `45` degrees. That relief must
   read as macro peaks, shelves, ridges, and valleys rather than local goal
   excavation. Goal elevations may rise or descend across the authored layout. The launch
   envelope remains an internal admission rule, never a visible trajectory or
@@ -404,8 +412,11 @@ cannon composition.
 
 - Applies to: FR-4, FR-5, FR-12.
 - Conditions for done: entering a goal at excessive speed and bouncing out does
-  not complete it; remaining within its tolerances for the required settle time
-  does. On `deep_relay`, either goal may confirm first without clearing the
+  not complete it or remove the live ball; it may re-enter that goal or another
+  incomplete goal. Remaining within tolerances for the required settle time
+  completes it. A contacted ball has no absolute lifetime timeout, while
+  out-of-bounds and two seconds of stable rest outside all goals resolve it. On
+  `deep_relay`, either goal may confirm first without clearing the
   course. After confirmation, the ball stays visible in that goal and cannot be
   knocked out by later shots. The original start and that goal appear in the
   cannon-source selector; choosing the goal centers the cannon on its plate.
@@ -423,6 +434,8 @@ cannon composition.
   velocity while retaining all prior impact marks and planning context; at a
   a source change it restores the retried ball's recorded cannon source and
   setup. Course reset clears that attempt history and restores the original start.
+  A ball that rebounds out of a settlement candidate remains one of the active
+  balls until it reaches an explicit resolution condition.
 
 ### AC-9: Predictable baseline rebound
 
