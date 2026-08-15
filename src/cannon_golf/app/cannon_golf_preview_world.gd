@@ -64,6 +64,7 @@ func set_preview_visible(should_show: bool) -> void:
 
 func _build_environment() -> void:
 	_environment = WorldEnvironment.new()
+	_environment.name = "WorldEnvironment"
 	var environment := Environment.new()
 	var sky_material := PanoramaSkyMaterial.new()
 	sky_material.panorama = load("res://assets/environment/kenney/skybox-day.png") as Texture2D
@@ -75,7 +76,6 @@ func _build_environment() -> void:
 	environment.ambient_light_color = Color(0.91, 0.93, 0.95, 1.0)
 	environment.ambient_light_energy = 0.34
 	environment.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-	environment.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	_environment.environment = environment
 	add_child(_environment)
 	var sun := DirectionalLight3D.new()
@@ -88,22 +88,21 @@ func _build_environment() -> void:
 	add_child(sun)
 	_sun = sun
 	_ground = MeshInstance3D.new()
-	_ground.name = "GroundApron"
+	_ground.name = "OpenGround"
 	_ground.position = Vector3(0.0, -5.0, -13.0)
-	var ground_mesh := CylinderMesh.new()
-	ground_mesh.top_radius = 160.0
-	ground_mesh.bottom_radius = 166.0
-	ground_mesh.height = 2.0
-	ground_mesh.radial_segments = 32
+	var ground_mesh := PlaneMesh.new()
+	ground_mesh.size = Vector2.ONE * CannonGolfCourseWorldEnvelope.OPEN_GROUND_SPAN
 	var material := ShaderMaterial.new()
 	material.shader = load("res://src/terrain/open_ground.gdshader") as Shader
 	material.set_shader_parameter(
 		&"ground_albedo",
 		load("res://assets/environment/ambientcg/Ground003_1K-JPG_Color.jpg") as Texture2D
 	)
-	material.set_shader_parameter(&"base_color", Color(0.48, 0.51, 0.42, 1.0))
+	material.set_shader_parameter(
+		&"base_color", CannonGolfCourseWorldEnvelope.OPEN_GROUND_COLOR
+	)
 	material.set_shader_parameter(&"world_scale", 0.032)
-	material.set_shader_parameter(&"detail_strength", 0.18)
+	material.set_shader_parameter(&"detail_strength", 0.1)
 	material.set_shader_parameter(&"source_saturation", 0.15)
 	ground_mesh.material = material
 	_ground.mesh = ground_mesh
@@ -114,8 +113,7 @@ func _apply_world_envelope() -> void:
 	var envelope := CannonGolfCourseWorldEnvelope.resolve(_builder.course.content_bounds)
 	var center: Vector3 = envelope.ground_center
 	var scale_factor := float(envelope.ground_scale)
-	_ground.position.x = center.x
-	_ground.position.z = center.z
+	_ground.position = center
 	_ground.scale = Vector3(scale_factor, 1.0, scale_factor)
 	_camera.far = float(envelope.far_distance)
 	_sun.directional_shadow_max_distance = float(envelope.far_distance)

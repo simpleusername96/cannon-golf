@@ -22,7 +22,6 @@ ambient_light_source = 2
 ambient_light_color = Color(0.91, 0.93, 0.95, 1)
 ambient_light_energy = 0.34
 reflected_light_source = 1
-tonemap_mode = 2
 
 [sub_resource type="ShaderMaterial" id="BaseMaterial"]
 shader = ExtResource("7_ground_shader")
@@ -32,12 +31,9 @@ shader_parameter/world_scale = 0.032
 shader_parameter/detail_strength = 0.1
 shader_parameter/source_saturation = 0.15
 
-[sub_resource type="CylinderMesh" id="BaseMesh"]
+[sub_resource type="PlaneMesh" id="BaseMesh"]
 material = SubResource("BaseMaterial")
-top_radius = 160.0
-bottom_radius = 166.0
-height = 2.0
-radial_segments = 32
+size = Vector2(1600, 1600)
 
 [node name="CannonGolf" type="Node3D"]
 script = ExtResource("1_game")
@@ -64,7 +60,7 @@ fov = 48.0
 near = 0.1
 far = 520.0
 
-[node name="DioramaBase" type="MeshInstance3D" parent="."]
+[node name="OpenGround" type="MeshInstance3D" parent="."]
 position = Vector3(0, -5, -13)
 mesh = SubResource("BaseMesh")
 

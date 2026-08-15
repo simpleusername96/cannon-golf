@@ -23,7 +23,7 @@ var initial_certification_candidate := false
 
 @onready var _camera: Camera3D = %Camera
 @onready var _sun: DirectionalLight3D = $Sun
-@onready var _ground: MeshInstance3D = $DioramaBase
+@onready var _ground: MeshInstance3D = $OpenGround
 @onready var _course_builder: CannonGolfCourseBuilder = %CourseBuilder
 @onready var _ball_root: Node3D = %Balls
 @onready var _impact_history: CannonGolfImpactHistory = %ImpactHistory
@@ -522,8 +522,7 @@ func _apply_world_envelope() -> void:
 	var envelope := CannonGolfCourseWorldEnvelope.resolve(_course_builder.presentation_bounds())
 	var center: Vector3 = envelope.ground_center
 	var scale_factor := float(envelope.ground_scale)
-	_ground.position.x = center.x
-	_ground.position.z = center.z
+	_ground.position = center
 	_ground.scale = Vector3(scale_factor, 1.0, scale_factor)
 	_camera.far = float(envelope.far_distance)
 	_sun.directional_shadow_max_distance = float(envelope.far_distance)

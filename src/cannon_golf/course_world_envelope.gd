@@ -4,6 +4,9 @@ extends RefCounted
 ## Resolves the presentation envelope around generated course bounds.
 
 const BASE_GROUND_RADIUS := 160.0
+const OPEN_GROUND_SPAN := 1600.0
+const OPEN_GROUND_COLOR := Color(0.349, 0.4, 0.341, 1.0)
+const GROUND_JOIN_DEPTH := 0.5
 const BASE_FAR_DISTANCE := 520.0
 const BASE_GROUND_CENTER_XZ := Vector2(0.0, -13.0)
 const GROUND_MARGIN := 32.0
@@ -16,7 +19,7 @@ static func resolve(content_bounds: AABB) -> Dictionary:
 		return {
 			"ground_center": Vector3(
 				BASE_GROUND_CENTER_XZ.x,
-				0.0,
+				content_bounds.position.y - GROUND_JOIN_DEPTH,
 				BASE_GROUND_CENTER_XZ.y
 			),
 			"ground_scale": 1.0,
@@ -29,7 +32,7 @@ static func resolve(content_bounds: AABB) -> Dictionary:
 	return {
 		"ground_center": Vector3(
 			content_bounds.get_center().x,
-			0.0,
+			content_bounds.position.y - GROUND_JOIN_DEPTH,
 			content_bounds.get_center().z
 		),
 		"ground_scale": maxf(1.0, horizontal_radius / BASE_GROUND_RADIUS),
