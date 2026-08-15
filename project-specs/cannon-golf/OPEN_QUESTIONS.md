@@ -46,7 +46,7 @@ affected code path is designed.
 
 | ID | Resolution | Owner |
 | --- | --- | --- |
-| Q-05 | A goal counts only after safe settlement. The confirmed ball stays visible and cannot be displaced; exact collision treatment is an implementation detail. | `DECISIONS.md` D-010 |
+| Q-05 | A goal counts only after safe settlement. D-044 supersedes retained-ball display: completion is stored as goal state and the resolved ball is removed while its first-contact mark remains. | `DECISIONS.md` D-010 and D-044 |
 | Q-06 | Retries are unlimited. There is no timer, lives, finite ball stock, or shot limit that can fail the stage. | `DECISIONS.md` D-011 |
 | Q-11 | Confirmed goals persist and later shots cannot invalidate them, so multi-goal completion does not require several still-dynamic balls to remain settled simultaneously. | `DECISIONS.md` D-010 and D-011 |
 | Q-15 | The selected additional vocabulary is a flat-surface damping pad, a mid-air placeable airflow device, and a bounded gravity-drop zone. | `DECISIONS.md` D-015 |
@@ -56,7 +56,7 @@ affected code path is designed.
 | Q-03 | Impact priority fades by retained launch order, not elapsed time. | `DECISIONS.md` D-019 |
 | Q-04 | The prototype retains five first-contact marks. | `DECISIONS.md` D-019 |
 | Q-12 | The initial two-course prototype uses deterministic Paint Mountain-generated, connected heightfield mountains at original horizontal scale. Each locally concave terrain goal and the complete visible terrain pass the accepted real-ballistics admission contract. | `DECISIONS.md` D-021, D-024, and D-025 |
-| Q-10 | Ordered relay courses assign goals one at a time. Only the active goal may confirm; intermediate confirmation preserves its ball, moves the reusable launcher to the completed goal's exact horizontal center, advances the compact goal tally, and does not clear the course. Only the final required goal clears. | `DECISIONS.md` D-030 and D-031 |
+| Q-10 | Relay history originally preserved confirmed balls. D-044 supersedes that detail: a completed basin remains an optional launcher source after the resolved ball is removed; intermediate confirmation preserves unrelated live balls and does not clear the course. | `DECISIONS.md` D-030, D-031, and D-044 |
 | Q-20 | Direct-shot certification repeats the center twice and checks all six axial one-unit control neighbors. Center must pass twice; at least four neighbors pass with one on each axis. Placement tolerances remain open with their device rules. | `DECISIONS.md` D-032 |
 | Q-22 | Authors provide bounded course intent; an offline constraint resolver chooses exact goals and terrain adjustments, and real Godot physics certifies the immutable prepared artifact. Runtime does not generate. | `DECISIONS.md` D-032 |
 

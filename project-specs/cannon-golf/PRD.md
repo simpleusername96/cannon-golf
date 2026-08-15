@@ -124,11 +124,11 @@ cannon composition.
   cannon location,
   compare prior impact marks, place and orient a limited bounce pad when the
   natural route is insufficient, then fire and observe. Confirming a goal
-  preserves its ball and unlocks that plate as an optional cannon location; it
+  removes its ball after progress is recorded and unlocks that basin as an optional cannon location; it
   does not choose the next goal or move the cannon automatically.
-- Expected outcome: each required goal contains a confirmed settled ball. A
-  confirmed ball remains visible and cannot be displaced from its completed
-  goal by later shots. Confirming every required goal clears the course,
+- Expected outcome: every required goal is recorded as completed, while only
+  first-contact impact marks remain from resolved balls. Later shots cannot
+  invalidate completed goals. Confirming every required goal clears the course,
   regardless of order.
 
 ### Flow 3: Learn from a miss
@@ -177,11 +177,12 @@ cannon composition.
 
 ### FR-4: Settlement goals
 
-- Requirement: every current-catalog goal is a shallow physical landing plate
-  installed on connected terrain. It has a readable floor, a low retaining
-  wall, and a broad lowered opening facing the incoming leg. The terrain below
-  it provides support only; it must not be excavated into a cup or deep basin.
-  A ball counts only after it remains inside the plate under the stage's
+- Requirement: every current-catalog goal is a smooth, terrain-owned basin in
+  the connected heightfield. It has a near-flat scoring floor and a broad,
+  gradual transition to the surrounding terrain, with no separate physical
+  plate floor, fence, retaining wall, or raised lip. A flush non-colliding disc
+  and fixed flag identify the goal without changing its terrain boundary.
+  A ball counts only after it remains inside the basin under the stage's
   position and safe-motion tolerances for one continuous second. Entering and
   then bouncing out cancels that settlement attempt but leaves the ball live.
   It may later re-enter the same or another incomplete goal. A live ball resolves
@@ -196,12 +197,12 @@ cannon composition.
 
 - Requirement: a stage may require one or more goals. A course may author an
   stable goal numbering for authoring and UI, but gameplay order is free. Any
-  incomplete goal may confirm. Once a goal confirms a settled ball, that ball
-  remains visibly present and protected from later displacement, and that
-  plate becomes an optional cannon source. The cannon never relocates
+  incomplete goal may confirm. Once a goal confirms a settled ball, progress is
+  stored independently and the resolved ball is removed, while that basin
+  becomes an optional cannon source. The cannon never relocates
   automatically. The player may select the original start or any completed
   goal; selecting a source centers the reusable cannon on that source, aligns
-  it to the plate floor when applicable, and starts that source at
+  it to the basin floor when applicable, and starts that source at
   `50 / 50 / 50`. Stage completion depends only on confirming every goal.
 - Reason: persistent goal occupancy makes progress legible and prevents later
   shots from invalidating an already completed route.
@@ -255,7 +256,10 @@ cannon composition.
 
 - Requirement: normal play must not display an exact predicted landing point,
   a full post-launch trajectory, or a separate UI label for the prior impact.
-  The terrain mark itself is the feedback. Persistent gameplay UI is limited to
+  A large, thin world-space aim arc may show only the first capped portion of
+  the current ballistic motion and must end in a thick tangent arrow. It must
+  not reach a goal, show an impact point, or imply complete-flight accuracy.
+  The terrain mark itself is the result feedback. Persistent gameplay UI is limited to
   compact horizontal aim, vertical angle, and power modules with direct
   decrement, slider, and increment input; Fire; overview; cannon view; ball
   follow; quick retry; pause; one compact completed-goals/total-goals tally; a
@@ -428,9 +432,9 @@ cannon composition.
   completes it. A contacted ball has no absolute lifetime timeout, while
   out-of-bounds and two seconds of stable rest outside all goals resolve it. On
   `deep_relay`, either goal may confirm first without clearing the
-  course. After confirmation, the ball stays visible in that goal and cannot be
-  knocked out by later shots. The original start and that goal appear in the
-  cannon-source selector; choosing the goal centers the cannon on its plate.
+  course. After confirmation, the ball is removed after its completed-goal
+  state and impact mark are secure. The original start and that goal appear in
+  the cannon-source selector; choosing the goal centers the cannon on its basin floor.
   The compact goal tally advances from `0 / 2` to `1 / 2`.
 
 ### AC-8: Unlimited recovery from misses
@@ -471,8 +475,8 @@ cannon composition.
 - Applies to: FR-15.
 - Conditions for done: loading a fresh stage creates no route-changing mechanism
   in the course; only terrain, cannon, and goals are visible gameplay objects.
-  Every goal supplies its own shallow plate floor and low retaining wall, while
-  the connected generated terrain supplies only its fitted support. Generated
+  Every goal is a smooth basin in the same connected render/collision
+  heightfield, with no separate floor or retaining wall. Generated
   top and support-shell geometry remain inside their accepted construction and
   triangle contracts.
 
@@ -523,8 +527,8 @@ cannon composition.
   count, and orientation are constrained.
 - Airflow and gravity volumes may become hard to judge unless their boundaries
   and active direction are readable from both planning camera families.
-- A confirmed ball must remain visible without becoming an accidental obstacle
-  that invalidates later certified routes.
+- Completed-goal state must remain legible through the compact tally and source
+  selector after its resolved ball is removed.
 - The current exact impact prediction and target-click inverse solver may remove
   the estimation challenge if reused without a product decision.
 

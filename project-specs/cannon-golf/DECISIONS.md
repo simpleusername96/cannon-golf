@@ -628,6 +628,44 @@ in `OPEN_QUESTIONS.md`.
   horizontal look-at reference rather than a colinear world-up vector. Neither
   presentation draws a trajectory, center-origin wedge, or second-barrel silhouette.
 
+### D-044 — Use disposable resolved balls, terrain basins, a partial aim arc, and macro relief
+
+- Status: accepted on 2026-08-16; supersedes the retained-confirmed-ball clauses
+  in D-010, D-030, D-036, D-041, and D-043; the physical plate/fence clauses in
+  D-035 and D-043; the aim-halo clauses in D-039, D-040, and D-043; and the
+  `60..160 m` relief limits in D-039 and D-040.
+- Every resolved ball is removed from the world after dependent completion or
+  failure bookkeeping is secure. Its existing first valid terrain-contact mark
+  remains under the five-mark history limit. Completed goals are stored as goal
+  identities, not retained scene nodes. Intermediate confirmation does not
+  remove or alter unrelated live balls; final clear may remove the remainder.
+- Each goal is a smooth basin in the same connected render/collision heightfield.
+  It has a near-flat scoring floor, a broad gradual shoulder, one flush
+  non-colliding disc, and a fixed flag. It has no separate physical floor,
+  fence, retaining wall, raised lip, or completion-dependent world geometry.
+  Completion hides only its airborne location arrow and updates compact UI state.
+- Replace the ring-and-dotted-scale halo with one large, thin, dark partial
+  ballistic curve from the launch origin. It samples only the first capped part
+  of the current launch setup and ends in a thick connected amber arrow aligned
+  to the final tangent. It never reaches a predicted landing point or presents
+  a complete trajectory. The curve stays depth-tested; only the compact
+  arrowhead may ignore depth. Cannon view hides the large curve and keeps its
+  compact reticle and physical barrel direction.
+- Multiply the accepted terrain relief schedule by ten to
+  `600, 650, 800, 900, 1000, 1120, 1240, 1360, 1480, 1600 m`. Distribute this
+  height through broad ridges, valleys, saddles, and plateaus by expanding the
+  macro terrain envelope as required. Do not satisfy it with a narrow cut,
+  isolated spike, deeper goal, steeper local cliff, or ballistic scaling. Keep
+  p95 adjacent slope at most `42°`, maximum slope at most `60°`, and at most
+  `3%` of samples above `45°`.
+- Route placement, play bounds, goal order, aim range, unlimited firing, the
+  current doubled ball pace, and overview/cannon/follow camera responsibilities
+  remain unchanged. Overview safety uses the physical terrain extent, while
+  normal reset framing uses route objects plus a small deterministic set of
+  nearby macro landmarks so the playable course stays readable.
+- D-042 remains in force. Bounce pads, damping pads, airflow, and gravity zones
+  stay deferred until the basic terrain and camera foundation is accepted.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

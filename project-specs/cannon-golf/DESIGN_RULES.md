@@ -68,17 +68,13 @@ coefficients, stage data formats, or code ownership.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
 - Use a true first-person view at the selected cannon source to show its actual
-  launch direction. A small reticle and a world-space aim halo make yaw and
-  elevation readable without implying a target or next goal. In overview, the
-  halo floats clearly above the launcher and uses a large deep-navy horizontal
-  ring plus compact perimeter tick for yaw. Its laterally offset dotted vertical
-  arc stays completely above the ground plane, and one bead marks elevation.
-  Cannon view uses a compact presentation of the same instrument ahead along
-  the real launch direction. It must not draw a center-origin line or wedge that
-  can read as a second barrel. Keep it visible in both overview/planning and
-  cannon views. Use unshaded high-contrast geometry with enough ordinary-view
-  screen thickness; narrow no-depth-tested ring and dot accents may preserve
-  readability without turning the broad instrument into a screen overlay. Exact
+  launch direction. In overview, draw one large, thin, deep-navy world-space
+  curve from the physical launch origin through only the first capped portion
+  of the current ballistic motion. Connect a thick amber arrowhead to the final
+  curve tangent. The curve must not reach a goal or show a landing/impact point.
+  Keep the curve depth-tested and shadow-free; only the compact arrowhead may
+  bypass depth testing. Hide this large world guide in cannon view, where the
+  small center reticle and physical barrel direction are sufficient. Exact
   vertical cannon aim must keep a finite, stable camera basis without reducing
   the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
@@ -140,34 +136,33 @@ coefficients, stage data formats, or code ownership.
 - Decorative rocks and trees may communicate scale but must not hide goals,
   impact marks, balls, or pad faces.
 
-### Settlement goals and settled balls
+### Settlement goals and resolved balls
 
-- A goal is a shallow physical landing plate placed on ordinary connected
-  terrain, not a deep hole, crater, floating ring, target decal, or invisible
-  trigger. Its complete floor must be visible from the authored overview.
-- The plate has a flat or barely concave floor, a low retaining wall, and one
-  broad lowered opening facing the incoming route. The wall catches low-energy
-  roll without looking like a cup or blocking the plate from view.
-- Terrain may fit a shallow support below the plate and blend back gradually,
-  but it must not supply the goal wall or create a surrounding excavation.
+- A goal is a smooth basin formed directly in the connected render/collision
+  heightfield. Its near-flat floor and broad gradual shoulder must be visible
+  from the authored overview.
+- Do not add a separate physical plate floor, low fence, retaining wall, raised
+  lip, or state-dependent boundary. A flush non-colliding disc and fixed flag
+  may identify the scoring floor.
+- The basin must be shallow relative to the macro terrain and wide enough to
+  read as normal landform shaping rather than a locally cut crater or cliff.
 - Entering a goal is not enough: a ball that bounces out before settlement must
   remain visibly unresolved and live. Exiting cancels only that settlement
   candidate; it must not delete the ball or prevent later re-entry.
-- A confirmed goal must show the settled ball clearly from every planning view,
-  and the ball must not move when later shots occur.
+- A confirmed goal removes its resolved ball after completed-goal state and the
+  existing first-contact impact mark are secure. Later shots cannot invalidate it.
 - All incomplete goals share the strongest available-goal flag and marker
-  rhythm. Confirmed goals are led by their retained ball and a completed marker
-  rhythm; there is no future or next-goal state in normal play.
-  Keep the physical plate flag as the local landing cue. Add a thick matte 3D
+  rhythm. Completion must not change basin, disc, flag, material, collision, or
+  boundary geometry; there is no future or next-goal geometry in normal play.
+  Keep the fixed flag as the local landing cue. Add a thick matte 3D
   downward arrow above the local skyline for course-scale location; do not use
   a thin emissive stem or diamond.
   One small edge-aligned tally may show completed goals over total goals, such as
-  `1 / 2`; it must not become a progress card or central status panel. Shape,
-  height, spacing, and the confirmed ball must distinguish the world states in
-  grayscale; color and contrast are secondary cues.
+  `1 / 2`; it must not become a progress card or central status panel. The tally
+  and source selector carry completed state after the ball is removed.
 - A compact edge-aligned cannon-source selector lists `Start` plus completed
   goal numbers only. It is a location choice, not a target selector. Selecting
-  a completed goal moves the cannon to that plate center and resets that source
+  a completed goal moves the cannon to that basin-floor center and resets that source
   to `50 / 50 / 50`; confirmation never selects it automatically.
 - The current-catalog ball uses one `2.0 m` physical and visual radius plus a
   dark navy, low-gloss material so it remains readable over the enlarged pale

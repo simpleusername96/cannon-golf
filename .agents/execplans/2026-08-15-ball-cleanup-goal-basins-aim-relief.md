@@ -13,9 +13,9 @@ related:
   - .agents/execplans/2026-08-15-normal-camera-course-variety.md
 ---
 
-# Ball Cleanup, Goal Basins, Aim Instrument, and Macro Relief — Execution Contract
+# Ball Cleanup, Goal Basins, Partial Aim Arc, and Macro Relief — Execution Contract
 
-The current build already removes a ball that rests outside a goal, but it retains a confirmed ball as progress state. A goal owns a raised physical floor and segmented fence whose visible segment count changes after confirmation. The current launcher halo is a large closed ring with a curved dotted tail; at ordinary overview scale it resembles another goal and does not communicate yaw and pitch. The terrain generator limits total relief to 60–160 metres plus a small margin and flattens a broad support apron under every physical plate. This contract replaces those four behaviours without adding bounce pads, damping pads, wind, gravity devices, trajectory prediction, or a new camera system.
+The current build already removes a ball that rests outside a goal, but it retains a confirmed ball as progress state. A goal owns a raised physical floor and segmented fence whose visible segment count changes after confirmation. The current launcher halo is a large closed ring with a curved dotted tail; at ordinary overview scale it resembles another goal and does not communicate launch direction. The terrain generator limits total relief to 60–160 metres plus a small margin and flattens a broad support apron under every physical plate. This contract replaces those four behaviours without adding bounce pads, damping pads, wind, gravity devices, an exact landing prediction, or a new camera system.
 
 ## Purpose
 
@@ -24,7 +24,7 @@ The current build already removes a ball that rests outside a goal, but it retai
 - Completion state:
   - every failed or confirmed stationary ball is removed from the world while its existing first-contact mark remains;
   - each goal is a smooth terrain-owned basin with no physical fence, and its terrain, boundary, and floor never change on completion;
-  - a compact camera-readable two-axis instrument above the cannon communicates full `360°` yaw and `-90°..+90°` pitch without looking like a goal or trajectory;
+  - a large, thin, partial ballistic arc begins at the cannon and ends in a thick tangent arrow, so the combined yaw and pitch direction is readable without revealing the complete flight or landing point;
   - the generated terrain has ten times the currently contracted world-height relief, distributed through broad landforms while the accepted slope limits and gameplay route scale remain intact.
 
 ## Scope and Boundaries
@@ -41,7 +41,7 @@ Out of scope:
 
 - Bounce pads, damping or slow pads, wind, altered gravity, moving hazards, portals, or other course devices. D-042 remains in force: these stay deferred until the basic terrain and camera foundation is accepted.
 - Ball power, launch-speed range, damping, the doubled local motion pace, gravity, collision size, settlement dwell duration, unlimited firing, and full-direction aim ranges.
-- A trajectory preview, center-origin direction ray, wedge, second barrel, long arrow, or full-screen aim HUD.
+- A complete-flight trajectory, predicted landing point, range overlay, second barrel, or full-screen aim HUD. The short launch-direction arc and its connected arrow are explicitly in scope.
 - A new camera mode or a wholesale camera rewrite. Existing overview, cannon, and shot-follow responsibilities remain.
 - Menu, theme, course-select, and unrelated HUD redesign work.
 - New dependencies, downloaded art, or external runtime services.
@@ -54,8 +54,8 @@ Constraints and invariants:
 - Completed-goal progress is stored as goal identity/index data, never as a retained `Node3D` reference.
 - A goal basin uses the shared render/collision height array. It has no separate floor collision, retaining wall, lip collision, or state-dependent terrain geometry.
 - Completion hides the airborne arrow and updates the HUD tally only. The flag, basin geometry, basin material, apparent boundary, and collision remain unchanged.
-- The aim instrument remains anchored above the cannon in 3D world space. Its apparent guide size is camera-aware; it does not become a screen-corner widget.
-- Only compact active aim markers may bypass depth testing. The guide structure stays depth-tested so terrain occlusion remains truthful.
+- The aim guide is world-space geometry that starts at the physical launch origin and follows the current yaw, pitch, and power for only the first part of flight. It does not become a screen-corner widget.
+- The thin arc stays depth-tested. Only the connected arrowhead may bypass depth testing, so the direction remains legible without making the whole path visible through terrain.
 - The current p95, absolute-maximum, and high-slope-share limits remain `42°`, `60°`, and `3%` above `45°`.
 - Route positions, goal order, authored leg count, ballistic admission, route-derived out-of-bounds behaviour, and gameplay horizontal scale remain unchanged. Macro terrain may extend beyond the route and play envelopes.
 - Intermediate confirmation preserves unrelated live balls. Final stage clear retains the accepted D-041 cleanup and may remove all remaining live balls.
@@ -81,8 +81,8 @@ Exact actions requiring owner or user approval:
 | Impact history | `ImpactHistory` stamps one mark on the first valid terrain contact and retains at most five | Keep this semantic exactly; do not stamp settlement or deletion. A mark persists until the existing five-mark FIFO limit evicts it | 2.1, 2.2 |
 | Changing goal fence | `SettlementGoal` creates a static floor plus 13 wall segments; `_apply_visual_state()` deliberately displays 13 active, 7 future, and 4 confirmed rim markers | Delete the physical floor/fence and the state-dependent rim-marker grammar; completion cues never mutate the basin or its boundary | 1.1, 3.5 |
 | Current goal terrain and metadata | `_fit_goal_plate_support()` flattens a large apron at `goal_y - 0.18 m`; generated/prepared legs store `goal_rim_y` and a required raised `goal_lip_y`; authored `3.5..4.5 m` recess data is not the active topology | Replace the apron and old rim/lip fields. `goal_position.y` is the basin floor, `goal_radius` is the near-flat scoring radius, `basin_shoulder_y` is the outer terrain join height, and `basin_outer_radius` is the join radius. Retain one flush non-colliding landing disc | 3.4, 4.3 |
-| Current halo | `CannonGolfAimHalo` uses a `13 m` full ring at `12 m` float height plus a spatial semicircle of 17 dots; the full ring accent and all dots bypass depth | Replace the closed ring and curved dotted tail. Use one compact anchored attitude glyph with separated yaw ticks and a discrete pitch ladder | 2.3 |
-| Aim scale | The large world-metre geometry becomes another small dark circle in full-course framing, while close views make it dominate the cannon | Keep overview yaw geometry world-horizontal, rotate only the vertical pitch ladder about world Y to face the camera, and apply a camera/FOV/viewport-aware scalar root scale; target `64 px` yaw diameter with an accepted `56..72 px` band | 2.3, 4.2 |
+| Current halo | `CannonGolfAimHalo` uses a `13 m` full ring at `12 m` float height plus a spatial semicircle of 17 dots; the full ring accent and all dots bypass depth | Replace every ring, dot, and bead with one continuous thin partial launch arc and one thick connected tangent arrow | 2.3 |
+| Aim scale | The current halo becomes another small dark circle in full-course framing and does not show the combined launch direction | Draw the first `0.55 s` of the current damped ballistic path, capped before any predicted impact, with a minimum `32 m` visible chord and a maximum `95 m` path length; use a thick arrow that remains readable in overview | 2.3, 4.2 |
 | Terrain relief | The generator accepts per-course relief of `60..160 m` plus `16 m`; later terrain is about `472.5 × 720 m` with an `861 m` diagonal | Multiply the contracted relief by ten. Preserve slopes by separating the route envelope from a larger macro-terrain envelope rather than carving local cliffs or scaling ballistics | 3.1, 3.3 |
 | Mathematical feasibility | `1600 m` over the current `861 m` diagonal implies about `61.7°` average end-to-end slope. A `42°` run requires at least `1778 m` | Grow each terrain envelope, at the current aspect ratio, until its diagonal is at least `1.10 × relief / tan(38°)`; the late-course example is about `2253 m`, or `2.62×` its current diagonal. Never shrink below existing bounds. The `38°` design target gives margin below the `42°` p95 gate | 3.1 |
 | Spatial-bound coupling | One `local_bounds` currently drives route placement and heightfield construction; `content_bounds` drives framing/pan/world envelope, while `play_bounds` owns ball-lifecycle space | Preserve the current pre-expansion rectangle as `route_bounds`; use `terrain_bounds` for the expanded heightfield, physical `content_bounds` for far clip/fog/safety, unchanged route-derived `play_bounds` for ball resolution, and stored `overview_frame_points` plus diagnostic bounds for point-based overview framing/pan | 3.1, 4.1, 4.2 |
@@ -99,14 +99,12 @@ Current visual evidence:
 - `.godot/capture-temp/normal-camera-course-variety/course-9-planning-1280x720.png`: at complete-course scale the current terrain silhouette remains shallow and repetitive.
 - `.godot/capture-temp/goal-plate-final/course-0-planning.png`: the previous localized goal treatment shows the placed-ring/crater language that must not return.
 
-External reference families:
+External reference families retained for terrain and rendering implementation:
 
 | Reference | Useful principle | Accepted use here |
 | --- | --- | --- |
-| [FAA Instrument Flying Handbook, pitch scale and HSI](https://www.faa.gov/sites/faa.gov/files/pilots/FAA-H-8083-15B.pdf) | Heading and pitch are shown as separate scales with discrete marks; a moving active cue is read against a stable guide | Separate yaw ticks from a vertical pitch ladder; one amber tick and one amber bead carry the live values |
-| [NASA TP-3525, Figures 4–5](https://ntrs.nasa.gov/api/citations/19960002013/downloads/19960002013.pdf) | A fixed reference symbol and discrete pitch-ladder marks stay legible without drawing a trajectory | Use an attitude-instrument grammar, not an arc that resembles ball flight |
-| [Unity Scene View orientation gizmo](https://docs.unity3d.com/cn/2018.3/Manual/SceneViewNavigation.html) and [Blender viewport gizmos](https://docs.blender.org/manual/en/latest/editors/3dview/display/gizmo.html) | Compact axis/orientation cues are distinct from scene targets and stay associated with their pivot | Keep the glyph compact, segmented, and anchored over the cannon |
-| [Godot `BaseMaterial3D`](https://docs.godotengine.org/en/4.7/classes/class_basematerial3d.html) | Billboard, fixed-size, and no-depth are independent modes; material fixed-size alone does not preserve world orientation or a cross-FOV pixel contract | Keep overview billboard off, calculate projected root scale explicitly, and use no-depth only for the two active markers |
+| [Godot `ImmediateMesh`](https://docs.godotengine.org/en/4.7/classes/class_immediatemesh.html) | A generated line strip can follow a small sampled path without adding scene-node clutter | Build one deterministic sampled arc from the live ballistic setup |
+| [Godot `BaseMaterial3D`](https://docs.godotengine.org/en/4.7/classes/class_basematerial3d.html) | Depth testing and unshaded rendering are independent | Keep the arc depth-tested and permit no-depth only on the arrowhead |
 | [Terrain Sketching](https://pubs.cs.uct.ac.za/id/eprint/516/) | Large terrain identity comes from authored mountain silhouettes, spines, and valleys before small stochastic detail | Build broad per-course ridge/valley masks before restrained noise |
 | [Red Blob Games: terrain from noise](https://www.redblobgames.com/maps/terrain-from-noise/) | Noise shaping and low-frequency components control large landforms; unstructured octave stacking alone produces weak, generic topography | Reserve most new amplitude for low-frequency masks and do not multiply local noise |
 | [Taubin surface smoothing](https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Taubin95.pdf) | Constrained smoothing can remove local artifacts without collapsing the intended large form | Condition local slopes after macro synthesis while protecting only small semantic anchors |
@@ -114,34 +112,27 @@ External reference families:
 Selected aim grammar:
 
 ```text
-                    PITCH
-                    +90  ───
-                    +60   ──
-                    +30  ───
-                      0   ── ●  amber pitch bead
-                    -30  ───
-                    -60   ──
-                    -90  ───
+                         thick arrow follows the end tangent
+                                           ▶
+                                      ____/
+                                ____/
+                          _____/
+              CANNON ●__/
 
-                  ·       ·
-              ·       ▲       ·
-              ·     CANNON  ◆  ·   amber yaw tick at live bearing
-                  ·       ·
-
-              broken yaw guide; no closed target ring
-              whole glyph anchored above the cannon
+              thin, large, early-flight arc only
+              no endpoint, impact marker, range ring, or full path
 ```
 
 Locked presentation rules:
 
-- Overview: anchor the compact glyph `6 m` above the cannon, with a permitted sampled-skyline adjustment inside `5..8 m`. Keep the yaw guide horizontal in world space. Rotate only the vertical pitch-ladder plane about world Y to face the current camera. Camera-, vertical-FOV-, and viewport-aware uniform root scaling keeps the yaw guide at a nominal `64 px` diameter (`56..72 px` accepted) and the projected whole glyph inside `112 × 96 px`.
-- Yaw: use 12 separated deep-navy ticks around the cannon reference and one amber active tick. Never draw a continuous circle. At exact vertical pitch, keep showing the launcher's stored yaw so left/right input never loses visible feedback.
-- Pitch: use seven disconnected bars at `-90, -60, -30, 0, +30, +60, +90°` and one amber bead interpolated over the ladder. Never draw a spine or curved arc.
-- Cannon view: reuse the same yaw/pitch data owner but show a camera-facing compact centre reference, heading tick, and pitch ladder no larger than `48 × 48 px` inside the existing `64 × 64 px` reticle footprint; do not render the overview glyph around the camera.
-- Scale formula: use launcher-anchor view-space depth `distance = max(-camera.to_local(anchor).z, camera.near + 0.01)`, then `world_per_pixel = 2 × distance × tan(vertical_fov / 2) / viewport_height`. While visible, `CannonGolfAimHalo` polls the active viewport camera and caches anchor depth, camera basis, FOV, viewport size, and presentation mode; it recomputes scale/pitch-plane azimuth when that tuple changes through zoom, orbit, view switch, FOV, or resize. Validate final projected bounds rather than relying on material `fixed_size`.
-- Materials: guide `#102A43`, active cue `#FFD05C`, unshaded, billboard disabled for overview, shadows off. Guide depth-tests; active tick and bead may use no-depth. No other element bypasses depth.
-- Framing: the dynamic glyph scale never feeds back into course framing. The overview owner exposes a camera-independent logical envelope through `presentation_radius() = 9 m` and `presentation_top_height() = 13 m`, covering the horizontal yaw guide and the pitch ladder at its highest allowed `8 m` anchor. `presentation_bounds()` uses that envelope, not the old `13 m` radius or dynamically scaled mesh bounds.
-- Rejected: a larger/recoloured version of the current torus, any long arrow or predicted path, a pure screen-corner HUD, and a three-axis gimbal that introduces unused roll information.
+- Geometry: sample the current launch origin and damped ballistic recurrence at fixed time intervals up to `0.55 s`. Stop earlier at `95 m` accumulated length or before the first terrain intersection. Never extrapolate to a goal or landing point.
+- Visibility: show at least the first `32 m` chord when it remains inside the world safety envelope. The resulting curve is intentionally large but partial. The line is `#102A43`, unshaded, shadow-free, and about `0.32 m` thick in world space.
+- Arrow: connect a solid `#FFD05C` arrowhead directly to the final curve sample and align it with the final sampled tangent. Its length is `7 m`, its maximum width is `3.5 m`, and only this compact head may ignore depth.
+- Full-direction behaviour: yaw rotates the whole curve around world Y; pitch changes its initial tangent from `-90°` through `+90°`. At exact vertical aim the stored yaw remains stable and the curve remains finite.
+- Power: power changes curvature and sampled distance because the guide uses the live launch velocity. The guide still ends by time/length cap and never claims a landing point.
+- Cannon view: hide the large world arc to prevent near-plane obstruction; retain the existing compact centre reticle and the barrel's physical direction.
+- Framing: `presentation_radius()` and `presentation_top_height()` return conservative fixed bounds for the maximum partial arc and arrow. They never depend on a predicted impact.
+- Rejected: any ring, dotted scale, bead, complete flight, landing marker, impact estimate, pure screen-corner direction widget, or second-barrel silhouette.
 
 Selected goal topology:
 
@@ -202,14 +193,14 @@ Selected macro-terrain topology:
 - PRD Flow 2, FR-4, and AC-7, plus D-010, D-036, D-041, and D-043, currently require a confirmed ball to remain visible.
 - PRD goal-plate language, `DESIGN_RULES.md` goal geometry, D-035, and D-043 currently require a shallow plate with a low physical wall and reject a basin.
 - D-039 and D-040 define the current 60–160 metre relief and coupled horizontal extents.
-- D-039/D-040 and the completed halo plan describe the closed ring plus dotted arc that this contract rejects.
+- D-039/D-040/D-043 and the completed halo plans describe ring/scale instruments or forbid the partial direction arc that this contract supersedes.
 - `OPEN_QUESTIONS.md` still carries retained-ball and older terrain assumptions as unresolved/current context.
 - The implementation must append one superseding decision, minimally align PRD/design rules, and close the affected question entries before code changes. Historic entries remain truthful records and are not silently rewritten.
 
 Readiness statement:
 
 - Every material product, gameplay, geometry, camera, rendering, data-ownership, artifact, and validation choice is closed.
-- The user requested planning only in the current turn. No gameplay, scene, specification, test, artifact, theme, menu, or UID file is changed by authoring this contract.
+- The user has now authorized implementation. The revised partial-arc direction replaces the earlier instrument proposal; unrelated theme, menu, UI-contract, and UID files remain excluded.
 - The current task-pre-existing dirty files have been identified and are outside this contract.
 
 ## Tasks
@@ -225,8 +216,8 @@ Preconditions:
 
 Source owners: `project-specs/cannon-golf/PRD.md`, `project-specs/cannon-golf/DESIGN_RULES.md`, `project-specs/cannon-golf/DECISIONS.md`, `project-specs/cannon-golf/OPEN_QUESTIONS.md`, `src/cannon_golf/cannon_golf_game.gd`, `src/cannon_golf/course_builder.gd`, session and multi-goal tests
 
-- [ ] **1.1** Record the superseding product and design decision
-  - Change: append one accepted decision for disposable resolved balls, terrain-owned goal basins, the compact two-axis aim instrument, literal tenfold macro relief, separated route/terrain envelopes, stable completed-goal geometry, and continued device deferral; minimally align PRD/design rules and mark the retained-ball/old-terrain entries in `OPEN_QUESTIONS.md` resolved by the new decision while preserving their historical text.
+- [x] **1.1** Record the superseding product and design decision
+  - Change: append one accepted decision for disposable resolved balls, terrain-owned goal basins, the partial launch arc with connected direction arrow, literal tenfold macro relief, separated route/terrain envelopes, stable completed-goal geometry, and continued device deferral; minimally align PRD/design rules and mark the retained-ball/old-terrain entries in `OPEN_QUESTIONS.md` resolved by the new decision while preserving their historical text.
   - Accept: no current canonical requirement or unresolved question still prescribes retained confirmed balls, a physical goal fence, a closed-ring halo, or the 60–160 metre relief schedule as current behaviour; D-042 remains explicitly unchanged.
   - Guard: preserve historic decision text as history and use current product terms such as `impact mark`, not inherited coverage language.
 - [ ] **1.2** Replace node-backed completion state
@@ -256,15 +247,15 @@ Source owners: `src/cannon_golf/cannon_golf_game.gd`, `src/cannon_golf/golf_ball
 - [ ] **2.2** Encode the resolved-ball regression contract
   - Change: replace tests that require retained frozen balls with completed-index, node-removal, five-mark-limit, intermediate-live-ball, and final-clear cleanup assertions.
   - Accept: focused tests fail on a retained confirmed node, a prematurely missing non-evicted mark, an intermediate-confirmation removal of another ball, or stale node-backed progress.
-- [ ] **2.3** Replace the torus/arc with the selected two-axis aim instrument
-  - Change: keep `CannonGolfAimHalo` as the data owner but replace its old node/material contract with exactly 12 world-horizontal yaw guides, one active yaw cue, seven camera-azimuth-facing vertical pitch bars, and one pitch bead; poll/cache the active-camera projection tuple while visible; scale from anchor view-space depth/FOV/viewport; expose the fixed logical `9 m` radius/`13 m` top envelope; and use a separate compact cannon-view presentation. Replace the ballistics/capture assertions that hard-code `YawRing`, `YawRingAccent`, `ElevationArc`, 17 dots, root scale `ONE`, and the old cannon scale.
-  - Accept: full yaw and pitch endpoints are unambiguous at default and extreme values, including stored yaw at exact vertical pitch; projected yaw bounds remain `56..72 px`, the entire overview glyph stays within `112 × 96 px`, the cannon glyph stays within `48 × 48 px` at every supported resolution/FOV, zoom/orbit updates preserve the band, the launcher remains visible, and no continuous circle, curved flight-like arc, ray, wedge, or second-barrel silhouette exists.
-  - Guard: only the active tick and bead use no-depth; all geometry casts no shadow.
+- [ ] **2.3** Replace the halo with the selected partial launch arc and arrow
+  - Change: keep `CannonGolfAimHalo` as the adapted data/geometry owner, but delete its ring, dotted scale, and bead. Sample only the first capped segment of the live damped launch path, draw it as one thin continuous dark curve, and connect a thick amber arrowhead to its final tangent. Hide the large guide in cannon view and keep the compact reticle.
+  - Accept: yaw and pitch changes are immediately visible at default and extreme values, including exact vertical aim; the arc starts at the launch origin, ends without a landing/impact marker, never exceeds `0.55 s` or `95 m`, remains large enough for overview, and the arrow tangent clearly shows motion direction. No ring, dotted scale, bead, complete trajectory, predicted impact, or second barrel remains.
+  - Guard: only the arrowhead may use no-depth; every mesh is unshaded and shadow-free.
 
 Phase gate:
 
 - Run focused lifecycle, multi-goal, session, goal, aim/input, camera, and capture-harness checks.
-- Render planning aim at yaw `0, 90, 180, 270°` and pitch `-90, -45, 0, +45, +90°` at 1280 by 720; render overview and cannon modes at 1280 by 720, 1600 by 900, and 1920 by 1080; exercise ordinary zoom/orbit changes before beginning terrain work.
+- Render planning aim at yaw `0, 90, 180, 270°` and pitch `-90, -45, 0, +45, +90°` at 1280 by 720; render overview and cannon modes at 1280 by 720 and 1920 by 1080; verify the world arc hides in cannon view and remains clear through ordinary overview zoom/orbit changes before beginning terrain work.
 - Record a user checkpoint.
 
 ### Phase 3: Broad tenfold terrain and terrain-owned goal basins
@@ -325,7 +316,7 @@ Source owners: `src/cannon_golf/course_world_envelope.gd`, `src/cannon_golf/over
   - Guard: do not add camera modes or reintroduce goal fly-to behaviour.
 - [ ] **4.2** Keep normal overview composition and stable cue size
   - Change: choose four deterministic landmarks—two high-region and two low-region representatives outside goal/start masks, within `route_bounds` grown by `35%` of its diagonal, and separated by non-maximum-suppression radius `20%` of the shorter terrain dimension. Generation fails if the macro masks do not supply those candidates. Store them with every goal, the launcher, and fixed logical marker-extreme points in `overview_frame_points`; use `TerrainCameraFramer.framed_pose_around_points()` rather than an AABB-corner fit for reset/full overview and pan. Reject a landmark set when its required frame distance exceeds `1.6×` the route-only frame distance.
-  - Accept: the longest projected separation between any launcher/goal pair is at least `30%` of the safe viewport's shorter dimension; every incomplete-goal aerial marker is at least `12 px` tall; relief is obvious in silhouette and occlusion; yaw bounds stay in the `56..72 px` band at 1280 by 720 and 1920 by 1080; the full glyph stays inside `112 × 96 px`; and no required cue is clipped.
+  - Accept: the longest projected separation between any launcher/goal pair is at least `30%` of the safe viewport's shorter dimension; every incomplete-goal aerial marker is at least `12 px` tall; relief is obvious in silhouette and occlusion; the partial aim arc and connected arrow are readable at 1280 by 720 and 1920 by 1080; and no required cue is clipped.
   - Guard: the camera may not flatten relief through a near-top-down reset pose or hide it through an excessive sky view.
 - [ ] **4.3** Replace all ten prepared artifacts as one verified batch
   - Change: make `CannonGolfMacroTerrainContract` the single owner of algorithm version `10`; bump `CannonGolfPreparedCourse.SCHEMA_VERSION` to `4` and `CONSTRUCTION_VERSION` to `5`. The authored `CannonGolfCourseIdentity.signature(course)` includes macro/algorithm versions, authored terrain/route inputs, `goal_recess_depth`/`bowl_recess_depth_range`, goal radii, and deterministic envelope-formula inputs only; it drops every retired lip input. Generated `route_bounds`, terrain `local_bounds`, `overview_frame_points`/diagnostic bounds, basin metadata, heights, and metrics enter payload and construction hashes only, avoiding a generated-output signature cycle. Runtime checks schema, algorithm, authored signature, and payload/construction hashes. Delete the codec's legacy dictionary fallback that synthesizes `goal_rim_y`/`goal_lip_y`.
@@ -371,7 +362,7 @@ Source owners: all task-owned changed files, the active contract, full Cannon Go
 | --- | --- | --- | --- |
 | Script inner loop | `scripts/invoke-cannon-golf-validation.ps1 -CheckOnly -Script res://src/cannon_golf/<changed-script>.gd`, then its directly owned focused test | A changed script or test first becomes internally complete | Its relevant input changes |
 | State gate | Session, multi-goal, live-ball lifecycle, goal, input, and impact-history focused tests through the bounded wrapper | Phase 1 and Phase 2 state tasks pass | A state owner changes |
-| Aim structure/render gate | Assert exactly 12 yaw guides, one yaw cue, seven pitch bars, and one bead; guide depth testing on, no-depth limited to two active cues, billboard off in overview, shadows off for every mesh; capture yaw `0/90/180/270°`, pitch `-90/-45/0/+45/+90°`, default/full overview, ordinary/exact-vertical cannon, and zoom/orbit changes at 1280 by 720, 1600 by 900, and 1920 by 1080; measure projected bounds and logical presentation envelope | Aim implementation is stable | Aim geometry, material, camera projection, viewport, or capture guard changes |
+| Aim structure/render gate | Assert one continuous sampled curve and one connected tangent arrow, depth testing on for the curve, no-depth limited to the arrow, and shadows off; capture yaw `0/90/180/270°`, pitch `-90/-45/0/+45/+90°`, default/full overview, hidden-guide cannon view, and zoom/orbit changes at 1280 by 720 and 1920 by 1080; measure duration, path length, endpoint tangent, and logical presentation envelope | Aim implementation is stable | Aim geometry, material, ballistics sampling, viewport, or capture guard changes |
 | Staged terrain gate | All ten staged generators; record relief, p10/p90, region coverage, slopes, sample spacing, route guards, basin samples, time, peak memory, triangles, and artifact size | Phase 3 is complete | Generator/profile/identity input changes |
 | Artifact gate | Course-artifact, catalog-smoke, terrain, terrain-slope, range, variety, multi-goal, and camera focused tests | One complete prepared batch exists | Artifact or consuming code changes |
 | Final render gate | Matched course `0/3/6/9` overview and close frames at 1280 by 720 and 1920 by 1080; active/confirmed goal pair; resolved-ball/mark frame | Prepared catalog and camera are stable | A visible input changes |
@@ -396,8 +387,8 @@ Validation rules:
 | Macro extremes are numerically valid but visually irrelevant to play | Move the broad ridge/valley masks, not route coordinates, so representative silhouettes and occlusions border or cross the route envelope | Do not make one spike/pit near a goal or use camera tilt alone to fake relief |
 | A goal basin does not settle a low-energy ball reliably | Widen its C2 transition and adjust floor radius within the existing goal footprint; keep depth in `3.5..4.5 m` and slope at or below `20°` | Do not add a fence, raised lip, damping pad, or goal-only gravity |
 | A confirmed goal is not distinguishable after its geometry becomes invariant | Strengthen the existing HUD tally/confirmation feedback and the timing of airborne-arrow removal | Do not alter the flag, basin, disc, world material boundary, or collision |
-| Camera-scaled aim markers show through a mountain incorrectly | Keep guide depth-tested and restrict no-depth to smaller active tick/bead geometry; adjust anchor height from sampled local skyline | Do not make the whole glyph no-depth or move it to a screen corner |
-| The aim glyph reads at overview but obscures cannon view | Use the locked compact reticle presentation in cannon mode and hide only the overview glyph | Do not reintroduce the torus/arc or a second barrel |
+| The aim arc passes visibly through a mountain | Stop sampling before the first terrain hit and keep the curve depth-tested; retain no-depth only on the compact arrowhead | Do not make the whole path no-depth or move it to a screen corner |
+| The aim arc reads at overview but obscures cannon view | Hide the world arc in cannon mode and keep the existing compact reticle | Do not reintroduce the torus, dotted scale, or a second barrel |
 | Full overview makes the route too small | Frame goals plus selected macro landmarks and preserve close zoom; use camera-projected aim/goal cue scaling | Do not shrink the terrain, lower relief, or crop required goals |
 | A material fact contradicts the locked product, geometry, or architecture contract | Stop the affected branch, update this contract, and obtain required owner direction | Implementation may tune numeric values only within the explicit acceptance bands above |
 
@@ -406,14 +397,14 @@ Implementation-local discoveries may be handled without replanning only when the
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Planning complete; implementation not authorized in this turn.
-- Next task after explicit implementation authorization: **1.1** Record the superseding product and design decision.
+- Current phase: Phase 1 is in progress. Task 1.1 aligned the canonical product records with D-044 and the user's partial-arc direction.
+- Next task: **1.2** Replace node-backed completed-goal state and remove the confirmed ball after bookkeeping.
 - Evidence completed during planning:
   - read the current PRD, design rules, decisions, relevant active/done plans, code owners, tests, recent history, and representative captures;
   - traced failed and confirmed ball resolution, impact marks, goal construction/state changes, aim geometry/materials, terrain generation/conditioning, and camera-bound coupling;
-  - compared official aerospace instrument, 3D orientation-gizmo, Godot material, and terrain-generation references;
+  - compared Godot geometry/material and terrain-generation references;
   - identified task-pre-existing modified/untracked files and corrected the unsupported earlier ownership description.
-- No implementation checkbox is checked because the user requested prework and planning only.
+- Task 1.1 is complete; runtime state work has not started.
 - Update rule: after each phase gate, record concise evidence, check completed tasks, and advance this pointer before continuing.
 
 ## Completion and Stop Conditions
@@ -424,7 +415,7 @@ Complete when:
 - Every resolved ball is absent from the scene after resolution and its first-contact mark remains according to impact-history limits.
 - Completed-goal data remains valid without retained ball nodes.
 - Goal basin geometry/collision/material is invariant across active, future, and confirmed states and no physical fence/floor body exists.
-- The selected aim glyph communicates every legal yaw/pitch extreme in the required rendered matrix without goal or trajectory ambiguity.
+- The selected partial aim arc and connected arrow communicate every legal yaw/pitch extreme without revealing a complete trajectory or predicted impact.
 - All ten prepared courses meet literal tenfold relief, macro-distribution, slope, basin, route, camera, identity, and performance contracts.
 - Canonical product records describe the implemented current behaviour, this plan is marked `done`, and only task-owned files are committed.
 
@@ -433,7 +424,7 @@ Replan when:
 - A required change would alter ballistics, the three slope limits, literal tenfold relief, terrain representation count, goal-device policy, camera mode ownership, or dependency surface.
 - The complete terrain/artifact target cannot be met within the locked single-heightfield and performance constraints after the predetermined optimization/expansion responses are exhausted.
 
-Do not implement in the planning-only turn, and do not stop or replan for:
+Do not stop or replan for:
 
 - Local tuning of aim marker spacing, bowl width, camera composition, or macro mask placement inside the locked bands.
 - One failing test or render before an evidence-producing correction has been attempted.
