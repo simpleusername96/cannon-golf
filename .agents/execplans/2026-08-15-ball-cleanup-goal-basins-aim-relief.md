@@ -24,7 +24,7 @@ The current build already removes a ball that rests outside a goal, but it retai
 - Completion state:
   - every failed or confirmed stationary ball is removed from the world while its existing first-contact mark remains;
   - each goal is a smooth terrain-owned basin with no physical fence, and its terrain, boundary, and floor never change on completion;
-  - a large, thin, partial ballistic arc begins at the cannon and ends in a thick tangent arrow, so the combined yaw and pitch direction is readable without revealing the complete flight or landing point;
+  - a large, thin, partial ballistic arc begins above the cannon and ends in a thick tangent arrow, so the combined yaw and pitch direction is readable without revealing the complete flight or landing point;
   - the generated terrain has ten times the currently contracted world-height relief, distributed through broad landforms while the accepted slope limits and gameplay route scale remain intact.
 
 ## Scope and Boundaries
@@ -54,7 +54,7 @@ Constraints and invariants:
 - Completed-goal progress is stored as goal identity/index data, never as a retained `Node3D` reference.
 - A goal basin uses the shared render/collision height array. It has no separate floor collision, retaining wall, lip collision, or state-dependent terrain geometry.
 - Completion hides the airborne arrow and updates the HUD tally only. The flag, basin geometry, basin material, apparent boundary, and collision remain unchanged.
-- The aim guide is world-space geometry that starts at the physical launch origin and follows the current yaw, pitch, and power for only the first part of flight. It does not become a screen-corner widget.
+- The aim guide is world-space geometry that starts `12 m` above the launcher and follows the current yaw, pitch, and power for only the first part of flight. The raised origin preserves readability and prevents the cue from claiming an exact muzzle-to-impact prediction. It does not become a screen-corner widget.
 - The thin arc stays depth-tested. Only the connected arrowhead may bypass depth testing, so the direction remains legible without making the whole path visible through terrain.
 - The current p95, absolute-maximum, and high-slope-share limits remain `42°`, `60°`, and `3%` above `45°`.
 - Route positions, goal order, authored leg count, ballistic admission, route-derived out-of-bounds behaviour, and gameplay horizontal scale remain unchanged. Macro terrain may extend beyond the route and play envelopes.
@@ -117,7 +117,7 @@ Selected aim grammar:
                                       ____/
                                 ____/
                           _____/
-              CANNON ●__/
+              CANNON   ●__/   raised guide origin
 
               thin, large, early-flight arc only
               no endpoint, impact marker, range ring, or full path
@@ -125,7 +125,7 @@ Selected aim grammar:
 
 Locked presentation rules:
 
-- Geometry: sample the current launch origin and damped ballistic recurrence at fixed time intervals up to `0.55 s`. Stop earlier at `95 m` accumulated length or before the first terrain intersection. Never extrapolate to a goal or landing point.
+- Geometry: start `12 m` above the launcher and sample the current damped ballistic recurrence at fixed time intervals up to `0.55 s`. Stop earlier at `95 m` accumulated length; when terrain intersects the cue, reserve the final segment for the connected arrow so its tip meets the obstruction. Never extrapolate to a goal or landing point.
 - Visibility: show at least the first `32 m` chord when it remains inside the world safety envelope. The resulting curve is intentionally large but partial. The line is `#102A43`, unshaded, shadow-free, and about `0.32 m` thick in world space.
 - Arrow: connect a solid `#FFD05C` arrowhead directly to the final curve sample and align it with the final sampled tangent. Its length is `7 m`, its maximum width is `3.5 m`, and only this compact head may ignore depth.
 - Full-direction behaviour: yaw rotates the whole curve around world Y; pitch changes its initial tangent from `-90°` through `+90°`. At exact vertical aim the stored yaw remains stable and the curve remains finite.
@@ -247,9 +247,9 @@ Source owners: `src/cannon_golf/cannon_golf_game.gd`, `src/cannon_golf/golf_ball
 - [x] **2.2** Encode the resolved-ball regression contract
   - Change: replace tests that require retained frozen balls with completed-index, node-removal, five-mark-limit, intermediate-live-ball, and final-clear cleanup assertions.
   - Accept: focused tests fail on a retained confirmed node, a prematurely missing non-evicted mark, an intermediate-confirmation removal of another ball, or stale node-backed progress.
-- [ ] **2.3** Replace the halo with the selected partial launch arc and arrow
+- [x] **2.3** Replace the halo with the selected partial launch arc and arrow
   - Change: keep `CannonGolfAimHalo` as the adapted data/geometry owner, but delete its ring, dotted scale, and bead. Sample only the first capped segment of the live damped launch path, draw it as one thin continuous dark curve, and connect a thick amber arrowhead to its final tangent. Hide the large guide in cannon view and keep the compact reticle.
-  - Accept: yaw and pitch changes are immediately visible at default and extreme values, including exact vertical aim; the arc starts at the launch origin, ends without a landing/impact marker, never exceeds `0.55 s` or `95 m`, remains large enough for overview, and the arrow tangent clearly shows motion direction. No ring, dotted scale, bead, complete trajectory, predicted impact, or second barrel remains.
+  - Accept: yaw and pitch changes are immediately visible at default and extreme values, including exact vertical aim; the arc starts `12 m` above the launcher, ends without a landing/impact marker, never exceeds `0.55 s` or `95 m`, remains large enough for overview, and the arrow tangent clearly shows motion direction. No ring, dotted scale, bead, complete trajectory, predicted impact, or second barrel remains.
   - Guard: only the arrowhead may use no-depth; every mesh is unshaded and shadow-free.
 
 Phase gate:
@@ -397,14 +397,14 @@ Implementation-local discoveries may be handled without replanning only when the
 ## Progress and Next Steps
 
 - Canonical progress: the task checkboxes in this contract.
-- Current phase: Phase 1 passed; Phase 2 is in progress. Completed-goal indices now own progress, every resolved ball is released, unrelated live balls and impact marks remain independent, and focused session/multi-goal/relay/lifecycle tests pass.
-- Next task: **2.3** Replace the ring/dotted halo with the partial launch arc and connected tangent arrow.
+- Current phase: Phase 2 passed; Phase 3 is next. The raised partial ballistic curve, terrain-clipped connected arrow, cannon-view hiding, full-direction finite geometry, and 1280/1920 rendered checks pass alongside focused ballistics/input/camera tests.
+- Next task: **3.1** Separate route and macro-terrain envelopes before increasing relief.
 - Evidence completed during planning:
   - read the current PRD, design rules, decisions, relevant active/done plans, code owners, tests, recent history, and representative captures;
   - traced failed and confirmed ball resolution, impact marks, goal construction/state changes, aim geometry/materials, terrain generation/conditioning, and camera-bound coupling;
   - compared Godot geometry/material and terrain-generation references;
   - identified task-pre-existing modified/untracked files and corrected the unsupported earlier ownership description.
-- Tasks 1.1, 1.2, 2.1, and 2.2 are complete. Focused Godot checks passed on 2026-08-16 with no log growth or owned-process leak.
+- Tasks 1.1 through 2.3 are complete. Focused Godot checks passed on 2026-08-16 with no log growth or owned-process leak; rendered evidence is under `.godot/capture-temp/partial-aim/`.
 - Update rule: after each phase gate, record concise evidence, check completed tasks, and advance this pointer before continuing.
 
 ## Completion and Stop Conditions

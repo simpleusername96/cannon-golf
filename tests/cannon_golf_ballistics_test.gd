@@ -54,89 +54,66 @@ func _initialize() -> void:
 	launcher.position = Vector3(2.0, 1.0, 5.0)
 	launcher.shot_axis_yaw_degrees = 7.0
 	launcher.set_setup(63.0, 41.0, 62.0)
-	var halo := launcher.get_node_or_null("AimHalo")
+	var halo := launcher.get_node_or_null("AimHalo") as CannonGolfAimHalo
+	var aim_curve := halo.get_node_or_null("AimCurve") as Node3D if halo != null else null
+	var direction_arrow := halo.get_node_or_null("DirectionArrow") as MeshInstance3D \
+			if halo != null else null
 	_assert_true(
-		halo != null and halo.position.y >= 2.0,
-		"The aim halo must float clearly above the scaled launcher base."
+		halo != null and aim_curve != null and direction_arrow != null \
+				and halo.get_node_or_null("YawRing") == null \
+				and halo.get_node_or_null("ElevationArc") == null,
+		"The aim guide must contain only the partial curve and connected arrow grammar."
 	)
+	var points := halo.sampled_points()
+	var expected_local_origin := Vector3.UP * halo.FLOAT_HEIGHT
 	_assert_true(
-		halo.get_node_or_null("YawTick") != null,
-		"The aim halo must expose a compact perimeter yaw tick."
+		points.size() >= 8 and points[0].is_equal_approx(expected_local_origin) \
+				and halo.sampled_duration() <= halo.MAXIMUM_GUIDE_SECONDS + 0.0001 \
+				and halo.sampled_path_length() > 32.0 \
+				and halo.sampled_path_length() <= halo.MAXIMUM_PATH_LENGTH + 0.0001 \
+				and halo.arrow_tangent().dot((points[-1] - points[-2]).normalized()) > 0.999,
+		"The raised aim curve must stay partial and end in its motion tangent."
 	)
+	var arrow_material := direction_arrow.mesh.surface_get_material(0) as StandardMaterial3D
+	var all_meshes: Array[MeshInstance3D] = [direction_arrow]
+	var curve_material: StandardMaterial3D
+	for child in aim_curve.get_children():
+		var segment := child as MeshInstance3D
+		all_meshes.append(segment)
+		if curve_material == null:
+			curve_material = segment.mesh.surface_get_material(0) as StandardMaterial3D
 	_assert_true(
-		halo.get_node_or_null("ElevationArc") != null \
-				and halo.get_node_or_null("ElevationBead") != null,
-		"The aim halo must expose a dotted elevation arc and active bead."
+		curve_material != null \
+				and curve_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
+				and not curve_material.no_depth_test \
+				and curve_material.albedo_color.get_luminance() < 0.18 \
+				and arrow_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
+				and arrow_material.no_depth_test,
+		"The thin dark curve must depth-test while only the thick arrow bypasses depth."
 	)
-	_assert_true(
-		halo.get_node_or_null("DirectionWedge") == null,
-		"The aim halo must not restore the second-barrel direction wedge."
-	)
-	_assert_true(
-		is_equal_approx(halo.rotation_degrees.y, -launcher.yaw_degrees) \
-				and is_equal_approx(halo.indicated_elevation_degrees(), 41.0),
-		"The halo must track both canonical launcher angles."
-	)
-	var yaw_tick := halo.get_node_or_null("YawTick") as MeshInstance3D
-	var elevation_bead := halo.get_node_or_null("ElevationBead") as MeshInstance3D
-	var yaw_ring := halo.get_node_or_null("YawRing") as MeshInstance3D
-	var yaw_ring_accent := halo.get_node_or_null("YawRingAccent") as MeshInstance3D
-	var elevation_arc := halo.get_node_or_null("ElevationArc") as Node3D
-	var accent_material := yaw_tick.mesh.surface_get_material(0) as StandardMaterial3D
-	var bead_material := elevation_bead.mesh.surface_get_material(0) as StandardMaterial3D
-	var guide_material := yaw_ring.mesh.surface_get_material(0) as StandardMaterial3D
-	var readability_material := yaw_ring_accent.mesh.surface_get_material(0) \
-			as StandardMaterial3D
-	var minimum_arc_height := INF
-	for arc_child in elevation_arc.get_children():
-		minimum_arc_height = minf(minimum_arc_height, (arc_child as MeshInstance3D).position.y)
-	_assert_true(
-		accent_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
-				and accent_material.no_depth_test \
-				and bead_material.no_depth_test \
-				and guide_material.shading_mode == BaseMaterial3D.SHADING_MODE_UNSHADED \
-				and not guide_material.no_depth_test \
-				and guide_material.albedo_color.get_luminance() < 0.12 \
-				and readability_material.no_depth_test \
-				and readability_material.albedo_color.get_luminance() < 0.12,
-		"The halo must use a dark unshaded surface guide and compact no-depth active markers."
-	)
-	_assert_true(
-		elevation_arc.get_child_count() >= 17 and minimum_arc_height > 0.0,
-		"The complete dotted elevation scale must remain above the halo's horizontal plane."
-	)
-	var all_halo_meshes: Array[MeshInstance3D] = [
-		yaw_ring, yaw_ring_accent, yaw_tick, elevation_bead,
-	]
-	for arc_child in elevation_arc.get_children():
-		all_halo_meshes.append(arc_child as MeshInstance3D)
 	var shadows_disabled := true
-	for halo_mesh in all_halo_meshes:
+	for guide_mesh in all_meshes:
 		shadows_disabled = shadows_disabled \
-				and halo_mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_assert_true(
-		shadows_disabled,
-		"Every halo guide and active marker must remain shadow-free."
-	)
+				and guide_mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_assert_true(shadows_disabled, "Every aim-curve mesh must remain shadow-free.")
 	launcher.set_first_person_visuals_hidden(true)
-	var cannon_eye_offset := launcher.first_person_eye_position() - launcher.global_position
 	_assert_true(
-		halo.visible and not launcher.get_node("LauncherVisualRoot").visible \
-				and (halo.position - cannon_eye_offset).is_equal_approx(
-					launcher.launch_direction() * halo.CANNON_FORWARD_DISTANCE
-				) \
-				and halo.scale.is_equal_approx(
-					Vector3.ONE * halo.CANNON_PRESENTATION_SCALE
-				),
-		"Cannon first-person must place a compact halo ahead along the real launch direction."
+		not halo.visible and not launcher.get_node("LauncherVisualRoot").visible,
+		"Cannon first-person must hide the large world-space aim curve."
 	)
 	launcher.set_first_person_visuals_hidden(false)
 	_assert_true(
-		halo.position.y == halo.FLOAT_HEIGHT and halo.scale.is_equal_approx(Vector3.ONE) \
-				and yaw_tick.scale.is_equal_approx(Vector3.ONE) \
-				and elevation_bead.scale.is_equal_approx(Vector3.ONE),
-		"Returning to planning must restore ordinary world-space marker scale."
+		halo.visible and halo.position.is_zero_approx() and halo.scale.is_equal_approx(Vector3.ONE),
+		"Returning to overview must restore the world-space aim curve."
 	)
+	launcher.set_setup(63.0, 90.0, 62.0)
+	points = halo.sampled_points()
+	_assert_true(
+		points.size() >= 2 and points[-1].is_finite() \
+				and (points[1] - points[0]).normalized().dot(launcher.launch_direction()) > 0.98,
+		"Exact vertical aim must keep a finite curve with the correct initial direction."
+	)
+	launcher.set_setup(63.0, 41.0, 62.0)
 	var origin_a := launcher.launch_origin()
 	var velocity_a := launcher.launch_velocity()
 	var origin_b := launcher.launch_origin()

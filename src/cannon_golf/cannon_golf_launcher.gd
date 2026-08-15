@@ -192,7 +192,12 @@ func _apply_visuals() -> void:
 	_yaw_pivot.rotation.y = -deg_to_rad(yaw_degrees)
 	_elevation_pivot.rotation.x = deg_to_rad(elevation_degrees)
 	if _aim_halo != null:
-		_aim_halo.set_angles(yaw_degrees, elevation_degrees, launch_direction())
+		_aim_halo.set_angles(
+			yaw_degrees,
+			elevation_degrees,
+			launch_direction(),
+			launch_speed()
+		)
 
 
 func _first_person_eye_offset() -> Vector3:

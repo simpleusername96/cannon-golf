@@ -645,7 +645,7 @@ in `OPEN_QUESTIONS.md`.
   fence, retaining wall, raised lip, or completion-dependent world geometry.
   Completion hides only its airborne location arrow and updates compact UI state.
 - Replace the ring-and-dotted-scale halo with one large, thin, dark partial
-  ballistic curve from the launch origin. It samples only the first capped part
+  ballistic curve from a raised point above the launcher. It samples only the first capped part
   of the current launch setup and ends in a thick connected amber arrow aligned
   to the final tangent. It never reaches a predicted landing point or presents
   a complete trajectory. The curve stays depth-tested; only the compact

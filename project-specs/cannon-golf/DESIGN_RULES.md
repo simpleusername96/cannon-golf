@@ -69,7 +69,7 @@ coefficients, stage data formats, or code ownership.
   distribution, branch choice, and device placement.
 - Use a true first-person view at the selected cannon source to show its actual
   launch direction. In overview, draw one large, thin, deep-navy world-space
-  curve from the physical launch origin through only the first capped portion
+  curve from a raised point above the launcher through only the first capped portion
   of the current ballistic motion. Connect a thick amber arrowhead to the final
   curve tangent. The curve must not reach a goal or show a landing/impact point.
   Keep the curve depth-tested and shadow-free; only the compact arrowhead may

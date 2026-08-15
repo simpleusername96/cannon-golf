@@ -214,34 +214,12 @@ func _capture() -> void:
 			quit(1)
 			return
 	if game != null and requested_state == "halo_cannon_down":
-		var halo := game._course_builder.launcher.get_node_or_null("AimHalo") as Node3D
-		var halo_screen_position := game._camera.unproject_position(halo.global_position) \
-				if halo != null else Vector2.INF
-		var marker_nodes: Array[Node3D] = []
-		if halo != null:
-			marker_nodes.assign([
-				halo.get_node_or_null("YawRingAccent"),
-				halo.get_node_or_null("YawTick"),
-				halo.get_node_or_null("ElevationBead"),
-			])
-			var elevation_arc := halo.get_node_or_null("ElevationArc") as Node3D
-			if elevation_arc != null:
-				for dot in elevation_arc.get_children():
-					marker_nodes.append(dot as Node3D)
-		var markers_visible := marker_nodes.size() >= 20
-		var viewport_rect := Rect2(Vector2.ZERO, Vector2(root.size))
-		for marker in marker_nodes:
-			markers_visible = markers_visible and marker != null \
-					and marker.is_visible_in_tree() and marker.global_transform.is_finite() \
-					and not game._camera.is_position_behind(marker.global_position) \
-					and viewport_rect.has_point(
-						game._camera.unproject_position(marker.global_position)
-					)
-		if halo == null or not halo.is_visible_in_tree() \
-				or not halo.global_transform.is_finite() \
-				or game._camera.is_position_behind(halo.global_position) \
-				or not viewport_rect.has_point(halo_screen_position) or not markers_visible:
-			push_error("Exact-down cannon halo must remain finite and visible in the viewport.")
+		var halo := game._course_builder.launcher.get_node_or_null("AimHalo") \
+				as CannonGolfAimHalo
+		var reticle := game._hud.get_node_or_null("%AimReticle") as Control
+		if halo == null or halo.visible or reticle == null or not reticle.is_visible_in_tree() \
+				or not game._camera.global_transform.is_finite():
+			push_error("Exact-down cannon view must hide the world curve and keep a finite reticle.")
 			quit(1)
 			return
 	if game != null and requested_state == "panned":
