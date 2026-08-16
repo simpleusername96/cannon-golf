@@ -1,18 +1,15 @@
 class_name CannonGolfSettlementGoal
 extends Node3D
 
-const RIM_SEGMENTS := 16
-const ENTRY_GAP_SEGMENTS := 3
-const PLATE_THICKNESS := 0.22
-const WALL_THICKNESS := 0.34
+const FLOOR_CUE_THICKNESS := 0.08
 const BASE_SETTLE_SECONDS := 1.0
 const BASE_MAXIMUM_LINEAR_SPEED := 0.72
 const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
 const BASE_CAPTURE_ENTRY_LINEAR_SPEED := 2.0
 const BASE_CAPTURE_ENTRY_ANGULAR_SPEED := 8.0
 const ACTIVE_FLAG_HEIGHT := 16.0
-const FUTURE_FLAG_HEIGHT := 14.0
-const CONFIRMED_FLAG_HEIGHT := 10.0
+const INCOMPLETE_FLAG_COLOR := Color("2584FF")
+const COMPLETED_FLAG_COLOR := Color("F2A33A")
 const ARROW_SHAFT_HEIGHT := 7.0
 const ARROW_TIP_HEIGHT := 4.0
 const ARROW_COLLAR_HEIGHT := 0.6
@@ -35,11 +32,10 @@ var capture_entry_angular_speed := BASE_CAPTURE_ENTRY_ANGULAR_SPEED \
 		* CannonGolfBallistics.MOTION_TIME_SCALE
 var visual_state := VisualState.ACTIVE
 
-var _rim_markers: Array[MeshInstance3D] = []
-var _plate_body: StaticBody3D
 var _plate_floor: MeshInstance3D
 var _flag_pole: MeshInstance3D
 var _flag: MeshInstance3D
+var _flag_material: StandardMaterial3D
 var _air_arrow: Node3D
 var _marker_top_height := 18.0
 var _incoming_yaw_degrees := 0.0
@@ -109,12 +105,11 @@ func marker_top_world_y() -> float:
 
 
 func camera_collision_rid() -> RID:
-	return _plate_body.get_rid() if _plate_body != null else RID()
+	return RID()
 
 
 func entry_opening_width() -> float:
-	var segment_angle := TAU / float(RIM_SEGMENTS)
-	return 2.0 * inner_radius * sin(segment_angle * float(_entry_gap_segment_count()) * 0.5)
+	return inner_radius * 2.0
 
 
 func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> bool:
@@ -124,100 +119,41 @@ func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> 
 
 func _build_plate() -> void:
 	var floor_material := _material(Color("53634F"), 0.0, 0.96)
-	var wall_material := _material(Color("24394D"), 0.04, 0.88)
-	var body := StaticBody3D.new()
-	body.name = "GoalPlateBody"
-	body.collision_layer = 1
-	body.collision_mask = 0
-	body.add_to_group(&"impact_mark_surface")
-	var physics := PhysicsMaterial.new()
-	physics.bounce = 0.08
-	physics.friction = 0.94
-	body.physics_material_override = physics
-	add_child(body)
-	_plate_body = body
 	var floor_mesh := MeshInstance3D.new()
-	floor_mesh.name = "GoalPlateFloor"
+	floor_mesh.name = "GoalFloorCue"
 	var floor_data := CylinderMesh.new()
-	floor_data.top_radius = inner_radius
-	floor_data.bottom_radius = inner_radius
-	floor_data.height = PLATE_THICKNESS
+	floor_data.top_radius = maxf(inner_radius * 0.45, 3.5)
+	floor_data.bottom_radius = floor_data.top_radius
+	floor_data.height = FLOOR_CUE_THICKNESS
 	floor_data.radial_segments = 32
 	floor_data.material = floor_material
 	floor_mesh.mesh = floor_data
-	floor_mesh.position.y = -PLATE_THICKNESS * 0.5
-	body.add_child(floor_mesh)
+	floor_mesh.position.y = FLOOR_CUE_THICKNESS * 0.5 + 0.015
+	add_child(floor_mesh)
 	_plate_floor = floor_mesh
-	var floor_collision := CollisionShape3D.new()
-	floor_collision.name = "GoalPlateFloorCollision"
-	var floor_shape := CylinderShape3D.new()
-	floor_shape.radius = inner_radius
-	floor_shape.height = PLATE_THICKNESS
-	floor_collision.shape = floor_shape
-	floor_collision.position.y = -PLATE_THICKNESS * 0.5
-	body.add_child(floor_collision)
-	var opening_angle := -deg_to_rad(_incoming_yaw_degrees)
-	var segment_angle := TAU / float(RIM_SEGMENTS)
-	var opening_half_angle := segment_angle * float(_entry_gap_segment_count()) * 0.5
-	var wall_radius := inner_radius + WALL_THICKNESS * 0.5
-	var segment_length := TAU * (inner_radius + 0.25) / float(RIM_SEGMENTS) * 1.08
-	for index in range(RIM_SEGMENTS):
-		var angle := TAU * float(index) / float(RIM_SEGMENTS)
-		if absf(wrapf(angle - opening_angle, -PI, PI)) <= opening_half_angle:
-			continue
-		var marker := MeshInstance3D.new()
-		marker.name = "GoalRimMarker%02d" % (index + 1)
-		marker.position = Vector3(
-			sin(angle) * wall_radius,
-			rim_height * 0.5,
-			cos(angle) * wall_radius
-		)
-		marker.rotation.y = angle + PI * 0.5
-		var mesh_data := BoxMesh.new()
-		mesh_data.size = Vector3(WALL_THICKNESS, rim_height, segment_length)
-		mesh_data.material = wall_material
-		marker.mesh = mesh_data
-		body.add_child(marker)
-		_rim_markers.append(marker)
-		var collision := CollisionShape3D.new()
-		collision.name = "GoalPlateWallCollision%02d" % (index + 1)
-		var wall_shape := BoxShape3D.new()
-		wall_shape.size = mesh_data.size
-		collision.shape = wall_shape
-		collision.position = marker.position
-		collision.rotation = marker.rotation
-		body.add_child(collision)
-
-
-func _entry_gap_segment_count() -> int:
-	var required_width := CannonGolfBall.RADIUS * 2.0 + 0.5
-	var ratio := clampf(required_width / maxf(inner_radius * 2.0, required_width), 0.0, 1.0)
-	var required_angle := 2.0 * asin(ratio)
-	return clampi(
-		maxi(ENTRY_GAP_SEGMENTS, ceili(required_angle / (TAU / float(RIM_SEGMENTS)))),
-		1,
-		RIM_SEGMENTS - 1
-	)
 
 
 func _build_flag() -> void:
 	var pole := MeshInstance3D.new()
+	pole.name = "GoalFlagPole"
 	var pole_mesh := CylinderMesh.new()
 	pole_mesh.top_radius = 0.11
 	pole_mesh.bottom_radius = 0.11
-	pole_mesh.height = 10.0
+	pole_mesh.height = ACTIVE_FLAG_HEIGHT
 	pole_mesh.radial_segments = 10
 	pole_mesh.material = _material(Color("13243A"), 0.22, 0.44)
 	pole.mesh = pole_mesh
-	pole.position = Vector3(inner_radius * 0.72, rim_height + 5.0, 0.0)
+	pole.position = Vector3(inner_radius * 0.62, ACTIVE_FLAG_HEIGHT * 0.5, 0.0)
 	add_child(pole)
 	_flag_pole = pole
 	var flag := MeshInstance3D.new()
+	flag.name = "GoalFlag"
 	var flag_mesh := BoxMesh.new()
 	flag_mesh.size = Vector3(4.0, 1.7, 0.10)
-	flag_mesh.material = _material(Color("2584FF"), 0.08, 0.42)
+	_flag_material = _material(INCOMPLETE_FLAG_COLOR, 0.08, 0.42)
+	flag_mesh.material = _flag_material
 	flag.mesh = flag_mesh
-	flag.position = Vector3(inner_radius * 0.72 - 1.9, rim_height + 9.0, 0.0)
+	flag.position = Vector3(inner_radius * 0.62 - 1.9, ACTIVE_FLAG_HEIGHT - 1.0, 0.0)
 	add_child(flag)
 	_flag = flag
 
@@ -272,37 +208,10 @@ func _build_air_marker() -> void:
 
 
 func _apply_visual_state() -> void:
-	if _flag_pole == null or _flag == null or _air_arrow == null:
+	if _flag_pole == null or _flag == null or _flag_material == null or _air_arrow == null:
 		return
-	var pole_height := ACTIVE_FLAG_HEIGHT
-	var flag_height := ACTIVE_FLAG_HEIGHT - 1.0
-	var flag_scale := Vector3(1.75, 1.75, 1.0)
-	match visual_state:
-		VisualState.FUTURE:
-			pole_height = FUTURE_FLAG_HEIGHT
-			flag_height = FUTURE_FLAG_HEIGHT - 1.0
-			flag_scale = Vector3(1.35, 1.35, 1.0)
-		VisualState.CONFIRMED:
-			pole_height = CONFIRMED_FLAG_HEIGHT
-			flag_height = CONFIRMED_FLAG_HEIGHT - 1.0
-			flag_scale = Vector3(1.0, 1.0, 1.0)
-	_flag_pole.scale = Vector3(1.0, pole_height / 10.0, 1.0)
-	_flag_pole.position.y = rim_height + pole_height * 0.5
-	_flag.scale = flag_scale
-	_flag.position = Vector3(
-		inner_radius * 0.72 - 1.9 * flag_scale.x,
-		rim_height + flag_height,
-		0.0
-	)
-	_air_arrow.visible = visual_state != VisualState.CONFIRMED
-	for index in range(_rim_markers.size()):
-		var marker := _rim_markers[index]
-		if visual_state == VisualState.FUTURE:
-			marker.visible = index % 2 == 0
-		elif visual_state == VisualState.CONFIRMED:
-			marker.visible = index % 4 == 0
-		else:
-			marker.visible = true
+	_flag_material.albedo_color = COMPLETED_FLAG_COLOR \
+			if visual_state == VisualState.CONFIRMED else INCOMPLETE_FLAG_COLOR
 
 
 func _material(color: Color, metallic: float, roughness: float) -> StandardMaterial3D:
@@ -313,8 +222,8 @@ func _material(color: Color, metallic: float, roughness: float) -> StandardMater
 	return material
 
 
-## The arrow is a distant locator for a physical plate. It must remain visible
-## when steep terrain hides the plate itself from the current planning angle.
+## The arrow is a distant locator for a terrain basin. Completion does not
+## mutate it; only the local flag material carries the world-state change.
 func _air_marker_material(
 	color: Color, metallic: float, roughness: float
 ) -> StandardMaterial3D:

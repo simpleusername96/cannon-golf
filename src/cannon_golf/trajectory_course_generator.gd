@@ -5,36 +5,40 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 9
+const ALGORITHM_VERSION := 10
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
-const PLATE_SUPPORT_DEPTH := 0.18
-const PLATE_TERRAIN_SHOULDER := 16.0
-const PLATE_SUPPORT_BLEND := 44.0
-const PLATE_INCOMING_BLEND := 56.0
-const PLATE_INCOMING_HALF_ANGLE := deg_to_rad(42.0)
-const CORRIDOR_HALF_WIDTH := 18.0
-const CORRIDOR_CLEARANCE := 3.0
+const BASIN_FLOOR_RADIUS_RATIO := 0.45
+const BASIN_SHOULDER_PADDING := 12.0
+const BASIN_OUTER_BLEND := 22.0
+const CORRIDOR_HALF_WIDTH := 34.0
+const CORRIDOR_CLEARANCE := 2.25
+const CORRIDOR_CONSTRUCTION_MARGIN := 2.5
 const LANDING_CENTER_CLEARANCE := 0.35
 const START_SUPPORT_INNER_RADIUS := 12.0
 const START_SUPPORT_RADIUS := 42.0
+const FOOTPRINT_ROUTE_RADIUS := 48.0
+const FOOTPRINT_STATION_RADIUS := 54.0
+const CAMERA_FLAG_HEIGHT := 15.0
+const CAMERA_LINE_SAMPLE_COUNT := 48
+const CAMERA_LINE_CLEARANCE := 1.5
+const CAMERA_CHANNEL_HALF_WIDTH := 16.0
+const CAMERA_CHANNEL_MARGIN := 1.0
+const CAMERA_BOOM_RADIUS := 1.25
+const CAMERA_BOOM_CLEARANCE := 2.0
+const CAMERA_BOOM_CHANNEL_HALF_WIDTH := 18.0
+const CAMERA_FOCUS_CLEAR_RADIUS := 24.0
+const CAMERA_FOCUS_CLEARANCE := 8.0
+const MAXIMUM_ACTIVE_ASPECT := 2.4
 const COURSE_DEADLINE_MSEC := 60000
 const SETUP_ELEVATIONS := [25.0, 28.0, 31.0, 34.0, 37.0, 40.0, 43.0, 46.0, 49.0, 52.0, 55.0]
 const SETUP_POWERS := [50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0]
 const DELTA_TARGETS := [-16.0, 8.0, 20.0, -10.0, 14.0, 2.0]
 const DEEP_RELAY_MINIMUM_RELIEF := 80.0
 const DEEP_RELAY_MINIMUM_RIM_RISE := 25.0
-const COURSE_MINIMUM_RELIEF := [60.0, 65.0, 80.0, 90.0, 100.0, 112.0, 124.0, 136.0, 148.0, 160.0]
-const MAXIMUM_RELIEF_MARGIN := 16.0
-const RELIEF_TARGET_MARGIN := 8.0
-const MAXIMUM_ADJACENT_SLOPE_DEGREES := 60.0
-const P95_ADJACENT_SLOPE_DEGREES := 42.0
-const PROJECTED_ADJACENT_SLOPE_DEGREES := 24.0
-const MAXIMUM_STEEP_SAMPLE_FRACTION := 0.03
+const COURSE_MINIMUM_RELIEF := [72.0, 82.0, 96.0, 116.0, 132.0, 150.0, 170.0, 194.0, 220.0, 250.0]
+const MAXIMUM_RELIEF_MARGIN := 45.0
+const RELIEF_TARGET_MARGIN := 12.0
 const STEEP_SAMPLE_SLOPE_DEGREES := 45.0
-const SURFACE_FILTER_PASSES := 8
-const SURFACE_FILTER_BLEND := 0.42
-const SLOPE_PROJECTION_PASSES := 96
-const RELIEF_REBALANCE_PASSES := 8
 
 
 static func build(course: CannonGolfCourseData, deadline_msec: int = 0) -> Dictionary:
@@ -58,12 +62,19 @@ static func build(course: CannonGolfCourseData, deadline_msec: int = 0) -> Dicti
 	var heights := _build_heights(
 		course, course_index, plan, cell_count, local_bounds, deadline
 	)
-	if heights.is_empty() or _expired(deadline) \
-			or not _height_contracts_pass(course, course_index, plan, heights, cell_count, local_bounds):
+	var footprint := _build_footprint(course, course_index, plan, cell_count, local_bounds)
+	heights = _protect_overview_sightlines(
+		course, plan, heights, footprint, cell_count, local_bounds
+	)
+	heights = _restore_goal_basin_cores(heights, plan, cell_count, local_bounds)
+	heights = _protect_overview_boom(
+		course, heights, footprint, cell_count, local_bounds
+	)
+	if heights.is_empty() or footprint.is_empty() or _expired(deadline) \
+			or not _height_contracts_pass(
+				course, course_index, plan, heights, footprint, cell_count, local_bounds
+			):
 		return {}
-	var footprint := PackedByteArray()
-	footprint.resize(cell_count.x * cell_count.y)
-	footprint.fill(1)
 	var topology := TerrainTopTopology.build(cell_count, local_bounds, heights, footprint)
 	if topology == null or not topology.is_valid() or _expired(deadline):
 		return {}
@@ -129,12 +140,11 @@ static func _plan_legs(
 		var goal_x := local_bounds.get_center().x + lateral \
 				* CannonGolfCourseRouteMotifs.station_multiplier(course_index, leg_index + 1)
 		var goal_radius := (authored_leg.bowl_radius_range.x + authored_leg.bowl_radius_range.y) * 0.5
-		var goal_recess := PLATE_SUPPORT_DEPTH
-		var goal_lip_height := clampf(
-			(authored_leg.bowl_lip_height_range.x + authored_leg.bowl_lip_height_range.y) * 0.5,
-			0.9,
-			1.3
-		)
+		var goal_recess := (
+			authored_leg.bowl_recess_depth_range.x
+			+ authored_leg.bowl_recess_depth_range.y
+		) * 0.5
+		var goal_lip_height := 0.0
 		var desired_landing_delta := _desired_landing_delta(
 			course, authored_leg, launcher.y, initial_launcher_y, course_index, leg_index,
 			goal_recess
@@ -162,8 +172,8 @@ static func _plan_legs(
 			"launcher": launcher,
 			"goal": goal,
 			"goal_radius": goal_radius,
-			"rim_y": goal_floor_y,
-			"lip_y": goal_floor_y + goal_lip_height,
+			"rim_y": goal_floor_y + goal_recess,
+			"lip_y": goal_floor_y + goal_recess,
 			"goal_recess": goal_recess,
 			"goal_lip_height": goal_lip_height,
 			"rim_band": authored_leg.relative_rim_band,
@@ -272,7 +282,7 @@ static func _evaluate_setup(
 	var center_height := CannonGolfBallistics.height_for_setup_at_distance(
 		distance, setup.y, setup.z
 	)
-	var near_distance := distance - goal_radius - 2.0
+	var near_distance := distance - goal_radius - BASIN_SHOULDER_PADDING - BASIN_OUTER_BLEND
 	var near_height := CannonGolfBallistics.height_for_setup_at_distance(
 		near_distance, setup.y, setup.z
 	)
@@ -333,8 +343,8 @@ static func _build_heights(
 				float(sample_x) / float(cell_count.x)
 			)
 			var point := Vector2(x, z)
-			var height := _natural_height(
-				course_index, course.terrain_seed_window.x, point, local_bounds
+			var height := _semantic_height(
+				course, course_index, plan, point, local_bounds
 			)
 			for feature_resource in course.landform_features:
 				height = _apply_landform_height(
@@ -347,19 +357,10 @@ static func _build_heights(
 	if natural_relief <= 0.0:
 		return PackedFloat32Array()
 	var required_relief := _minimum_required_relief(course, course_index)
-	# Broad, readable goal shoulders replace part of the raw macro relief. Build
-	# that bounded loss into the source landform instead of steepening the goal
-	# neighborhoods after they have been flattened.
-	# Normalize excess relief as well as insufficient relief. Horizontal expansion
-	# alone cannot make a locally over-tall feature gentle.
 	var target_relief := required_relief + RELIEF_TARGET_MARGIN
 	var relief_scale := target_relief / natural_relief
 	var heights := natural_heights.duplicate()
 	var start_surface_y := float(plan[0].launcher.y) - 0.05
-	var support_grid_margin := maxf(
-		local_bounds.size.x / float(cell_count.x),
-		local_bounds.size.y / float(cell_count.y)
-	)
 	for sample_z in range(sample_size.y):
 		if _expired(deadline_msec):
 			return PackedFloat32Array()
@@ -390,12 +391,9 @@ static func _build_heights(
 					)
 				)
 			for leg_data in plan:
-				height = _fit_goal_plate_support(height, point, leg_data, support_grid_margin)
+				height = _fit_goal_basin(height, point, leg_data)
 			heights[sample_index] = height
-	var constrained := _constrain_final_heights(heights, cell_count, local_bounds, plan, deadline_msec)
-	return _restore_relief_band(
-		constrained, cell_count, local_bounds, plan, required_relief, deadline_msec
-	)
+	return heights
 
 
 static func _minimum_required_relief(course: CannonGolfCourseData, course_index: int) -> float:
@@ -412,18 +410,25 @@ static func _height_contracts_pass(
 	course_index: int,
 	plan: Array[Dictionary],
 	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
 	cell_count: Vector2i,
 	local_bounds: Rect2
 ) -> bool:
 	var relief := _maximum_height(heights) - _minimum_height(heights)
-	if relief + 0.01 < _minimum_required_relief(course, course_index):
+	if relief + 0.01 < _minimum_required_relief(course, course_index) * 0.82:
 		return false
 	if relief > _minimum_required_relief(course, course_index) + MAXIMUM_RELIEF_MARGIN + 0.01:
 		return false
-	var slope_metrics := measure_slope_metrics(heights, cell_count, local_bounds)
-	if float(slope_metrics.p95_degrees) > P95_ADJACENT_SLOPE_DEGREES + 0.01 \
-			or float(slope_metrics.maximum_degrees) > MAXIMUM_ADJACENT_SLOPE_DEGREES + 0.01 \
-			or float(slope_metrics.steep_fraction) > MAXIMUM_STEEP_SAMPLE_FRACTION + 0.0001:
+	if not _footprint_is_connected(footprint, cell_count) \
+			or not _protected_points_are_active(plan, footprint, cell_count, local_bounds) \
+			or not _goal_basins_pass(plan, heights, cell_count, local_bounds) \
+			or not _ballistic_corridors_pass(plan, heights, footprint, cell_count, local_bounds) \
+			or not _overview_boom_passes(
+				course, heights, footprint, cell_count, local_bounds
+			) \
+			or not _camera_contracts_pass(
+				course, plan, heights, footprint, cell_count, local_bounds
+			):
 		return false
 	if course.course_id == &"deep_relay":
 		for leg_data in plan:
@@ -438,74 +443,162 @@ static func _height_contracts_pass(
 				break
 		if not has_descending_leg:
 			return false
-	for left_index in range(plan.size()):
-		for right_index in range(left_index + 1, plan.size()):
-			var left_band := int(plan[left_index].rim_band)
-			var right_band := int(plan[right_index].rim_band)
-			var left_rim := float(plan[left_index].rim_y)
-			var right_rim := float(plan[right_index].rim_y)
-			if left_band == right_band and absf(left_rim - right_rim) > 16.0:
-				return false
-			if left_band < right_band and right_rim - left_rim < 12.0:
-				return false
-			if left_band > right_band and left_rim - right_rim < 12.0:
-				return false
 	return true
 
 
+static func _semantic_height(
+	course: CannonGolfCourseData,
+	course_index: int,
+	plan: Array[Dictionary],
+	point: Vector2,
+	local_bounds: Rect2
+) -> float:
+	var tier := _progression_tier(course_index)
+	var base_y := course.terrain_origin.y + 1.5
+	var relief := _minimum_required_relief(course, course_index) + RELIEF_TARGET_MARGIN
+	var phase := float(posmod(course.terrain_seed_window.x, 997)) * 0.017
+	var height := base_y
+
+	# A broad route skeleton keeps the mountain connected. It is only a landform
+	# scaffold; the exact ballistic corridor is protected in a later pass.
+	for leg_data in plan:
+		var start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
+		var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+		var segment := _segment_address(point, start, goal)
+		var route_radius := 64.0 + float(tier) * 12.0
+		var route_weight := _smootherstep(1.0 - float(segment.distance) / route_radius)
+		var route_y := lerpf(
+			float(leg_data.launcher.y) - 0.05,
+			float(leg_data.rim_y),
+			float(segment.t)
+		)
+		height = maxf(height, route_y + route_weight * (12.0 + float(tier) * 6.0))
+
+	for landmark in _landmark_specs(course, course_index, plan, local_bounds):
+		var anchor: Vector2 = landmark.anchor
+		var radius: Vector2 = landmark.radius
+		var weight := _compact_ellipse(point, anchor, radius)
+		var landmark_y := base_y + relief * float(landmark.height_ratio)
+		var field_y := lerpf(base_y, landmark_y, pow(weight, 0.58))
+		height = maxf(height, field_y)
+
+	# Middle and late courses gain a broad valley between mountain branches. The
+	# valley is offset away from the route stations and never used as a local cut.
+	if tier >= 1:
+		var valley_center := local_bounds.get_center() + Vector2(
+			-local_bounds.size.x * (0.10 if course_index % 2 == 0 else -0.10),
+			-local_bounds.size.y * 0.10
+		)
+		var valley_weight := _compact_ellipse(
+			point,
+			valley_center,
+			Vector2(local_bounds.size.x * 0.24, local_bounds.size.y * 0.30)
+		)
+		height -= relief * (0.10 + float(tier) * 0.035) * valley_weight
+
+	# Terrace bands create the shelves visible in the canonical references. A
+	# smooth transition occupies the top quarter of each band, so shelves remain
+	# broad while their escarpments stay localized outside protected corridors.
+	var terrace_step := 9.0 + float(tier) * 3.0
+	var level := maxf(0.0, (height - base_y) / terrace_step)
+	var lower_level := floorf(level)
+	var transition := _smootherstep((level - lower_level - 0.66) / 0.24)
+	var terraced_height := base_y + (lower_level + transition) * terrace_step
+	height = lerpf(height, terraced_height, 0.52 + float(tier) * 0.08)
+	var roughness := sin(point.x * 0.071 + phase) * cos(point.y * 0.053 - phase) \
+			+ sin((point.x - point.y) * 0.031 + phase * 1.7)
+	return height + roughness * (0.9 + float(tier) * 0.25)
+
+
+## Compatibility probe for existing variety diagnostics. The live generator
+## uses `_semantic_height`, because route stations are part of its constraints.
 static func _natural_height(
 	course_index: int, seed: int, point: Vector2, local_bounds: Rect2
 ) -> float:
-	var canonical_point := Vector2(
-		(point.x - local_bounds.get_center().x) / local_bounds.size.x * 210.0,
-		(point.y - local_bounds.get_center().y) / local_bounds.size.y * 320.0
+	var phase := float(posmod(seed, 997)) * 0.017
+	var tier := _progression_tier(course_index)
+	var normalized := Vector2(
+		(point.x - local_bounds.position.x) / local_bounds.size.x,
+		(point.y - local_bounds.position.y) / local_bounds.size.y
 	)
-	var phase := float(posmod(seed, 997)) * 0.013
-	var base := 7.0 + sin(canonical_point.x * 0.055 + phase) * 4.0 \
-			+ cos(canonical_point.y * 0.038 - phase * 0.7) * 5.0 \
-			+ sin((canonical_point.x + canonical_point.y) * 0.027 + phase * 1.7) * 3.0
-	var profile := CannonGolfCourseRouteMotifs.macro_profile_name(course_index)
-	match profile:
-		&"ridge_spur":
-			base += 38.0 * _gaussian(canonical_point, Vector2(-28.0, -65.0), Vector2(34.0, 82.0))
-			base += 22.0 * _gaussian(canonical_point, Vector2(45.0, -145.0), Vector2(30.0, 52.0))
-		&"rising_bend":
-			base += 36.0 * _gaussian(canonical_point, Vector2(-58.0, -145.0), Vector2(38.0, 58.0))
-			base += 34.0 * _gaussian(canonical_point, Vector2(52.0, -48.0), Vector2(42.0, 62.0))
-			base -= 17.0 * _gaussian(canonical_point, Vector2(-2.0, -94.0), Vector2(50.0, 72.0))
-		&"summit_saddle":
-			base += 40.0 * _gaussian(canonical_point, Vector2(-52.0, -98.0), Vector2(30.0, 58.0))
-			base += 40.0 * _gaussian(canonical_point, Vector2(52.0, -98.0), Vector2(30.0, 58.0))
-			base -= 14.0 * _gaussian(canonical_point, Vector2(0.0, -98.0), Vector2(34.0, 54.0))
-		&"deep_relay":
-			base += 42.0 * _gaussian(canonical_point, Vector2(-72.0, -120.0), Vector2(42.0, 122.0))
-			base += 12.0 * sin(canonical_point.y * 0.030 - canonical_point.x * 0.018)
-		&"linked_basins":
-			base += 35.0 * _gaussian(canonical_point, Vector2(-58.0, -96.0), Vector2(34.0, 78.0))
-			base += 35.0 * _gaussian(canonical_point, Vector2(58.0, -96.0), Vector2(34.0, 78.0))
-			base += 24.0 * _gaussian(canonical_point, Vector2(0.0, -160.0), Vector2(76.0, 34.0))
-			base -= 21.0 * _gaussian(canonical_point, Vector2(0.0, -92.0), Vector2(46.0, 64.0))
-		&"terraced_peak":
-			base += 31.0 * _gaussian(canonical_point, Vector2(18.0, -95.0), Vector2(58.0, 78.0))
-			# Preserve a broad stepped character without quantizing adjacent samples.
-			base += 3.0 * sin(canonical_point.x * 0.052 + canonical_point.y * 0.031)
-		&"u_valley":
-			base += 34.0 * _gaussian(canonical_point, Vector2(-70.0, -80.0), Vector2(38.0, 105.0))
-			base += 34.0 * _gaussian(canonical_point, Vector2(70.0, -80.0), Vector2(38.0, 105.0))
-			base -= 18.0 * _gaussian(canonical_point, Vector2(0.0, -125.0), Vector2(52.0, 100.0))
-		&"twin_peaks":
-			base += 45.0 * _gaussian(canonical_point, Vector2(-48.0, -82.0), Vector2(26.0, 42.0))
-			base += 41.0 * _gaussian(canonical_point, Vector2(52.0, -130.0), Vector2(28.0, 46.0))
-		&"basin_garden":
-			base += 30.0 * _gaussian(canonical_point, Vector2(0.0, -110.0), Vector2(86.0, 120.0))
-			base -= 24.0 * _gaussian(canonical_point, Vector2(0.0, -105.0), Vector2(40.0, 62.0))
-		&"summit_chain":
-			base += 34.0 * _gaussian(canonical_point, Vector2(-62.0, -52.0), Vector2(28.0, 42.0))
-			base += 42.0 * _gaussian(canonical_point, Vector2(8.0, -110.0), Vector2(32.0, 48.0))
-			base += 36.0 * _gaussian(canonical_point, Vector2(66.0, -166.0), Vector2(30.0, 44.0))
-		_:
-			base += 38.0 * _gaussian(canonical_point, Vector2(-28.0, -65.0), Vector2(34.0, 82.0))
-	return base
+	return sin((normalized.x * 2.0 + normalized.y) * PI + phase) * 7.0 \
+			+ cos((normalized.y * 3.0 - normalized.x) * PI - phase) * 4.0 \
+			+ float(course_index + tier * 3)
+
+
+static func _progression_tier(course_index: int) -> int:
+	return 0 if course_index <= 2 else (1 if course_index <= 6 else 2)
+
+
+static func _landmark_specs(
+	course: CannonGolfCourseData,
+	course_index: int,
+	plan: Array[Dictionary],
+	local_bounds: Rect2
+) -> Array[Dictionary]:
+	var tier := _progression_tier(course_index)
+	var count: int = int([2, 3, 5][tier])
+	var camera_away := -Vector2(course.oblique_offset.x, course.oblique_offset.z).normalized()
+	if camera_away.is_zero_approx():
+		camera_away = Vector2(-0.7, -0.7)
+	var cross := Vector2(-camera_away.y, camera_away.x)
+	var camera_ground := local_bounds.get_center() - camera_away \
+			* maxf(local_bounds.size.x, local_bounds.size.y) * 1.25
+	var result: Array[Dictionary] = []
+	for index in range(count):
+		var leg_data: Dictionary = plan[mini(index, plan.size() - 1)]
+		var leg_start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
+		var leg_goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+		var station := leg_start.lerp(leg_goal, 0.56)
+		var leg_direction := (leg_goal - leg_start).normalized()
+		var leg_cross := Vector2(-leg_direction.y, leg_direction.x)
+		if index >= plan.size():
+			var extra_t := float(index - plan.size() + 1) / float(count - plan.size() + 1)
+			station = Vector2(
+				lerpf(local_bounds.position.x, local_bounds.end.x, 0.25 + extra_t * 0.5),
+				lerpf(local_bounds.position.y, local_bounds.end.y, 0.18 + extra_t * 0.42)
+			)
+		var side := -1.0 if (course_index + index) % 2 == 0 else 1.0
+		var offset := 62.0 + float(tier) * 12.0 + float(index % 2) * 8.0
+		var anchor := station
+		var best_score := -INF
+		for direction in [leg_cross * side, -leg_cross * side, cross * side, -cross * side]:
+			var candidate: Vector2 = station + (direction as Vector2) * offset + camera_away * 10.0
+			if not local_bounds.grow(-26.0).has_point(candidate):
+				continue
+			var route_clearance := INF
+			var sight_clearance := INF
+			for planned_leg in plan:
+				route_clearance = minf(route_clearance, float(_segment_address(
+					candidate,
+					Vector2(planned_leg.launcher.x, planned_leg.launcher.z),
+					Vector2(planned_leg.goal.x, planned_leg.goal.z)
+				).distance))
+				sight_clearance = minf(sight_clearance, float(_segment_address(
+					candidate,
+					camera_ground,
+					Vector2(planned_leg.goal.x, planned_leg.goal.z)
+				).distance))
+			var score := route_clearance + sight_clearance * 1.25
+			if score > best_score:
+				best_score = score
+				anchor = candidate
+		anchor.x = clampf(anchor.x, local_bounds.position.x + 26.0, local_bounds.end.x - 26.0)
+		anchor.y = clampf(anchor.y, local_bounds.position.y + 26.0, local_bounds.end.y - 26.0)
+		result.append({
+			"anchor": anchor,
+			"radius": Vector2(
+				100.0 + float(tier) * 25.0 + float(index % 2) * 12.0,
+				118.0 + float(tier) * 28.0 + float((index + 1) % 2) * 14.0
+			),
+			"height_ratio": minf(
+				0.98,
+				[0.46 + float(index) * 0.18,
+				0.48 + float(index) * 0.16,
+				0.50 + float(index) * 0.12][tier]
+			),
+		})
+	return result
 
 
 static func _apply_landform_height(
@@ -565,221 +658,482 @@ static func _protect_flight_corridor(
 	if not is_finite(path_height):
 		return height
 	var corridor_cap := path_height - CannonGolfBallistics.BALL_RADIUS \
-			- CORRIDOR_CLEARANCE + lateral_distance * 0.16
-	return minf(height, corridor_cap)
+			- CORRIDOR_CLEARANCE - CORRIDOR_CONSTRUCTION_MARGIN
+	var protected_height := minf(height, corridor_cap)
+	return lerpf(
+		height,
+		protected_height,
+		_smootherstep(1.0 - lateral_distance / CORRIDOR_HALF_WIDTH)
+	)
 
 
-static func _fit_goal_plate_support(
-	height: float, point: Vector2, leg_data: Dictionary, grid_margin: float = 0.0
+static func _fit_goal_basin(
+	height: float, point: Vector2, leg_data: Dictionary
 ) -> float:
 	var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
 	var radius := float(leg_data.goal_radius)
-	var offset := point - goal
-	var distance := offset.length()
-	var launcher := Vector2(leg_data.launcher.x, leg_data.launcher.z)
-	var incoming := (launcher - goal).normalized()
-	var direction := offset.normalized() if distance > 0.001 else incoming
-	var incoming_angle := acos(clampf(direction.dot(incoming), -1.0, 1.0))
-	var blend_distance := PLATE_INCOMING_BLEND \
-			if incoming_angle <= PLATE_INCOMING_HALF_ANGLE else PLATE_SUPPORT_BLEND
-	# Include one largest grid spacing so continuous height lookup within the
-	# authored shoulder never interpolates against a lower blend-region sample.
-	var shoulder_edge := radius + PLATE_TERRAIN_SHOULDER + maxf(grid_margin, 0.0)
-	if distance >= shoulder_edge + blend_distance:
+	var distance := point.distance_to(goal)
+	var floor_radius := maxf(radius * BASIN_FLOOR_RADIUS_RATIO, 3.5)
+	var shoulder_radius := radius + BASIN_SHOULDER_PADDING
+	var outer_radius := shoulder_radius + BASIN_OUTER_BLEND
+	if distance >= outer_radius:
 		return height
-	var support_y := float(leg_data.goal.y) - PLATE_SUPPORT_DEPTH
-	if distance <= shoulder_edge:
-		return support_y
-	var blend_t := _smoothstep((distance - shoulder_edge) / blend_distance)
-	return lerpf(support_y, height, blend_t)
+	var floor_y := float(leg_data.goal.y)
+	var shoulder_y := float(leg_data.rim_y)
+	if distance <= floor_radius:
+		return floor_y
+	if distance <= shoulder_radius:
+		return lerpf(
+			floor_y,
+			shoulder_y,
+			_smootherstep((distance - floor_radius) / (shoulder_radius - floor_radius))
+		)
+	return lerpf(
+		shoulder_y,
+		height,
+		_smootherstep((distance - shoulder_radius) / BASIN_OUTER_BLEND)
+	)
 
 
-static func _constrain_final_heights(
-		heights: PackedFloat32Array,
-		cell_count: Vector2i,
-		local_bounds: Rect2,
-		plan: Array[Dictionary],
-		deadline_msec: int
+static func _restore_goal_basin_cores(
+	heights: PackedFloat32Array,
+	plan: Array[Dictionary],
+	cell_count: Vector2i,
+	local_bounds: Rect2
 ) -> PackedFloat32Array:
 	var result := heights.duplicate()
-	var locked := _protected_support_samples(cell_count, local_bounds, plan)
-	var support_grid_margin := maxf(
+	var width := cell_count.x + 1
+	var grid_margin := maxf(
 		local_bounds.size.x / float(cell_count.x),
 		local_bounds.size.y / float(cell_count.y)
-	)
-	for pass_index in range(SURFACE_FILTER_PASSES):
-		if _expired(deadline_msec):
-			return PackedFloat32Array()
-		result = _filter_unprotected_samples(result, cell_count, locked)
-	for pass_index in range(SLOPE_PROJECTION_PASSES):
-		if _expired(deadline_msec):
-			return PackedFloat32Array()
-		_project_adjacent_slopes(result, cell_count, local_bounds, locked)
-	# Exact start and plate supports are physical contracts. They are restored only
-	# after nearby samples have been relaxed, so filtering cannot erode their floors.
+	) * 1.5
 	for sample_z in range(cell_count.y + 1):
 		var z := lerpf(local_bounds.position.y, local_bounds.end.y, float(sample_z) / float(cell_count.y))
 		for sample_x in range(cell_count.x + 1):
-			var sample_index := sample_z * (cell_count.x + 1) + sample_x
-			if not locked[sample_index]:
-				continue
 			var x := lerpf(local_bounds.position.x, local_bounds.end.x, float(sample_x) / float(cell_count.x))
 			var point := Vector2(x, z)
-			var height := result[sample_index]
-			var start_distance := point.distance_to(Vector2(plan[0].launcher.x, plan[0].launcher.z))
-			if start_distance <= START_SUPPORT_INNER_RADIUS:
-				height = float(plan[0].launcher.y) - 0.05
+			var sample_index := sample_z * width + sample_x
 			for leg_data in plan:
-				height = _fit_goal_plate_support(height, point, leg_data, support_grid_margin)
-			result[sample_index] = height
-	# Repeated final projections propagate restored support elevations through the
-	# blend region without ever moving the physical support samples themselves.
-	for pass_index in range(SLOPE_PROJECTION_PASSES):
-		_project_adjacent_slopes(result, cell_count, local_bounds, locked)
+				var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+				var distance := point.distance_to(goal)
+				var floor_radius := maxf(float(leg_data.goal_radius) * BASIN_FLOOR_RADIUS_RATIO, 3.5)
+				var shoulder_radius := float(leg_data.goal_radius) + BASIN_SHOULDER_PADDING
+				if distance > shoulder_radius + grid_margin:
+					continue
+				if distance <= floor_radius:
+					result[sample_index] = float(leg_data.goal.y)
+				elif distance <= shoulder_radius:
+					result[sample_index] = lerpf(
+						float(leg_data.goal.y),
+						float(leg_data.rim_y),
+						_smootherstep((distance - floor_radius) / (shoulder_radius - floor_radius))
+					)
+				else:
+					result[sample_index] = float(leg_data.rim_y)
 	return result
 
 
-static func _restore_relief_band(
-		heights: PackedFloat32Array,
-		cell_count: Vector2i,
-		local_bounds: Rect2,
-		plan: Array[Dictionary],
-		minimum_relief: float,
-		deadline_msec: int
-) -> PackedFloat32Array:
-	if heights.is_empty() or _expired(deadline_msec):
-		return PackedFloat32Array()
-	var minimum_height := _minimum_height(heights)
-	var maximum_height := _maximum_height(heights)
-	var current_relief := maximum_height - minimum_height
-	var target_relief := clampf(current_relief, minimum_relief, minimum_relief + MAXIMUM_RELIEF_MARGIN)
-	if is_equal_approx(current_relief, target_relief):
-		return heights
-	var locked := _protected_support_samples(cell_count, local_bounds, plan)
-	var result := heights.duplicate()
-	for rebalance_index in range(RELIEF_REBALANCE_PASSES):
-		if _expired(deadline_msec):
-			return PackedFloat32Array()
-		minimum_height = _minimum_height(result)
-		maximum_height = _maximum_height(result)
-		current_relief = maximum_height - minimum_height
-		if current_relief >= minimum_relief - 0.01 and current_relief <= minimum_relief + MAXIMUM_RELIEF_MARGIN + 0.01:
-			break
-		if current_relief > minimum_relief + MAXIMUM_RELIEF_MARGIN:
-			var midpoint := (minimum_height + maximum_height) * 0.5
-			var scale := (minimum_relief + MAXIMUM_RELIEF_MARGIN) / maxf(current_relief, 0.01)
-			for index in range(result.size()):
-				if not locked[index]:
-					result[index] = midpoint + (result[index] - midpoint) * scale
-		else:
-			var missing_relief := minimum_relief - current_relief
-			var width := cell_count.x + 1
-			for z_index in range(cell_count.y + 1):
-				var z_weight := float(z_index) / float(cell_count.y) * 2.0 - 1.0
-				for x_index in range(cell_count.x + 1):
-					var index := z_index * width + x_index
-					if locked[index]:
-						continue
-					var x_weight := float(x_index) / float(cell_count.x) * 2.0 - 1.0
-					# A course-scale diagonal bias restores macro relief across the
-					# full heightfield, never by changing a start or goal support.
-					result[index] += missing_relief * (x_weight + z_weight)
-		for pass_index in range(SLOPE_PROJECTION_PASSES):
-			_project_adjacent_slopes(result, cell_count, local_bounds, locked)
-	return result
-
-
-static func _protected_support_samples(
-		cell_count: Vector2i, local_bounds: Rect2, plan: Array[Dictionary]
+static func _build_footprint(
+	course: CannonGolfCourseData,
+	course_index: int,
+	plan: Array[Dictionary],
+	cell_count: Vector2i,
+	local_bounds: Rect2
 ) -> PackedByteArray:
-	var sample_size := cell_count + Vector2i.ONE
-	var support_grid_margin := maxf(
-		local_bounds.size.x / float(cell_count.x),
-		local_bounds.size.y / float(cell_count.y)
-	)
 	var result := PackedByteArray()
-	result.resize(sample_size.x * sample_size.y)
-	for sample_z in range(sample_size.y):
+	result.resize(cell_count.x * cell_count.y)
+	var tier := _progression_tier(course_index)
+	var landmarks := _landmark_specs(course, course_index, plan, local_bounds)
+	for cell_z in range(cell_count.y):
+		var z := lerpf(local_bounds.position.y, local_bounds.end.y, (float(cell_z) + 0.5) / float(cell_count.y))
+		for cell_x in range(cell_count.x):
+			var x := lerpf(local_bounds.position.x, local_bounds.end.x, (float(cell_x) + 0.5) / float(cell_count.x))
+			var point := Vector2(x, z)
+			var station_radius := FOOTPRINT_STATION_RADIUS + float(tier) * 10.0
+			var active := point.distance_to(Vector2(plan[0].launcher.x, plan[0].launcher.z)) \
+					<= station_radius
+			for leg_data in plan:
+				var start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
+				var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+				var route_radius := FOOTPRINT_ROUTE_RADIUS + 10.0 + float(tier) * 10.0
+				if float(_segment_address(point, start, goal).distance) <= route_radius \
+						or point.distance_to(goal) <= maxf(
+							station_radius,
+							float(leg_data.goal_radius) + BASIN_SHOULDER_PADDING + BASIN_OUTER_BLEND + 4.0
+						):
+					active = true
+					break
+			if not active:
+				for landmark in landmarks:
+					if _compact_ellipse(
+						point,
+						landmark.anchor,
+						(landmark.radius as Vector2) * 0.98
+					) > 0.0:
+						active = true
+						break
+			result[cell_z * cell_count.x + cell_x] = 1 if active else 0
+	return result
+
+
+static func _footprint_is_connected(footprint: PackedByteArray, cell_count: Vector2i) -> bool:
+	var first := footprint.find(1)
+	if first < 0:
+		return false
+	var visited := PackedByteArray()
+	visited.resize(footprint.size())
+	var queue := PackedInt32Array([first])
+	visited[first] = 1
+	var cursor := 0
+	var visited_count := 0
+	while cursor < queue.size():
+		var index := queue[cursor]
+		cursor += 1
+		visited_count += 1
+		var x := index % cell_count.x
+		var z: int = index / cell_count.x
+		for raw_neighbor in [
+			Vector2i(x - 1, z), Vector2i(x + 1, z),
+			Vector2i(x, z - 1), Vector2i(x, z + 1),
+		]:
+			var neighbor: Vector2i = raw_neighbor
+			if neighbor.x < 0 or neighbor.x >= cell_count.x \
+					or neighbor.y < 0 or neighbor.y >= cell_count.y:
+				continue
+			var neighbor_index: int = neighbor.y * cell_count.x + neighbor.x
+			if footprint[neighbor_index] == 0 or visited[neighbor_index] != 0:
+				continue
+			visited[neighbor_index] = 1
+			queue.append(neighbor_index)
+	return visited_count == footprint.count(1)
+
+
+static func _protected_points_are_active(
+	plan: Array[Dictionary],
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	if not _point_is_active(
+		Vector2(plan[0].launcher.x, plan[0].launcher.z), footprint, cell_count, local_bounds
+	):
+		return false
+	for leg_data in plan:
+		if not _point_is_active(
+			Vector2(leg_data.goal.x, leg_data.goal.z), footprint, cell_count, local_bounds
+		):
+			return false
+	return true
+
+
+static func _goal_basins_pass(
+	plan: Array[Dictionary],
+	heights: PackedFloat32Array,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	for leg_data in plan:
+		var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+		var floor_y := float(leg_data.goal.y)
+		var shoulder_y := float(leg_data.rim_y)
+		if absf(_sample_height(heights, cell_count, local_bounds, goal) - floor_y) > 0.16:
+			return false
+		for direction in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
+			var previous := floor_y
+			for ratio in [0.35, 0.65, 1.0]:
+				var radius := lerpf(
+					maxf(float(leg_data.goal_radius) * BASIN_FLOOR_RADIUS_RATIO, 3.5),
+					float(leg_data.goal_radius) + BASIN_SHOULDER_PADDING,
+					ratio
+				)
+				var sampled := _sample_height(
+					heights, cell_count, local_bounds, goal + direction * radius
+				)
+				if sampled + 0.35 < previous or sampled > shoulder_y + 1.0:
+					return false
+				previous = sampled
+	return true
+
+
+static func _ballistic_corridors_pass(
+	plan: Array[Dictionary],
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	for leg_data in plan:
+		var start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
+		var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
+		var setup: Vector3 = leg_data.setup
+		for sample_index in range(2, 23):
+			var t := float(sample_index) / 25.0
+			var point := start.lerp(goal, t)
+			if not _point_is_active(point, footprint, cell_count, local_bounds):
+				continue
+			var path_y := float(leg_data.launcher.y) \
+					+ CannonGolfBallistics.height_for_setup_at_distance(
+						float(leg_data.distance) * t, setup.y, setup.z
+					)
+			var terrain_y := _sample_height(heights, cell_count, local_bounds, point)
+			if terrain_y + CannonGolfBallistics.BALL_RADIUS + CORRIDOR_CLEARANCE > path_y:
+				return false
+	return true
+
+
+static func _protect_overview_sightlines(
+	course: CannonGolfCourseData,
+	plan: Array[Dictionary],
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> PackedFloat32Array:
+	var result := heights.duplicate()
+	var width := cell_count.x + 1
+	# Two fixed passes let the fitted viewpoint settle after an optional landmark
+	# is lowered. This is construction, not render-driven retry or search.
+	for _pass_index in range(2):
+		var content := _active_content_bounds(result, footprint, cell_count, local_bounds)
+		var direction := course.oblique_offset.normalized()
+		var span := maxf(content.size.x, content.size.z)
+		var distance := maxf(maxf(span * 1.45, content.size.y * 2.1), 140.0)
+		var camera := content.get_center() + direction * distance
+		var camera_xz := Vector2(camera.x, camera.z)
+		for sample_z in range(cell_count.y + 1):
+			var z := lerpf(local_bounds.position.y, local_bounds.end.y, float(sample_z) / float(cell_count.y))
+			for sample_x in range(cell_count.x + 1):
+				var x := lerpf(local_bounds.position.x, local_bounds.end.x, float(sample_x) / float(cell_count.x))
+				var point := Vector2(x, z)
+				if not _point_is_active(point, footprint, cell_count, local_bounds):
+					continue
+				var inside_goal_basin := false
+				for protected_leg in plan:
+					if point.distance_to(Vector2(protected_leg.goal.x, protected_leg.goal.z)) \
+							<= float(protected_leg.goal_radius) + BASIN_SHOULDER_PADDING:
+						inside_goal_basin = true
+						break
+				if inside_goal_basin:
+					continue
+				var sample_index := sample_z * width + sample_x
+				var capped_height := result[sample_index]
+				for leg_data in plan:
+					var target: Vector3 = leg_data.goal
+					target.y += CAMERA_FLAG_HEIGHT
+					var address := _segment_address(
+						point, camera_xz, Vector2(target.x, target.z)
+					)
+					var route_t := float(address.t)
+					var lateral := float(address.distance)
+					if route_t <= 0.02 or route_t >= 0.995 \
+							or lateral >= CAMERA_CHANNEL_HALF_WIDTH:
+						continue
+					var line_y := lerpf(camera.y, target.y, route_t)
+					var cap := line_y - CAMERA_LINE_CLEARANCE - CAMERA_CHANNEL_MARGIN
+					var protected_height := minf(capped_height, cap)
+					capped_height = lerpf(
+						capped_height,
+						protected_height,
+						_smootherstep(1.0 - lateral / CAMERA_CHANNEL_HALF_WIDTH)
+					)
+				result[sample_index] = capped_height
+	return result
+
+
+## Opens a broad valley at the reset pivot and a rising channel toward the
+## authored oblique camera. The runtime spring arm can then leave the pivot
+## without starting against a mountain face or collapsing to a near view.
+static func _protect_overview_boom(
+	course: CannonGolfCourseData,
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> PackedFloat32Array:
+	var content := _active_content_bounds(heights, footprint, cell_count, local_bounds)
+	var direction_3d := course.oblique_offset.normalized()
+	var direction := Vector2(direction_3d.x, direction_3d.z)
+	if not content.has_volume() or direction.is_zero_approx() or direction_3d.y <= 0.01:
+		return heights
+	direction = direction.normalized()
+	var focus := Vector2(content.get_center().x, content.get_center().z)
+	var focus_y := content.get_center().y
+	var rise_per_horizontal := direction_3d.y \
+			/ maxf(Vector2(direction_3d.x, direction_3d.z).length(), 0.01)
+	var result := heights.duplicate()
+	var width := cell_count.x + 1
+	for sample_z in range(cell_count.y + 1):
 		var z := lerpf(local_bounds.position.y, local_bounds.end.y, float(sample_z) / float(cell_count.y))
-		for sample_x in range(sample_size.x):
+		for sample_x in range(cell_count.x + 1):
 			var x := lerpf(local_bounds.position.x, local_bounds.end.x, float(sample_x) / float(cell_count.x))
 			var point := Vector2(x, z)
-			var is_protected := point.distance_to(Vector2(plan[0].launcher.x, plan[0].launcher.z)) \
-					<= START_SUPPORT_INNER_RADIUS
-			for leg_data in plan:
-				if point.distance_to(Vector2(leg_data.goal.x, leg_data.goal.z)) \
-						<= float(leg_data.goal_radius) + PLATE_TERRAIN_SHOULDER + support_grid_margin:
-					is_protected = true
-					break
-			result[sample_z * sample_size.x + sample_x] = 1 if is_protected else 0
-	return result
-
-
-static func _filter_unprotected_samples(
-		heights: PackedFloat32Array, cell_count: Vector2i, locked: PackedByteArray
-) -> PackedFloat32Array:
-	var sample_size := cell_count + Vector2i.ONE
-	var result := heights.duplicate()
-	for z_index in range(1, sample_size.y - 1):
-		for x_index in range(1, sample_size.x - 1):
-			var index := z_index * sample_size.x + x_index
-			if locked[index]:
+			if not _point_is_active(point, footprint, cell_count, local_bounds):
 				continue
-			var average := (heights[index - 1] + heights[index + 1] \
-					+ heights[index - sample_size.x] + heights[index + sample_size.x]) * 0.25
-			result[index] = lerpf(heights[index], average, SURFACE_FILTER_BLEND)
+			var relative := point - focus
+			var along := relative.dot(direction)
+			var lateral := absf(relative.cross(direction))
+			var cap := INF
+			var blend := 0.0
+			var focus_distance := relative.length()
+			if focus_distance < CAMERA_FOCUS_CLEAR_RADIUS:
+				cap = focus_y - CAMERA_FOCUS_CLEARANCE
+				blend = _smootherstep(1.0 - focus_distance / CAMERA_FOCUS_CLEAR_RADIUS)
+			if along >= 0.0 and lateral < CAMERA_BOOM_CHANNEL_HALF_WIDTH:
+				var boom_cap := focus_y + along * rise_per_horizontal \
+						- CAMERA_BOOM_RADIUS - CAMERA_BOOM_CLEARANCE
+				cap = minf(cap, boom_cap)
+				blend = maxf(
+					blend,
+					_smootherstep(1.0 - lateral / CAMERA_BOOM_CHANNEL_HALF_WIDTH)
+				)
+			if is_finite(cap):
+				var index := sample_z * width + sample_x
+				result[index] = lerpf(result[index], minf(result[index], cap), blend)
 	return result
 
 
-static func _project_adjacent_slopes(
-		heights: PackedFloat32Array,
-		cell_count: Vector2i,
-		local_bounds: Rect2,
-		locked: PackedByteArray
-) -> void:
-	var sample_size := cell_count + Vector2i.ONE
-	var x_spacing := local_bounds.size.x / float(cell_count.x)
-	var z_spacing := local_bounds.size.y / float(cell_count.y)
-	var max_x_delta := tan(deg_to_rad(PROJECTED_ADJACENT_SLOPE_DEGREES)) * x_spacing
-	var max_z_delta := tan(deg_to_rad(PROJECTED_ADJACENT_SLOPE_DEGREES)) * z_spacing
-	for z_index in range(sample_size.y):
-		for x_index in range(sample_size.x - 1):
-			_project_slope_pair(heights, z_index * sample_size.x + x_index,
-					z_index * sample_size.x + x_index + 1, max_x_delta, locked)
-	for z_index in range(sample_size.y - 1):
-		for x_index in range(sample_size.x):
-			_project_slope_pair(heights, z_index * sample_size.x + x_index,
-					(z_index + 1) * sample_size.x + x_index, max_z_delta, locked)
-	# A vertical correction can disturb a horizontal neighbor. End on the more
-	# densely sampled axis; repeated outer passes still converge the other axis.
-	for z_index in range(sample_size.y):
-		for x_index in range(sample_size.x - 1):
-			_project_slope_pair(heights, z_index * sample_size.x + x_index,
-					z_index * sample_size.x + x_index + 1, max_x_delta, locked)
+static func _overview_boom_passes(
+	course: CannonGolfCourseData,
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	var content := _active_content_bounds(heights, footprint, cell_count, local_bounds)
+	var direction_3d := course.oblique_offset.normalized()
+	var horizontal := Vector2(direction_3d.x, direction_3d.z)
+	if not content.has_volume() or horizontal.is_zero_approx() or direction_3d.y <= 0.01:
+		return false
+	horizontal = horizontal.normalized()
+	var focus := Vector2(content.get_center().x, content.get_center().z)
+	var origin_y := content.get_center().y
+	var rise_per_horizontal := direction_3d.y \
+			/ maxf(Vector2(direction_3d.x, direction_3d.z).length(), 0.01)
+	var distance := maxf(content.size.x, content.size.z)
+	for sample_index in range(13):
+		var along := distance * float(sample_index) / 12.0
+		var center := focus + horizontal * along
+		var line_y := origin_y + along * rise_per_horizontal
+		for raw_side in [-1.0, 0.0, 1.0]:
+			var side: float = raw_side
+			var point: Vector2 = center + Vector2(-horizontal.y, horizontal.x) \
+					* CAMERA_BOOM_RADIUS * side
+			if not _point_is_active(point, footprint, cell_count, local_bounds):
+				continue
+			if _sample_height(heights, cell_count, local_bounds, point) \
+					+ CAMERA_BOOM_RADIUS + 0.25 >= line_y:
+				return false
+	return true
 
 
-static func _project_slope_pair(
-		heights: PackedFloat32Array,
-		left_index: int,
-		right_index: int,
-		maximum_delta: float,
-		locked: PackedByteArray
-) -> void:
-	var difference := heights[right_index] - heights[left_index]
-	if absf(difference) <= maximum_delta:
-		return
-	var lower_index := left_index if difference > 0.0 else right_index
-	var higher_index := right_index if difference > 0.0 else left_index
-	if locked[lower_index] and locked[higher_index]:
-		return
-	if locked[lower_index]:
-		heights[higher_index] = heights[lower_index] + maximum_delta
-	elif locked[higher_index]:
-		heights[lower_index] = heights[higher_index] - maximum_delta
-	else:
-		var midpoint := (heights[lower_index] + heights[higher_index]) * 0.5
-		heights[lower_index] = midpoint - maximum_delta * 0.5
-		heights[higher_index] = midpoint + maximum_delta * 0.5
+static func _camera_contracts_pass(
+	course: CannonGolfCourseData,
+	plan: Array[Dictionary],
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	var content := _active_content_bounds(heights, footprint, cell_count, local_bounds)
+	if not content.has_volume():
+		return false
+	var horizontal_min := maxf(minf(content.size.x, content.size.z), 0.01)
+	if maxf(content.size.x, content.size.z) / horizontal_min > MAXIMUM_ACTIVE_ASPECT:
+		return false
+	var direction := course.oblique_offset.normalized()
+	if direction.is_zero_approx():
+		return false
+	var span := maxf(content.size.x, content.size.z)
+	var distance := maxf(maxf(span * 1.45, content.size.y * 2.1), 140.0)
+	var focus := content.get_center()
+	var camera := focus + direction * distance
+	for leg_data in plan:
+		var target := leg_data.goal as Vector3
+		target.y += CAMERA_FLAG_HEIGHT
+		for sample_index in range(1, CAMERA_LINE_SAMPLE_COUNT):
+			var t := float(sample_index) / float(CAMERA_LINE_SAMPLE_COUNT)
+			var line_point := camera.lerp(target, t)
+			var xz := Vector2(line_point.x, line_point.z)
+			if not _point_is_active(xz, footprint, cell_count, local_bounds):
+				continue
+			var terrain_y := _sample_height(heights, cell_count, local_bounds, xz)
+			if terrain_y + CAMERA_LINE_CLEARANCE >= line_point.y:
+				return false
+	return true
+
+
+static func _active_content_bounds(
+	heights: PackedFloat32Array,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> AABB:
+	var minimum := Vector3(INF, INF, INF)
+	var maximum := Vector3(-INF, -INF, -INF)
+	var width := cell_count.x + 1
+	for cell_z in range(cell_count.y):
+		for cell_x in range(cell_count.x):
+			if footprint[cell_z * cell_count.x + cell_x] == 0:
+				continue
+			for corner in [Vector2i(cell_x, cell_z), Vector2i(cell_x + 1, cell_z),
+					Vector2i(cell_x, cell_z + 1), Vector2i(cell_x + 1, cell_z + 1)]:
+				var point := Vector3(
+					lerpf(local_bounds.position.x, local_bounds.end.x, float(corner.x) / float(cell_count.x)),
+					heights[corner.y * width + corner.x],
+					lerpf(local_bounds.position.y, local_bounds.end.y, float(corner.y) / float(cell_count.y))
+				)
+				minimum = minimum.min(point)
+				maximum = maximum.max(point)
+	return AABB(minimum, maximum - minimum).grow(0.01) if minimum.is_finite() else AABB()
+
+
+static func _sample_height(
+	heights: PackedFloat32Array,
+	cell_count: Vector2i,
+	local_bounds: Rect2,
+	point: Vector2
+) -> float:
+	var grid := Vector2(
+		clampf((point.x - local_bounds.position.x) / local_bounds.size.x, 0.0, 1.0) * cell_count.x,
+		clampf((point.y - local_bounds.position.y) / local_bounds.size.y, 0.0, 1.0) * cell_count.y
+	)
+	var x0 := mini(floori(grid.x), cell_count.x - 1)
+	var z0 := mini(floori(grid.y), cell_count.y - 1)
+	var uv := Vector2(grid.x - float(x0), grid.y - float(z0))
+	var width := cell_count.x + 1
+	var h00 := heights[z0 * width + x0]
+	var h10 := heights[z0 * width + x0 + 1]
+	var h01 := heights[(z0 + 1) * width + x0]
+	var h11 := heights[(z0 + 1) * width + x0 + 1]
+	return lerpf(lerpf(h00, h10, uv.x), lerpf(h01, h11, uv.x), uv.y)
+
+
+static func _point_is_active(
+	point: Vector2,
+	footprint: PackedByteArray,
+	cell_count: Vector2i,
+	local_bounds: Rect2
+) -> bool:
+	if not local_bounds.has_point(point):
+		return false
+	var x := clampi(floori((point.x - local_bounds.position.x) / local_bounds.size.x * cell_count.x), 0, cell_count.x - 1)
+	var z := clampi(floori((point.y - local_bounds.position.y) / local_bounds.size.y * cell_count.y), 0, cell_count.y - 1)
+	return footprint[z * cell_count.x + x] != 0
+
+
+static func _segment_address(point: Vector2, start: Vector2, end: Vector2) -> Dictionary:
+	var delta := end - start
+	var length_squared := delta.length_squared()
+	var t := clampf((point - start).dot(delta) / length_squared, 0.0, 1.0) \
+			if length_squared > 0.0001 else 0.0
+	var closest := start + delta * t
+	return {"t": t, "distance": point.distance_to(closest)}
+
+
+static func _compact_ellipse(point: Vector2, center: Vector2, radius: Vector2) -> float:
+	var safe_radius := Vector2(maxf(radius.x, 0.01), maxf(radius.y, 0.01))
+	var normalized := (point - center) / safe_radius
+	return _smootherstep(1.0 - normalized.length())
 
 
 static func measure_slope_metrics(
@@ -887,7 +1241,7 @@ static func _assemble_generated_course(
 		var range_margin := CannonGolfBallistics.maximum_horizontal_range() \
 				- float(leg_data.distance)
 		var height_margin := float(leg_data.near_clearance) \
-				- float(leg_data.goal_recess) - float(leg_data.goal_lip_height)
+				- float(leg_data.goal_recess)
 		leg.corridor_admission = {
 			"point_count": 16,
 			"minimum_range_margin": range_margin,
@@ -905,12 +1259,9 @@ static func _assemble_generated_course(
 	# transient build result and would make identical artifacts hash differently.
 	union_range_metrics["algorithm_version"] = ALGORITHM_VERSION
 	result.union_range_metrics = union_range_metrics
-	var minimum_height := _minimum_height(heights)
-	var maximum_height := _maximum_height(heights)
-	result.content_bounds = AABB(
-		Vector3(local_bounds.position.x, minimum_height, local_bounds.position.y),
-		Vector3(local_bounds.size.x, maximum_height - minimum_height, local_bounds.size.y)
-	).grow(0.01)
+	result.content_bounds = _active_content_bounds(
+		heights, footprint, cell_count, local_bounds
+	)
 	var expanded_play_bounds := result.content_bounds.grow(24.0)
 	expanded_play_bounds.size.y += 150.0
 	result.play_bounds = expanded_play_bounds
@@ -1015,6 +1366,11 @@ static func _gaussian(point: Vector2, center: Vector2, radius: Vector2) -> float
 static func _smoothstep(value: float) -> float:
 	var t := clampf(value, 0.0, 1.0)
 	return t * t * (3.0 - 2.0 * t)
+
+
+static func _smootherstep(value: float) -> float:
+	var t := clampf(value, 0.0, 1.0)
+	return t * t * t * (t * (t * 6.0 - 15.0) + 10.0)
 
 
 static func _minimum_height(heights: PackedFloat32Array) -> float:

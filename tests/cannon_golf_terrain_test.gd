@@ -80,9 +80,16 @@ func _assert_prepared_terrain(
 		"Prepared terrain must retain one render surface and triangle collision."
 	)
 	_assert_prepared_material(prepared, course)
+	_assert_true(
+		prepared.footprint.count(1) < prepared.footprint.size(),
+		"Prepared terrain must retain an irregular mountain footprint."
+	)
+	_assert_true(
+		FAST_GENERATOR._footprint_is_connected(prepared.footprint, prepared.cell_count),
+		"Prepared terrain footprint must be connected."
+	)
 	for leg_index in range(prepared.legs.size()):
-		_assert_goal_plate_support(prepared, prepared.legs[leg_index], course.leg_at(leg_index))
-	_assert_rim_bands(prepared)
+		_assert_goal_basin(prepared, prepared.legs[leg_index], course.leg_at(leg_index))
 	if course.course_id == &"deep_relay":
 		_assert_true(prepared.relief() >= 80.0, "Deep Relay must retain at least 80m relief.")
 		for leg in prepared.legs:
@@ -137,77 +144,40 @@ func _assert_prepared_material(
 	)
 
 
-func _assert_rim_bands(prepared: CannonGolfPreparedCourse) -> void:
-	for left_index in range(prepared.legs.size()):
-		for right_index in range(left_index + 1, prepared.legs.size()):
-			var left := prepared.legs[left_index]
-			var right := prepared.legs[right_index]
-			if left.rim_elevation_band < right.rim_elevation_band:
-				_assert_true(
-					right.goal_rim_y - left.goal_rim_y >= 12.0,
-					"Higher authored rim bands must be at least 12m above lower bands."
-				)
-			elif left.rim_elevation_band > right.rim_elevation_band:
-				_assert_true(
-					left.goal_rim_y - right.goal_rim_y >= 12.0,
-					"Higher authored rim bands must be at least 12m above lower bands."
-				)
-
-
-func _assert_goal_plate_support(
+func _assert_goal_basin(
 		prepared: CannonGolfPreparedCourse,
 		leg: CannonGolfPreparedCourseLeg,
 		authored_leg: CannonGolfCourseLegData
 ) -> void:
-	var support_y := leg.goal_position.y - FAST_GENERATOR.PLATE_SUPPORT_DEPTH
+	var floor_y := leg.goal_position.y
+	var recess := leg.goal_rim_y - floor_y
 	_assert_true(
-		absf(prepared.height_at_local(leg.goal_position.x, leg.goal_position.z) - support_y) <= 0.08,
-		"Prepared terrain must support the plate at the sealed shallow offset."
+		absf(prepared.height_at_local(leg.goal_position.x, leg.goal_position.z) - floor_y) <= 0.16,
+		"The goal center must be the floor of its terrain basin."
 	)
 	_assert_true(
 		leg.goal_radius >= authored_leg.bowl_radius_range.x and leg.goal_radius <= authored_leg.bowl_radius_range.y,
 		"Prepared goal radius must stay inside the authored recipe range."
 	)
 	_assert_true(
-		is_equal_approx(leg.goal_rim_y, leg.goal_position.y) \
-				and leg.goal_lip_y - leg.goal_position.y >= 0.89 \
-				and leg.goal_lip_y - leg.goal_position.y <= 1.31,
-		"Prepared plate must seal its floor and low wall height."
+		recess >= authored_leg.bowl_recess_depth_range.x \
+				and recess <= authored_leg.bowl_recess_depth_range.y \
+				and is_equal_approx(leg.goal_lip_y, leg.goal_rim_y),
+		"The basin depth must remain authored and must not add a raised fence lip."
 	)
-	var minimum_sample_height := INF
-	var maximum_sample_height := -INF
-	var samples_inside := 0
-	for z_index in range(prepared.cell_count.y + 1):
-		var z := lerpf(prepared.local_bounds.position.y, prepared.local_bounds.end.y, float(z_index) / prepared.cell_count.y)
-		for x_index in range(prepared.cell_count.x + 1):
-			var x := lerpf(prepared.local_bounds.position.x, prepared.local_bounds.end.x, float(x_index) / prepared.cell_count.x)
-			if Vector2(x, z).distance_to(Vector2(leg.goal_position.x, leg.goal_position.z)) > leg.goal_radius:
-				continue
-			var height := prepared.heights[z_index * (prepared.cell_count.x + 1) + x_index]
-			minimum_sample_height = minf(minimum_sample_height, height)
-			maximum_sample_height = maxf(maximum_sample_height, height)
-			samples_inside += 1
-			_assert_true(
-				absf(height - support_y) <= 0.08,
-				"Terrain below a goal plate must remain flat and shallow."
-			)
-	_assert_true(samples_inside >= 8, "Goal plate support must contain enough sampled terrain.")
-	_assert_true(
-		maximum_sample_height - minimum_sample_height <= 0.08,
-		"Terrain must not create a retaining wall inside the physical plate."
-	)
-	var shoulder_directions: Array[Vector2] = [
+	var directions: Array[Vector2] = [
 		Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN,
 	]
-	for direction: Vector2 in shoulder_directions:
-		var shoulder_point: Vector2 = Vector2(leg.goal_position.x, leg.goal_position.z) \
-				+ direction * (leg.goal_radius + FAST_GENERATOR.PLATE_TERRAIN_SHOULDER * 0.75)
+	for direction: Vector2 in directions:
+		var middle_point := Vector2(leg.goal_position.x, leg.goal_position.z) \
+				+ direction * (leg.goal_radius * 0.72)
+		var shoulder_point := Vector2(leg.goal_position.x, leg.goal_position.z) \
+				+ direction * (leg.goal_radius + FAST_GENERATOR.BASIN_SHOULDER_PADDING)
+		var middle_height := prepared.height_at_local(middle_point.x, middle_point.y)
 		var shoulder_height := prepared.height_at_local(shoulder_point.x, shoulder_point.y)
 		_assert_true(
-			absf(shoulder_height - support_y) <= 0.12,
-			"%s goal plate shoulder %s differs by %.3fm from its support." % [
-				prepared.course_id, direction, shoulder_height - support_y,
-			]
+			middle_height >= floor_y - 0.16 and shoulder_height >= middle_height - 0.16,
+			"%s goal basin must rise outward without a raised fence." % prepared.course_id
 		)
 
 

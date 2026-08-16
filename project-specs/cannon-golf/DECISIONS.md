@@ -666,6 +666,34 @@ in `OPEN_QUESTIONS.md`.
 - D-042 remains in force. Bounce pads, damping pads, airflow, and gravity zones
   stay deferred until the basic terrain and camera foundation is accepted.
 
+### D-045 — Generate semantic mountain tiers under ballistic and overview constraints
+
+- Status: accepted on 2026-08-16; supersedes D-044's literal tenfold relief,
+  global slope, completion-arrow, and unchanged-flag clauses. It does not
+  change D-044's resolved-ball or partial-aim-arc decisions.
+- The canonical terrain target is the early/middle/late reference family under
+  `assets/terrain-progression-*.png`, not a literal world-height multiplier.
+  Generate a compact connected mountain from a small semantic graph of ridges,
+  shelves, valleys, landmarks, route stations, and an irregular outside shell.
+  Increase feature density and elevation layering across the catalog while
+  keeping steep escarpments outside protected launcher, basin, and intended
+  flight corridors.
+- Select each launcher-to-goal leg from the legal analytic ballistic domain
+  before terrain synthesis. Admit the final shared height grid only when it
+  preserves that intended path's clearance. Derive compact content bounds from
+  active terrain cells, open a terrain-clear reset-pivot and spring-arm channel
+  toward the existing oblique camera direction, and require interpolated terrain
+  to remain below each camera-to-flag line of sight. These intrinsic checks
+  replace random terrain retries and large shot-test campaigns.
+- Every goal is a near-flat floor plus smooth concave shoulder carved into the
+  shared heightfield. It has no separate physical floor, fence, retaining wall,
+  or raised lip. Completion changes only the flag material from incomplete blue
+  to completed gold in world geometry; the basin, disc, pole, flag transform,
+  collision, and airborne locator stay unchanged. The compact progress tally
+  remains the redundant non-world completion cue.
+- D-042 remains in force. Do not implement or use bounce, damping, airflow,
+  gravity, camera rewrites, or unrelated UI work as part of this terrain slice.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

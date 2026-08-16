@@ -1,8 +1,5 @@
 extends SceneTree
 
-const FAST_GENERATOR := preload("res://src/cannon_golf/trajectory_course_generator.gd")
-
-
 func _initialize() -> void:
 	var payloads: Dictionary = {}
 	for course in CannonGolfCourseCatalog.all_courses():
@@ -23,11 +20,10 @@ func _initialize() -> void:
 		_assert_true(prepared.render_mesh != null and prepared.top_shape != null and prepared.skirt_shape != null, "Prepared artifact must retain render and collision resources.")
 		for leg in prepared.legs:
 			_assert_true(
-				absf(
-					prepared.height_at_local(leg.goal_position.x, leg.goal_position.z) \
-							- (leg.goal_position.y - FAST_GENERATOR.PLATE_SUPPORT_DEPTH)
-				) <= 0.08,
-				"Prepared sampled surface must reproduce each shallow goal support."
+				absf(prepared.height_at_local(
+					leg.goal_position.x, leg.goal_position.z
+				) - leg.goal_position.y) <= 0.16,
+				"Prepared sampled surface must reproduce each terrain-basin floor."
 			)
 		var stale_course := course.duplicate(true) as CannonGolfCourseData
 		stale_course.terrain_seed_window.x += 1

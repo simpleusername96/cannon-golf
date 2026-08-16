@@ -23,6 +23,27 @@ loop.
 
 ## Sources
 
+### Constraint-based terrain generation evidence (2026-08-16)
+
+| Source | Supported mechanism | Cannon Golf use |
+| --- | --- | --- |
+| [Terrain Synthesis Using Curve Networks](https://gigl.scs.carleton.ca/papers/curve-networks-terrain.pdf) | A sparse hierarchy of curves can encode salient peaks and ridges before patch interpolation | Generate a low-count ridge/valley graph from launcher and goal stations instead of asking noise to invent the course structure |
+| [Terrain Sketching](https://pubs.cs.uct.ac.za/id/eprint/516/1/terrsketch.pdf) | Curvilinear, branching extrema and explicit boundary curves control ridges, river courses, and landform footprints | Treat ridge centerlines, valley centerlines, plateau edges, and the irregular outer silhouette as explicit constraints |
+| [Feature Based Terrain Generation Using Diffusion Equation](https://doi.org/10.1111/j.1467-8659.2010.01806.x) | Elevation, ridge, valley, cliff, slope, and roughness constraints can be rasterized into one controllable heightfield | Evaluate compact-support feature fields on the existing grid and preserve protected supports/corridors during local blending |
+| [Terrain Generation Using Procedural Models Based on Hydrology](https://doi.org/10.1145/2461912.2461996) | A hierarchical drainage graph produces coherent valleys, watersheds, ridges, and broad landform patches | Use a small abstract branch graph for mid/late valley and ridge topology; do not run full erosion or add literal rivers |
+| [FHWA controlling criteria](https://highways.dot.gov/federal-lands/pddm/dpg/about-controlling-criteria) and [vertical curvature guidance](https://highways.dot.gov/safety/speed-management/speed-concepts-informational-guide/chapter-4-engineering-and-technical) | Alignment design separates maximum grade, cross slope, vertical clearance, curvature, and sight distance instead of using one global smoothness score | Protect each launcher-to-goal corridor with explicit clearance and smooth transition constraints while allowing steep cliffs outside it |
+| [A Comparison of I/O-Efficient Algorithms for Visibility Computation on Massive Grid Terrains](https://arxiv.org/abs/1810.01946) | Grid-terrain visibility can be decided by interpolating terrain elevation along the horizontal projection of a viewpoint-to-target line | Sample the final shared heightfield along each overview-camera-to-flag line and reject occluded goal layouts before baking |
+| [Distance Transforms of Sampled Functions](https://cs.brown.edu/people/pfelzens/papers/dt.pdf) | Distance fields turn sparse masks into deterministic clearance values | Use world-distance capsule fields around routes, starts, goals, and feature curves so protected areas are construction inputs |
+
+These sources support a deterministic coarse-to-fine resolver: choose legal
+ballistic stations first, derive a semantic landform graph, rasterize bounded
+fields into one height grid, carve goal basins last, and admit the final grid by
+trajectory clearance and overview line-of-sight. They do not support repeated
+random terrain generation followed by a large physics search. Full hydraulic
+erosion and a general constraint solver were rejected for this slice because
+they add cost and failure modes without improving the three canonical visual
+families.
+
 ### External product references
 
 | Reference | Directly evidenced behavior | Useful lesson | Important gap |

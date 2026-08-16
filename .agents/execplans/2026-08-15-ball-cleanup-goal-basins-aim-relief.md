@@ -1,6 +1,7 @@
 ---
 type: plan
-status: active
+status: superseded
+superseded_by: .agents/execplans/2026-08-16-constrained-mountain-terrain.md
 created: 2026-08-15
 scope: Cannon Golf resolved-ball cleanup, stable goal basins, two-axis aim indication, and broad tenfold terrain relief
 related:

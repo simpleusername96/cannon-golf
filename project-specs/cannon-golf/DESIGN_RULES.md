@@ -121,16 +121,23 @@ coefficients, stage data formats, or code ownership.
   extent and must fit inside the real three-parameter launch envelope. Do not
   shrink or clip the mountain to make a shot appear feasible, and do not draw
   the envelope in normal play.
-- Later courses expand progressively from the early `315 x 180` metre teaching
-  scale to approximately `473 x 720` metres and `160` metres of relief. Their
-  height must read as distinct peaks, broad shelves, ridges, and natural valleys,
-  not repeated local pits. Ordered legs may rise or descend.
-- Course generation must widen semantic landforms with the accepted horizontal
-  scale and must not create hard multi-metre height steps. On the final shared
-  render/collision height array, p95 adjacent-sample slope is at most `42`
-  degrees, maximum slope is at most `60` degrees, at most `3%` of samples exceed
-  `45` degrees, and relief remains within `target..target + 16 m`. Preserve broad
-  peaks and protected start/goal supports while enforcing these limits.
+- Keep the active mountain footprint compact enough for one high-oblique reset
+  view. Progression comes from more elevation tiers, branching ridges, shelves,
+  and valleys, not from an increasingly empty rectangular map.
+- Preserve a broad low area at the reset pivot and a rising terrain-clear
+  channel along the existing camera boom. The generator must prevent the reset
+  camera from collapsing against a nearby mountain face without rewriting the
+  camera controller.
+- Use `assets/terrain-progression-early.png`, `terrain-progression-mid.png`, and
+  `terrain-progression-late.png` as the visual family contract. Early terrain
+  has one dominant mountain relationship and few broad levels; middle terrain
+  introduces distinct plateau branches and a valley; late terrain uses several
+  connected ridge and shelf branches at clearly different elevations.
+- Steep escarpments may separate shelves and may form the irregular outside
+  shell. The launcher support, every basin approach, and every intended
+  launcher-to-goal flight corridor remain explicit protected constraints.
+  Do not globally smooth away the reference structure or create an isolated
+  spike merely to increase a numeric relief value.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,
@@ -151,9 +158,10 @@ coefficients, stage data formats, or code ownership.
   candidate; it must not delete the ball or prevent later re-entry.
 - A confirmed goal removes its resolved ball after completed-goal state and the
   existing first-contact impact mark are secure. Later shots cannot invalidate it.
-- All incomplete goals share the strongest available-goal flag and marker
-  rhythm. Completion must not change basin, disc, flag, material, collision, or
-  boundary geometry; there is no future or next-goal geometry in normal play.
+- All incomplete goals share the same blue flag and marker rhythm. Completion
+  changes only that flag material to the accepted completed-goal gold; it must
+  not change the basin, disc, pole or flag transform, collision, boundary
+  geometry, or airborne locator.
   Keep the fixed flag as the local landing cue. Add a thick matte 3D
   downward arrow above the local skyline for course-scale location; do not use
   a thin emissive stem or diamond.
@@ -167,7 +175,8 @@ coefficients, stage data formats, or code ownership.
 - The current-catalog ball uses one `2.0 m` physical and visual radius plus a
   dark navy, low-gloss material so it remains readable over the enlarged pale
   terrain without becoming a non-physical screen-space marker.
-- A completed state must not rely on color alone.
+- The existing compact completed-goals tally remains the non-world redundant
+  status cue; the local goal itself changes only its flag color.
 
 ### Impact-history marks
 

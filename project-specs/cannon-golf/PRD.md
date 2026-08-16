@@ -181,7 +181,9 @@ cannon composition.
   the connected heightfield. It has a near-flat scoring floor and a broad,
   gradual transition to the surrounding terrain, with no separate physical
   plate floor, fence, retaining wall, or raised lip. A flush non-colliding disc
-  and fixed flag identify the goal without changing its terrain boundary.
+  and fixed flag identify the goal without changing its terrain boundary. Goal
+  completion changes only the flag material color in the world; the basin,
+  disc, pole, flag transform, locator, and collision remain unchanged.
   A ball counts only after it remains inside the basin under the stage's
   position and safe-motion tolerances for one continuous second. Entering and
   then bouncing out cancels that settlement attempt but leaves the ball live.
@@ -338,21 +340,16 @@ cannon composition.
   zones must not be preinstalled. A stage may still store non-world metadata
   such as play bounds, camera bookmarks, goal tolerances, per-device stock,
   placement legality, and certified solution witnesses.
-- Current catalog baseline: deterministic generation retains the connected
-  triangulated mountain topology, but goals are separate physical plates over a
-  shallow fitted support footprint. The first two teaching courses use a
-  `315 x 180` metre baseline. Later course horizontal scale increases through
-  `1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25`, reaching
-  approximately `473 x 720` metres for course 10, while
-  target playable relief increases from `60` to `160` metres. Final relief must
-  remain between each target and `target + 16` metres. Across the final shared
-  render/collision height array, adjacent-sample slope p95 must be at most `42`
-  degrees, maximum slope at most `60` degrees, and at most `3%` of samples may
-  exceed `45` degrees. That relief must
-  read as macro peaks, shelves, ridges, and valleys rather than local goal
-  excavation. Goal elevations may rise or descend across the authored layout. The launch
-  envelope remains an internal admission rule, never a visible trajectory or
-  range overlay.
+- Current catalog baseline: deterministic generation selects legal ballistic
+  launcher-to-goal legs first, constructs one connected irregular mountain
+  footprint around them, and carves every goal into the same shared
+  render/collision heightfield. Early, middle, and late courses progressively
+  add elevation tiers, ridge/shelf branches, and valleys according to the three
+  canonical terrain-progression references. The final grid must keep the
+  intended flight corridor clear, keep the existing overview camera boom clear
+  from its reset pivot, and keep every flag visible from that high-oblique view.
+  These are generator admission rules, not visible trajectory or range overlays
+  and not a post-hoc large physics search.
 - Reason: the course supplies the spatial problem while the player supplies all
   route-changing mechanisms.
 
