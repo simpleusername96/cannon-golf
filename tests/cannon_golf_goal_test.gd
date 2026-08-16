@@ -20,8 +20,8 @@ func _run() -> void:
 		"A goal must not add hidden collision geometry."
 	)
 	_assert_true(
-		goal.find_children("GoalFloorCue", "MeshInstance3D", true, false).size() == 1,
-		"A goal may retain one non-colliding floor cue."
+		goal.find_children("GoalFloorCue", "MeshInstance3D", true, false).is_empty(),
+		"A goal must let the terrain material own the complete circular floor cue."
 	)
 	_assert_true(not goal.camera_collision_rid().is_valid(), "A goal must not obstruct the camera.")
 	_assert_true(_air_marker_ignores_terrain_depth(goal), "The air locator must remain readable.")

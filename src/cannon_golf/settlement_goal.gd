@@ -1,7 +1,6 @@
 class_name CannonGolfSettlementGoal
 extends Node3D
 
-const FLOOR_CUE_THICKNESS := 0.08
 const BASE_SETTLE_SECONDS := 1.0
 const BASE_MAXIMUM_LINEAR_SPEED := 0.72
 const BASE_MAXIMUM_ANGULAR_SPEED := 2.2
@@ -32,7 +31,6 @@ var capture_entry_angular_speed := BASE_CAPTURE_ENTRY_ANGULAR_SPEED \
 		* CannonGolfBallistics.MOTION_TIME_SCALE
 var visual_state := VisualState.ACTIVE
 
-var _plate_floor: MeshInstance3D
 var _flag_pole: MeshInstance3D
 var _flag: MeshInstance3D
 var _flag_material: StandardMaterial3D
@@ -61,7 +59,6 @@ func configure(
 
 
 func _ready() -> void:
-	_build_plate()
 	_build_flag()
 	_build_air_marker()
 	_apply_visual_state()
@@ -115,22 +112,6 @@ func entry_opening_width() -> float:
 func _local_horizontal_contains(local_position: Vector3, ball_radius: float) -> bool:
 	return Vector2(local_position.x, local_position.z).length() \
 			<= inner_radius - ball_radius * 0.35
-
-
-func _build_plate() -> void:
-	var floor_material := _material(Color("53634F"), 0.0, 0.96)
-	var floor_mesh := MeshInstance3D.new()
-	floor_mesh.name = "GoalFloorCue"
-	var floor_data := CylinderMesh.new()
-	floor_data.top_radius = maxf(inner_radius * 0.45, 3.5)
-	floor_data.bottom_radius = floor_data.top_radius
-	floor_data.height = FLOOR_CUE_THICKNESS
-	floor_data.radial_segments = 32
-	floor_data.material = floor_material
-	floor_mesh.mesh = floor_data
-	floor_mesh.position.y = FLOOR_CUE_THICKNESS * 0.5 + 0.015
-	add_child(floor_mesh)
-	_plate_floor = floor_mesh
 
 
 func _build_flag() -> void:
