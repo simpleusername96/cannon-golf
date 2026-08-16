@@ -157,8 +157,14 @@ files, commits, artifacts, or chat.
 - Task 2 passed: workflow YAML parses, all third-party actions use full commit
   pins, the credential is scoped to the three authorized steps, and the
   responsibility/failure-path audit found no competing runtime owner.
-- Next: create the private GitHub repository and transfer the itch credential
-  without exposing it.
+- Task 3 is partially complete: the private repository now exists at
+  `https://github.com/simpleusername96/cannon-golf`, `origin` points to it, and
+  the UI and deployment work are stored in separate local commits. The remote
+  remains unpushed so the first workflow run cannot fail from a missing secret.
+- Current stop condition: itch.io requires a fresh password confirmation before
+  its API Keys page can be opened. The signed-in Chrome tab is retained at that
+  prompt. After the user confirms it, create or reuse the key, store it as the
+  GitHub `BUTLER_API_KEY` secret, and push `main`.
 
 ## Completion and Stop Conditions
 
