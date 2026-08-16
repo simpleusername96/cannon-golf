@@ -12,6 +12,11 @@
 - Keep diffs scoped and validation explicit.
 - Keep active task progress in that plan's checkboxes rather than mirroring it
   into another document.
+- Keep accepted product knowledge in `project-specs/cannon-golf/`. Store
+  reusable advisory synthesis in `.agents/research/` and retained validation
+  proof in `.agents/evidence/`; neither location creates product authority.
+- Link research and evidence from each consuming plan instead of copying the
+  same findings into multiple documents.
 - Treat root `AGENTS.md` as the stable repo-wide operating contract.
 - Treat the nearest local `AGENTS.md` as the source of truth for subtree-specific
   placement or operating rules.
@@ -25,3 +30,5 @@
   durable layer.
 - Keep transient discoveries in `.agents/*` instead of turning root `AGENTS.md`
   into a structure map.
+- Do not use `.agents/research/` for raw search dumps, screenshots, logs, or
+  task progress.

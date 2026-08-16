@@ -6,9 +6,9 @@ topic: 3D cannon golf, planning cameras, impact history, and placeable trajector
 scope: Comparative product and visual references; consult only
 source: Local/product references reviewed on 2026-08-12; constraint-generation primary sources and pilot reviewed on 2026-08-14
 related:
-  - PRD.md
-  - DESIGN_RULES.md
-  - DECISIONS.md
+  - ../../../project-specs/cannon-golf/PRD.md
+  - ../../../project-specs/cannon-golf/DESIGN_RULES.md
+  - ../../../project-specs/cannon-golf/DECISIONS.md
 ---
 
 # Cannon Golf Research
@@ -61,7 +61,7 @@ families.
 ### Additional device candidate portfolio
 
 This table preserves the evidence considered before the owner selected damping,
-airflow, and local gravity behaviors in `DECISIONS.md`. External precedents do
+airflow, and local gravity behaviors in `project-specs/cannon-golf/DECISIONS.md`. External precedents do
 not define their Cannon Golf implementation.
 
 | Candidate family | Directly evidenced behavior | Distinct Cannon Golf verb | Main fit limit |
@@ -254,7 +254,7 @@ persistent-log growth and no remaining owned process:
 
 ## Recommendations
 
-- Use the screen-direction storyboard in `DESIGN_RULES.md` as the visual brief,
+- Use the screen-direction storyboard in `project-specs/cannon-golf/DESIGN_RULES.md` as the visual brief,
   then compare a runtime-feasible graybox from true top, high-oblique, true side,
   near-profile, and temporary launch-follow views.
 - Validate the direct-shot and bounce-pad loop before committing expansion-stage
@@ -262,7 +262,7 @@ persistent-log growth and no remaining owned process:
 - Author high-level course recipes, let the bounded offline resolver select exact
   geometry and witnesses, and bake only real-physics-certified artifacts. Add a
   Godot editor plugin only after this workflow reveals stable repeated operations.
-- Audit candidate code owners against `PRD.md` before any rename or rewrite.
+- Audit candidate code owners against `project-specs/cannon-golf/PRD.md` before any rename or rewrite.
 
 ## Limitations
 
@@ -275,7 +275,7 @@ persistent-log growth and no remaining owned process:
 - Exact aiming controls, camera transitions, mark retention, pad editing,
   placement-device tolerances, and confirmed-ball collision treatment still
   require owner decisions. The direct-shot certification tolerance is accepted
-  separately in `DECISIONS.md` D-032.
+  separately in `project-specs/cannon-golf/DECISIONS.md` D-032.
 
 ## HUD external-model review, 2026-08-16
 

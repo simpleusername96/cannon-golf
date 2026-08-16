@@ -24,7 +24,7 @@ affected code path is designed.
 
 - User direction recorded on 2026-08-12.
 - Accepted decisions in [`DECISIONS.md`](DECISIONS.md).
-- Reference gaps in [`RESEARCH.md`](RESEARCH.md).
+- Reference gaps in [`RESEARCH.md`](../../.agents/research/cannon-golf/RESEARCH.md).
 - Conflicts between the copied Paint Mountain runtime and [`PRD.md`](PRD.md).
 
 ## Findings

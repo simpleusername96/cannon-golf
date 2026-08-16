@@ -12,7 +12,7 @@
   direction.
 - Read `project-specs/cannon-golf/DECISIONS.md` for accepted decisions,
   `project-specs/cannon-golf/OPEN_QUESTIONS.md` for unresolved owner decisions,
-  and `project-specs/cannon-golf/RESEARCH.md` as consult-only evidence.
+  and `.agents/research/cannon-golf/RESEARCH.md` as consult-only evidence.
   `project-specs/cannon-golf/TASKS.md` is a draft planning aid, not an active
   execution contract.
 
@@ -84,4 +84,8 @@
 - Put durable supporting memory and evolving notes in `.agents/*`.
 - Put plan policy in `.agents/PLANS.md` and durable planning artifacts in `.agents/execplans/`.
 - Keep product knowledge in `project-specs/cannon-golf/`; do not duplicate it into `.agents/` or infer it from the inherited runtime.
+- Put reusable synthesized, consult-only research in `.agents/research/`; it
+  supports judgment but does not override the product specifications.
+- Put retained screenshots, logs, measurements, and other validation proof in
+  `.agents/evidence/`, linked from the plan or research dossier that uses it.
 - Prefer purpose-revealing naming over root-level structure prose where naming can carry the meaning.

@@ -9,7 +9,7 @@ source: User direction recorded on 2026-08-12
 related:
   - DESIGN_RULES.md
   - DECISIONS.md
-  - RESEARCH.md
+  - ../../.agents/research/cannon-golf/RESEARCH.md
   - OPEN_QUESTIONS.md
   - TASKS.md
 ---

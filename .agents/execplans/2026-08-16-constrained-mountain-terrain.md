@@ -7,7 +7,7 @@ related:
   - project-specs/cannon-golf/PRD.md
   - project-specs/cannon-golf/DESIGN_RULES.md
   - project-specs/cannon-golf/DECISIONS.md
-  - project-specs/cannon-golf/RESEARCH.md
+  - ../research/cannon-golf/RESEARCH.md
   - project-specs/cannon-golf/assets/terrain-progression-early.png
   - project-specs/cannon-golf/assets/terrain-progression-mid.png
   - project-specs/cannon-golf/assets/terrain-progression-late.png

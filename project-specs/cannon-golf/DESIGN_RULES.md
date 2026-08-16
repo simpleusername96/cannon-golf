@@ -8,7 +8,7 @@ scope: Camera, terrain readability, impact marks, settlement goals, devices, HUD
 source: Paint Mountain design system plus user direction recorded on 2026-08-12
 related:
   - PRD.md
-  - RESEARCH.md
+  - ../../.agents/research/cannon-golf/RESEARCH.md
   - assets/paint-mountain-hud-comparator.png
   - assets/paint-mountain-world-comparator.png
 ---
@@ -290,12 +290,13 @@ coefficients, stage data formats, or code ownership.
 - Pixel-for-pixel reuse of a Paint Mountain screenshot.
 - A photoreal golf course, sports broadcast presentation, or character avatar.
 - A large device toolbar before the bounce-pad loop is validated.
-- Treating the exploratory images in `RESEARCH.md` as approved camera targets.
+- Treating the exploratory images in `.agents/research/cannon-golf/RESEARCH.md`
+  as approved camera targets.
 
 ## Related
 
 - [`PRD.md`](PRD.md) owns product behavior.
-- [`RESEARCH.md`](RESEARCH.md) records source material and the limits of the
+- [`RESEARCH.md`](../../.agents/research/cannon-golf/RESEARCH.md) records source material and the limits of the
   current concept images.
 - [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) owns unresolved camera and interaction
   choices.

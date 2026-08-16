@@ -6,7 +6,7 @@ scope: Record newly accepted core rules and identify the next distinct device fa
 related:
   - ../../project-specs/cannon-golf/PRD.md
   - ../../project-specs/cannon-golf/DECISIONS.md
-  - ../../project-specs/cannon-golf/RESEARCH.md
+  - ../research/cannon-golf/RESEARCH.md
   - ../../project-specs/cannon-golf/OPEN_QUESTIONS.md
 ---
 
@@ -79,7 +79,7 @@ Phase gate:
 
 - [x] Inspect bounded direct precedents for distinct device relationships.
 - [x] Record source, observed mechanic, transfer limit, and confidence in
-  `RESEARCH.md`.
+  `.agents/research/cannon-golf/RESEARCH.md`.
 - [x] Stop or narrow the search when the evidence contract is satisfied.
 
 Phase gate:

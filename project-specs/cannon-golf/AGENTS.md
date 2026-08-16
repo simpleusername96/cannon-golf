@@ -13,7 +13,8 @@ Keep one evolving, agent-ready PRD and its supporting files so future sessions c
   experience.
 - `DESIGN_RULES.md` is canonical for visual composition and UI direction.
 - `DECISIONS.md` records accepted choices and rejected alternatives.
-- `RESEARCH.md` is consult-only evidence; it does not define the product.
+- `.agents/research/cannon-golf/RESEARCH.md` is consult-only evidence; it does
+  not define the product.
 - `OPEN_QUESTIONS.md` owns unresolved issues that still affect implementation.
 - `TASKS.md` is a draft planning aid derived from the specifications. It is not
   an active execution contract.
@@ -34,6 +35,8 @@ Keep one evolving, agent-ready PRD and its supporting files so future sessions c
 8. Use `Paint Mountain` only for truthful source history or inherited runtime
    behavior. Use `impact mark`, `impact history`, or `first-contact mark` for the
    new product concept.
+9. Keep reusable research under `.agents/research/cannon-golf/`; link it from
+   this workspace instead of duplicating it beside the specifications.
 
 ## Completion Standard
 

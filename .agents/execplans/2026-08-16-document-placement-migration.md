@@ -30,7 +30,7 @@ Constraints:
 | Disposition | Exact paths | Locked reason |
 | --- | --- | --- |
 | Keep | `project-specs/cannon-golf/PRD.md`; `DESIGN_RULES.md`; `DECISIONS.md`; `OPEN_QUESTIONS.md`; `docs/asset-licenses.md` | Product, design, decisions, decision queue, and provenance owners |
-| Move to `.agents/research/cannon-golf/` | `project-specs/cannon-golf/RESEARCH.md`; `project-specs/cannon-golf/CAMERA_AND_WORLD_READABILITY.ko.md` | Reusable advisory synthesis and explanatory evidence |
+| Move to `.agents/research/cannon-golf/` | Sources: `project-specs/cannon-golf/RESEARCH.md` and `project-specs/cannon-golf/CAMERA_AND_WORLD_READABILITY.ko.md`; targets: identically named files under `.agents/research/cannon-golf/` | Reusable advisory synthesis and explanatory evidence |
 | Leave unchanged | `project-specs/cannon-golf/TASKS.md` | Draft-plan lifecycle is separate from placement migration |
 
 Known link owners are root `AGENTS.md`, `project-specs/cannon-golf/AGENTS.md`, the retained spec set, and existing execution contracts found by the final stale-path scan. Classification is closed.
@@ -39,22 +39,27 @@ Known link owners are root `AGENTS.md`, `project-specs/cannon-golf/AGENTS.md`, t
 
 ### Phase 1: Lock guidance and manifest
 
-- [ ] **1.1 Update root and local placement rules.** State the authority/audience/function test and retain `OPEN_QUESTIONS.md` as the explicit decision-queue exception.
+- [x] **1.1 Update root and local placement rules.** State the authority/audience/function test and retain `OPEN_QUESTIONS.md` as the explicit decision-queue exception.
   - Accept: no guidance describes `RESEARCH.md` as product authority.
-- [ ] **1.2 Record source path and SHA-256 for both files.** Map them to identically named targets under `.agents/research/cannon-golf/`.
+  - Evidence: root, `.agents`, and specification-workspace guidance now distinguish canonical project knowledge, advisory research, and retained validation proof.
+- [x] **1.2 Record source path and SHA-256 for both files.** Map them to identically named targets under `.agents/research/cannon-golf/`.
   - Accept: both sources exist and targets do not conflict.
+  - Evidence: pre-move SHA-256 values were `9B28127AB9A931DDDF8FCF133ADBFBFDB03676D92B866324A9FFB19339EA122B` for `RESEARCH.md` and `81C3E35F26679282E4ACC0FF1A457A7C476D2C28E4DBCA81762E44E2CE82B55D` for the Korean camera summary; both target paths were absent.
 
 ### Phase 2: Move and relink
 
-- [ ] **2.1 Move both research files with `git mv`.** Do not move or edit `TASKS.md` except if a necessary link correction is found.
+- [x] **2.1 Move both research files with `git mv`.** Do not move or edit `TASKS.md` except if a necessary link correction is found.
   - Accept: both target hashes equal the manifest and old paths are absent.
-- [ ] **2.2 Update all inbound and internal links.** Search root guidance, `project-specs/`, and `.agents/`; correct related frontmatter and Markdown paths.
-  - Accept: `rg -n 'RESEARCH\.md|CAMERA_AND_WORLD_READABILITY' AGENTS.md project-specs .agents` returns only new valid paths.
+  - Evidence: Git recorded both files as 100% renames before link-only edits; the old paths are absent and `TASKS.md` is unchanged.
+- [x] **2.2 Update all inbound and internal links.** Search root guidance, `project-specs/`, and `.agents/`; correct related frontmatter and Markdown paths.
+  - Accept: the stale-path scan returns no live old path outside this source-to-target history row.
+  - Evidence: spec frontmatter, Markdown links, three consuming execution contracts, research frontmatter, and the camera summary source link resolve to the new owners.
 
 ### Phase 3: Validate and close
 
-- [ ] **3.1 Run `git diff --check`, path existence checks, and `git diff --name-status -- AGENTS.md project-specs docs .agents`.**
+- [x] **3.1 Run `git diff --check`, path existence checks, and `git diff --name-status -- AGENTS.md project-specs docs .agents`.**
   - Accept: only migration-owned documentation paths changed; no runtime, asset, resource, or test path is staged.
+  - Evidence: patch hygiene, exact staged-scope comparison, target/source existence checks, and stale-link checks passed; unrelated implementation files remain unstaged.
 - [ ] **3.2 Record evidence, set `status: done`, and commit the scoped migration.**
 
 ## Validation and Rework Controls
@@ -72,9 +77,9 @@ Known link owners are root `AGENTS.md`, `project-specs/cannon-golf/AGENTS.md`, t
 ## Progress and Next Steps
 
 - Canonical progress: this contract's checkboxes.
-- Current phase: Awaiting owner approval to execute.
-- Next task after approval: 1.1 Update root and local placement rules.
-- Last completed gate: full specification and guidance audit; dispositions are locked.
+- Current phase: Phase 3, migration implementation validated.
+- Next task: 3.2 Commit the scoped migration, then close this contract in a separate plan-state commit.
+- Last completed gate: scoped stage, patch hygiene, source/target path, lifecycle, and stale-link validation.
 
 ## Completion and Stop Conditions
 

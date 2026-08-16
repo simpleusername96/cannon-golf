@@ -8,7 +8,7 @@ related:
   - project-specs/cannon-golf/PRD.md
   - project-specs/cannon-golf/DESIGN_RULES.md
   - project-specs/cannon-golf/DECISIONS.md
-  - project-specs/cannon-golf/CAMERA_AND_WORLD_READABILITY.ko.md
+  - ../research/cannon-golf/CAMERA_AND_WORLD_READABILITY.ko.md
   - .agents/execplans/2026-08-14-camera-navigation-goal-visibility.md
   - .agents/execplans/2026-08-14-goal-plates-progressive-terrain.md
   - .agents/execplans/2026-08-14-terrain-contrast-height-contract.md

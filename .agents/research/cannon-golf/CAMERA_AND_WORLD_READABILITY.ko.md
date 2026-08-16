@@ -3,7 +3,7 @@ type: evidence
 status: active
 created: 2026-08-15
 topic: Camera and world readability implementation summary
-source: .agents/execplans/2026-08-15-camera-navigation-world-readability.md
+source: ../../execplans/2026-08-15-camera-navigation-world-readability.md
 ---
 
 # 카메라·목표 가독성 개선 요약
@@ -12,7 +12,9 @@ source: .agents/execplans/2026-08-15-camera-navigation-world-readability.md
 
 현재 문제와 다음 수정 방향을 짧게 설명한다. 이 문서는 설명용이다.
 실제 작업 순서와 완료 기준은 연결된 실행계획이 관리하고, 제품 규칙은
-`PRD.md`, `DESIGN_RULES.md`, `DECISIONS.md`가 관리한다.
+`project-specs/cannon-golf/PRD.md`,
+`project-specs/cannon-golf/DESIGN_RULES.md`,
+`project-specs/cannon-golf/DECISIONS.md`가 관리한다.
 
 ## Sources
 
