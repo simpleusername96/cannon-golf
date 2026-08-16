@@ -7,12 +7,12 @@ uniform vec4 goal_color : source_color = vec4(0.145, 0.518, 1.0, 1.0);
 uniform vec4 goal_regions[6];
 uniform int goal_region_count = 0;
 
-varying float facet_tone;
+varying float terrain_tone;
 varying float upwardness;
 varying float goal_tone;
 
 void vertex() {
-	facet_tone = COLOR.g;
+	terrain_tone = COLOR.g;
 	upwardness = clamp(NORMAL.y, 0.0, 1.0);
 	goal_tone = 0.0;
 	for (int index = 0; index < 6; index++) {
@@ -29,10 +29,10 @@ void vertex() {
 }
 
 void fragment() {
-	vec3 facet = mix(accent_color.rgb, rock_color.rgb, 0.45 + facet_tone * 0.4);
-	facet *= mix(0.88, 1.06, upwardness) * mix(0.95, 1.04, facet_tone);
-	vec3 marked_goal = goal_color.rgb * mix(0.88, 1.05, facet_tone);
-	ALBEDO = mix(facet, marked_goal, goal_tone * 0.88);
+	vec3 terrain = mix(accent_color.rgb, rock_color.rgb, 0.45 + terrain_tone * 0.4);
+	terrain *= mix(0.88, 1.06, upwardness) * mix(0.95, 1.04, terrain_tone);
+	vec3 marked_goal = goal_color.rgb * mix(0.88, 1.05, terrain_tone);
+	ALBEDO = mix(terrain, marked_goal, goal_tone * 0.88);
 	ROUGHNESS = 0.94;
 	SPECULAR = 0.18;
 	METALLIC = 0.0;

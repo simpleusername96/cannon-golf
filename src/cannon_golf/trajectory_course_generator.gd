@@ -5,8 +5,9 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 11
+const ALGORITHM_VERSION := 12
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
+const FEATURE_GRAPH_BUILDER := preload("res://src/cannon_golf/terrain_feature_graph_builder.gd")
 const TERRAIN_EXTENT_SCALE := 1.35
 const MINIMUM_ACTIVE_AREA_RATIO := 1.08
 const MAXIMUM_INTERNAL_SLOPE_DEGREES := 50.0
@@ -117,7 +118,9 @@ static func build(course: CannonGolfCourseData, deadline_msec: int = 0) -> Dicti
 	if not layout.install_footprint(footprint) or not layout.is_valid():
 		return {}
 	var minimum_height := _minimum_height(heights)
-	var geometry := TerrainGeometryFactory.build(layout, minf(-34.0, minimum_height - 18.0))
+	var geometry := TerrainGeometryFactory.build(
+		layout, minf(-34.0, minimum_height - 18.0), true
+	)
 	if geometry == null or not geometry.is_valid() or _expired(deadline):
 		return {}
 	_apply_material(geometry.render_mesh, course)
@@ -369,6 +372,14 @@ static func _build_heights(
 	var natural_heights := PackedFloat32Array()
 	var sample_size := cell_count + Vector2i.ONE
 	natural_heights.resize(sample_size.x * sample_size.y)
+	var required_relief := _minimum_required_relief(course, course_index)
+	var target_relief := required_relief + RELIEF_TARGET_MARGIN
+	var relief_base_y := course.terrain_origin.y + 1.0
+	var terrain_field: RefCounted = FEATURE_GRAPH_BUILDER.build(
+		course, course_index, plan, local_bounds, relief_base_y, target_relief
+	)
+	if terrain_field == null or not terrain_field.is_valid():
+		return PackedFloat32Array()
 	for sample_z in range(sample_size.y):
 		if _expired(deadline_msec):
 			return PackedFloat32Array()
@@ -382,23 +393,12 @@ static func _build_heights(
 				float(sample_x) / float(cell_count.x)
 			)
 			var point := Vector2(x, z)
-			var height := _semantic_height(
-				course, course_index, plan, point, local_bounds
-			)
-			for feature_resource in course.landform_features:
-				height = _apply_landform_height(
-					height, point, local_bounds,
-					feature_resource as CannonGolfCourseLandformFeature
-				)
-			natural_heights[sample_z * sample_size.x + sample_x] = height
+			natural_heights[sample_z * sample_size.x + sample_x] = terrain_field.sample(point)
 	var natural_minimum := _minimum_height(natural_heights)
 	var natural_relief := _maximum_height(natural_heights) - natural_minimum
 	if natural_relief <= 0.0:
 		return PackedFloat32Array()
-	var required_relief := _minimum_required_relief(course, course_index)
-	var target_relief := required_relief + RELIEF_TARGET_MARGIN
 	var relief_scale := target_relief / natural_relief
-	var relief_base_y := course.terrain_origin.y + 1.0
 	var heights := natural_heights.duplicate()
 	var start_surface_y := float(plan[0].launcher.y) - 0.05
 	for sample_z in range(sample_size.y):
@@ -485,72 +485,8 @@ static func _height_contracts_pass(
 	return true
 
 
-static func _semantic_height(
-	course: CannonGolfCourseData,
-	course_index: int,
-	plan: Array[Dictionary],
-	point: Vector2,
-	local_bounds: Rect2
-) -> float:
-	var tier := _progression_tier(course_index)
-	var base_y := course.terrain_origin.y + 1.5
-	var relief := _minimum_required_relief(course, course_index) + RELIEF_TARGET_MARGIN
-	var phase := float(posmod(course.terrain_seed_window.x, 997)) * 0.017
-	var height := base_y
-
-	# A broad route skeleton keeps the mountain connected. It is only a landform
-	# scaffold; the exact ballistic corridor is protected in a later pass.
-	for leg_data in plan:
-		var start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
-		var goal := Vector2(leg_data.goal.x, leg_data.goal.z)
-		var segment := _segment_address(point, start, goal)
-		var route_radius := 64.0 + float(tier) * 12.0
-		var route_weight := _smootherstep(1.0 - float(segment.distance) / route_radius)
-		var route_y := lerpf(
-			float(leg_data.launcher.y) - 0.05,
-			float(leg_data.rim_y),
-			float(segment.t)
-		)
-		height = maxf(height, route_y + route_weight * (12.0 + float(tier) * 6.0))
-
-	for landmark in _landmark_specs(course, course_index, plan, local_bounds):
-		var anchor: Vector2 = landmark.anchor
-		var radius: Vector2 = landmark.radius
-		var weight := _compact_ellipse(point, anchor, radius)
-		var landmark_y := base_y + relief * float(landmark.height_ratio)
-		var field_y := lerpf(base_y, landmark_y, pow(weight, 0.58))
-		height = maxf(height, field_y)
-
-	# Middle and late courses gain a broad valley between mountain branches. The
-	# valley is offset away from the route stations and never used as a local cut.
-	if tier >= 1:
-		var valley_center := local_bounds.get_center() + Vector2(
-			-local_bounds.size.x * (0.10 if course_index % 2 == 0 else -0.10),
-			-local_bounds.size.y * 0.10
-		)
-		var valley_weight := _compact_ellipse(
-			point,
-			valley_center,
-			Vector2(local_bounds.size.x * 0.24, local_bounds.size.y * 0.30)
-		)
-		height -= relief * (0.10 + float(tier) * 0.035) * valley_weight
-
-	# Terrace bands create the shelves visible in the canonical references. A
-	# smooth transition occupies the top quarter of each band, so shelves remain
-	# broad while their escarpments stay localized outside protected corridors.
-	var terrace_step := 9.0 + float(tier) * 3.0
-	var level := maxf(0.0, (height - base_y) / terrace_step)
-	var lower_level := floorf(level)
-	var transition := _smootherstep((level - lower_level - 0.66) / 0.24)
-	var terraced_height := base_y + (lower_level + transition) * terrace_step
-	height = lerpf(height, terraced_height, 0.52 + float(tier) * 0.08)
-	var roughness := sin(point.x * 0.071 + phase) * cos(point.y * 0.053 - phase) \
-			+ sin((point.x - point.y) * 0.031 + phase * 1.7)
-	return height + roughness * (0.9 + float(tier) * 0.25)
-
-
 ## Compatibility probe for existing variety diagnostics. The live generator
-## uses `_semantic_height`, because route stations are part of its constraints.
+## uses the continuous curve field, because route stations are its constraints.
 static func _natural_height(
 	course_index: int, seed: int, point: Vector2, local_bounds: Rect2
 ) -> float:
@@ -567,110 +503,6 @@ static func _natural_height(
 
 static func _progression_tier(course_index: int) -> int:
 	return 0 if course_index <= 2 else (1 if course_index <= 6 else 2)
-
-
-static func _landmark_specs(
-	course: CannonGolfCourseData,
-	course_index: int,
-	plan: Array[Dictionary],
-	local_bounds: Rect2
-) -> Array[Dictionary]:
-	var tier := _progression_tier(course_index)
-	var count: int = int([2, 3, 5][tier])
-	var camera_away := -Vector2(course.oblique_offset.x, course.oblique_offset.z).normalized()
-	if camera_away.is_zero_approx():
-		camera_away = Vector2(-0.7, -0.7)
-	var cross := Vector2(-camera_away.y, camera_away.x)
-	var camera_ground := local_bounds.get_center() - camera_away \
-			* maxf(local_bounds.size.x, local_bounds.size.y) * 1.25
-	var result: Array[Dictionary] = []
-	for index in range(count):
-		var leg_data: Dictionary = plan[mini(index, plan.size() - 1)]
-		var leg_start := Vector2(leg_data.launcher.x, leg_data.launcher.z)
-		var leg_goal := Vector2(leg_data.goal.x, leg_data.goal.z)
-		var station := leg_start.lerp(leg_goal, 0.56)
-		var leg_direction := (leg_goal - leg_start).normalized()
-		var leg_cross := Vector2(-leg_direction.y, leg_direction.x)
-		if index >= plan.size():
-			var extra_t := float(index - plan.size() + 1) / float(count - plan.size() + 1)
-			station = Vector2(
-				lerpf(local_bounds.position.x, local_bounds.end.x, 0.25 + extra_t * 0.5),
-				lerpf(local_bounds.position.y, local_bounds.end.y, 0.18 + extra_t * 0.42)
-			)
-		var side := -1.0 if (course_index + index) % 2 == 0 else 1.0
-		var offset := 62.0 + float(tier) * 12.0 + float(index % 2) * 8.0
-		var anchor := station
-		var best_score := -INF
-		for direction in [leg_cross * side, -leg_cross * side, cross * side, -cross * side]:
-			var candidate: Vector2 = station + (direction as Vector2) * offset + camera_away * 10.0
-			if not local_bounds.grow(-26.0).has_point(candidate):
-				continue
-			var route_clearance := INF
-			var sight_clearance := INF
-			for planned_leg in plan:
-				route_clearance = minf(route_clearance, float(_segment_address(
-					candidate,
-					Vector2(planned_leg.launcher.x, planned_leg.launcher.z),
-					Vector2(planned_leg.goal.x, planned_leg.goal.z)
-				).distance))
-				sight_clearance = minf(sight_clearance, float(_segment_address(
-					candidate,
-					camera_ground,
-					Vector2(planned_leg.goal.x, planned_leg.goal.z)
-				).distance))
-			var score := route_clearance + sight_clearance * 1.25
-			if score > best_score:
-				best_score = score
-				anchor = candidate
-		anchor.x = clampf(anchor.x, local_bounds.position.x + 26.0, local_bounds.end.x - 26.0)
-		anchor.y = clampf(anchor.y, local_bounds.position.y + 26.0, local_bounds.end.y - 26.0)
-		result.append({
-			"anchor": anchor,
-			"radius": Vector2(
-				100.0 + float(tier) * 25.0 + float(index % 2) * 12.0,
-				118.0 + float(tier) * 28.0 + float((index + 1) % 2) * 14.0
-			),
-			"height_ratio": minf(
-				0.98,
-				[0.46 + float(index) * 0.18,
-				0.48 + float(index) * 0.16,
-				0.50 + float(index) * 0.12][tier]
-			),
-		})
-	return result
-
-
-static func _apply_landform_height(
-	height: float,
-	point: Vector2,
-	local_bounds: Rect2,
-	feature: CannonGolfCourseLandformFeature
-) -> float:
-	if feature == null:
-		return height
-	var horizontal_scale := local_bounds.size.x / 210.0
-	var anchor := Vector2(
-		local_bounds.get_center().x + feature.route_offset.x * horizontal_scale,
-		lerpf(local_bounds.position.y, local_bounds.end.y, feature.route_t)
-	)
-	var radius := maxf(feature.radius * horizontal_scale, 1.0)
-	var normalized_distance := point.distance_to(anchor) / radius
-	if normalized_distance >= 1.0:
-		return height
-	var weight := _smoothstep(1.0 - normalized_distance)
-	var amplitude := feature.amplitude
-	match feature.kind:
-		CannonGolfCourseLandformFeature.Kind.VALLEY, CannonGolfCourseLandformFeature.Kind.BASIN:
-			return height - amplitude * weight
-		CannonGolfCourseLandformFeature.Kind.SADDLE:
-			var lateral := absf(point.x - anchor.x) / radius
-			return height + amplitude * weight * (lateral * 2.0 - 0.65)
-		CannonGolfCourseLandformFeature.Kind.PLATEAU:
-			return height + amplitude * pow(weight, maxf(feature.flatness, 0.05))
-		CannonGolfCourseLandformFeature.Kind.TERRACE:
-			return height + amplitude * _smoothstep(weight)
-		_:
-			return height + amplitude * weight
 
 
 static func _protect_flight_corridor(
@@ -935,7 +767,9 @@ static func _build_footprint(
 	var result := PackedByteArray()
 	result.resize(cell_count.x * cell_count.y)
 	var tier := _progression_tier(course_index)
-	var landmarks := _landmark_specs(course, course_index, plan, local_bounds)
+	var landmarks := FEATURE_GRAPH_BUILDER.landmark_specs(
+		course, course_index, plan, local_bounds
+	)
 	var phase := float(posmod(course.terrain_seed_window.x, 997)) * 0.017
 	for cell_z in range(cell_count.y):
 		var z := lerpf(local_bounds.position.y, local_bounds.end.y, (float(cell_z) + 0.5) / float(cell_count.y))
@@ -969,7 +803,7 @@ static func _build_footprint(
 					if _compact_ellipse(
 						point,
 						landmark.anchor,
-						(landmark.radius as Vector2) * 0.98
+						Vector2.ONE * float(landmark.width) * 0.98
 					) > 0.0:
 						active = true
 						break

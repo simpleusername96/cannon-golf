@@ -29,6 +29,7 @@ var _boundary_cursor: int = 0
 var _canonical_vertices := PackedVector3Array()
 var _canonical_indices := PackedInt32Array()
 var _canonical_normals := PackedVector3Array()
+var _canonical_vertex_normals := PackedVector3Array()
 var _boundary_edges := PackedInt32Array()
 var _top_vertices := PackedVector3Array()
 var _top_normals := PackedVector3Array()
@@ -51,20 +52,25 @@ var _skirt_shape: ConcavePolygonShape3D
 var _result: TerrainGeometry
 var _skirt_vertex_count: int = 0
 var _failure_message := ""
+var _smooth_top_surface := false
 
 
 func _init(
 		layout: GeneratedStageLayout,
-		base_y: float = TerrainGeometryFactory.DEFAULT_BASE_Y
+		base_y: float = TerrainGeometryFactory.DEFAULT_BASE_Y,
+		smooth_top_surface: bool = false
 ) -> void:
 	assert(layout != null and layout.is_valid(), "Terrain geometry job requires a valid layout.")
 	_layout = layout
 	_topology = layout.top_topology
 	assert(_topology != null and _topology.is_valid(), "Terrain geometry job requires canonical topology.")
 	_base_y = base_y
+	_smooth_top_surface = smooth_top_surface
 	_canonical_vertices = _topology.canonical_vertices_read_only()
 	_canonical_indices = _topology.canonical_triangle_indices_read_only()
 	_canonical_normals = _topology.canonical_triangle_normals_read_only()
+	if _smooth_top_surface:
+		_canonical_vertex_normals = _build_smooth_vertex_normals()
 	_boundary_edges = _topology.boundary_edges_read_only()
 	_preallocate_output_arrays()
 
@@ -149,13 +155,26 @@ func _step_top() -> void:
 	var c := _canonical_vertices[index_c]
 	var upward_normal := _canonical_normals[_triangle_cursor]
 	var classification := TerrainGeometryFactory._paintable_facet_color(a, b, c)
+	var normal_a := upward_normal
+	var normal_b := upward_normal
+	var normal_c := upward_normal
+	var color_a := classification
+	var color_b := classification
+	var color_c := classification
+	if _smooth_top_surface:
+		normal_a = _canonical_vertex_normals[index_a]
+		normal_b = _canonical_vertex_normals[index_c]
+		normal_c = _canonical_vertex_normals[index_b]
+		color_a = TerrainGeometryFactory._paintable_surface_color(a)
+		color_b = TerrainGeometryFactory._paintable_surface_color(c)
+		color_c = TerrainGeometryFactory._paintable_surface_color(b)
 	_write_triangle(
 		_top_vertices, _top_normals, _top_uvs, _top_colors, corner_offset,
 		a, c, b,
 		TerrainGeometryFactory._uv_for(_topology.local_bounds, a),
 		TerrainGeometryFactory._uv_for(_topology.local_bounds, c),
 		TerrainGeometryFactory._uv_for(_topology.local_bounds, b),
-		upward_normal, classification
+		normal_a, color_a, normal_b, normal_c, color_b, color_c
 	)
 	_top_source_vertices[corner_offset] = index_a
 	_top_source_vertices[corner_offset + 1] = index_c
@@ -251,20 +270,45 @@ func _write_triangle(
 		uv_b: Vector2,
 		uv_c: Vector2,
 		normal: Vector3,
-		classification: Color
+		classification: Color,
+		normal_b: Vector3 = Vector3.ZERO,
+		normal_c: Vector3 = Vector3.ZERO,
+		classification_b: Color = Color(-1.0, -1.0, -1.0, -1.0),
+		classification_c: Color = Color(-1.0, -1.0, -1.0, -1.0)
 ) -> void:
 	vertices[offset] = a
 	vertices[offset + 1] = b
 	vertices[offset + 2] = c
 	normals[offset] = normal
-	normals[offset + 1] = normal
-	normals[offset + 2] = normal
+	normals[offset + 1] = normal if normal_b.is_zero_approx() else normal_b
+	normals[offset + 2] = normal if normal_c.is_zero_approx() else normal_c
 	uvs[offset] = uv_a
 	uvs[offset + 1] = uv_b
 	uvs[offset + 2] = uv_c
 	colors[offset] = classification
-	colors[offset + 1] = classification
-	colors[offset + 2] = classification
+	colors[offset + 1] = classification if classification_b.r < 0.0 else classification_b
+	colors[offset + 2] = classification if classification_c.r < 0.0 else classification_c
+
+
+func _build_smooth_vertex_normals() -> PackedVector3Array:
+	var accumulated := PackedVector3Array()
+	accumulated.resize(_canonical_vertices.size())
+	accumulated.fill(Vector3.ZERO)
+	for triangle_id in range(_topology.triangle_count()):
+		var offset := triangle_id * TerrainTopTopology.CORNERS_PER_TRIANGLE
+		var index_a := _canonical_indices[offset]
+		var index_b := _canonical_indices[offset + 1]
+		var index_c := _canonical_indices[offset + 2]
+		var area_normal := (
+			_canonical_vertices[index_b] - _canonical_vertices[index_a]
+		).cross(_canonical_vertices[index_c] - _canonical_vertices[index_a])
+		accumulated[index_a] += area_normal
+		accumulated[index_b] += area_normal
+		accumulated[index_c] += area_normal
+	for index in range(accumulated.size()):
+		accumulated[index] = accumulated[index].normalized() \
+				if not accumulated[index].is_zero_approx() else Vector3.UP
+	return accumulated
 
 
 func _create_mesh() -> void:

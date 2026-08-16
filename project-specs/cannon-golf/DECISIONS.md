@@ -732,6 +732,25 @@ in `OPEN_QUESTIONS.md`.
   perspective does not select or frame a goal, and overview remains the sole
   map-exploration camera.
 
+### D-048 — Author terrain as a continuous constrained curve field
+
+- Status: accepted on 2026-08-16; replaces the sampled blob, global terrace,
+  grid-scale roughness, and per-triangle visual treatment used by the D-045 and
+  D-046 implementation. It does not change their route, basin, ballistic,
+  camera-admission, footprint, relief, or slope contracts.
+- The terrain source of truth is a deterministic semantic graph of compact
+  ridge, valley, shelf, and peak curves. A continuous scalar field evaluates
+  that graph before hard launcher, goal-basin, flight-clearance, slope, camera
+  boom, and flag-visibility constraints are compiled.
+- The regular height grid remains a derived compatibility artifact shared by
+  collision, terrain queries, goal scoring, camera admission, prepared-course
+  storage, and stable triangle identity. Do not introduce adaptive collision
+  topology as part of this decision.
+- Cannon Golf renders the compiled top surface with area-weighted shared-vertex
+  normals and deterministic macro-scale vertex tone. Collision faces and the
+  inherited flat-render default remain unchanged. Do not restore random
+  per-triangle color variation merely to make the grid legible.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

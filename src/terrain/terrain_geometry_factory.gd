@@ -5,8 +5,12 @@ const DEFAULT_BASE_Y := -28.0
 const MINIMUM_SKIRT_HEIGHT := 8.0
 
 
-static func build(layout: GeneratedStageLayout, base_y: float = DEFAULT_BASE_Y) -> TerrainGeometry:
-	var job := begin_build(layout, base_y)
+static func build(
+		layout: GeneratedStageLayout,
+		base_y: float = DEFAULT_BASE_Y,
+		smooth_top_surface: bool = false
+) -> TerrainGeometry:
+	var job := begin_build(layout, base_y, smooth_top_surface)
 	while not job.step(9223372036854775807):
 		if job.failed():
 			push_error(job.failure_message())
@@ -18,9 +22,10 @@ static func build(layout: GeneratedStageLayout, base_y: float = DEFAULT_BASE_Y) 
 ## math as synchronous fixtures, but yield between each build phase.
 static func begin_build(
 		layout: GeneratedStageLayout,
-		base_y: float = DEFAULT_BASE_Y
+		base_y: float = DEFAULT_BASE_Y,
+		smooth_top_surface: bool = false
 ) -> TerrainGeometryBuildJob:
-	return TerrainGeometryBuildJob.new(layout, base_y)
+	return TerrainGeometryBuildJob.new(layout, base_y, smooth_top_surface)
 
 
 static func _append_top(
@@ -159,6 +164,14 @@ static func _paintable_facet_color(a: Vector3, b: Vector3, c: Vector3) -> Color:
 	# Red remains the binary top/shell contract. Green carries a stable
 	# per-triangle tone so the low-poly surface stays readable in bright light.
 	return Color(1.0, facet_tone, 0.0, 1.0)
+
+
+## Stable low-frequency color at a canonical terrain vertex. Smooth-course
+## rendering interpolates this value instead of exposing triangle boundaries.
+static func _paintable_surface_color(vertex: Vector3) -> Color:
+	var broad_tone := sin(vertex.x * 0.0107 + vertex.z * 0.0061) * 0.18 \
+			+ cos(vertex.z * 0.0083 - vertex.x * 0.0037) * 0.12
+	return Color(1.0, clampf(0.5 + broad_tone, 0.2, 0.8), 0.0, 1.0)
 
 
 static func _uv_for(bounds: Rect2, vertex: Vector3) -> Vector2:

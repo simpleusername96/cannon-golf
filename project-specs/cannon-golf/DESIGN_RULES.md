@@ -254,8 +254,10 @@ coefficients, stage data formats, or code ownership.
 
 ### Color and materials
 
-- Preserve a restrained warm off-white and cool-gray world with clear faceting
-  and soft daylight.
+- Preserve a restrained warm off-white and cool-gray world with continuous
+  landform shading and soft daylight. Use slow macro-scale tonal variation;
+  do not expose the regular collision grid through random per-triangle color
+  or one face normal per triangle.
 - Reserve saturated colors for the current ball, newest impact, selected device,
   primary action, and semantic state.
 - Older impact marks should lose contrast and saturation while remaining
