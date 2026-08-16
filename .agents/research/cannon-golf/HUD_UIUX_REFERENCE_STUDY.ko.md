@@ -109,6 +109,16 @@ related:
 - `.agents/evidence/cannon-golf/hud-concepts-2026-08-16/hud-concept-02-upper-ribbon.png`
 - `.agents/evidence/cannon-golf/hud-concepts-2026-08-16/hud-concept-03-split-periphery.png`
 
+### Greenfield HUD follow-up
+
+사용자 지시에 따라 기존 HUD와 앞선 시안의 배치·색·컴포넌트 문법을 입력에서 제외하고, HUD가 제거된 월드 crop과 외부 레퍼런스만 사용해 서로 다른 세 방향을 추가 생성했다.
+
+- `.agents/evidence/cannon-golf/hud-greenfield-2026-08-16/hud-greenfield-01-cannon-sight.png`
+- `.agents/evidence/cannon-golf/hud-greenfield-2026-08-16/hud-greenfield-02-surveyor-rulers.png`
+- `.agents/evidence/cannon-golf/hud-greenfield-2026-08-16/hud-greenfield-03-kinetic-shot.png`
+
+세 이미지는 비교를 위해 cannon perspective 한 장면에 적용했지만 HUD 계약은 카메라 독립적이다. Overview, cannon perspective, Shot Follow에서 같은 screen-edge anchor와 launch parameter state를 유지해야 한다. 좌우·상하·파워와 Fire는 모든 카메라에서 계속 보이고 편집 가능하다. Overview 전용 pan/orbit/zoom/reset만 다른 시점에서 숨길 수 있으며, Follow의 `Tab` 복귀와 quick retry는 유지한다. 카메라 전환은 HUD 위치나 선택한 cannon source, 조준값, 완료 목표를 재설정하지 않는다.
+
 ## 프로젝트 구조 변화 평가
 
 기준점은 이전 HUD 시안을 기록한 `d49e2e5`이며 현재 비교 대상은 `f0cba67`이다.
