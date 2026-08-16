@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cannon Golf 지형·난이도·UI/UX 분석 보고서</title>
+  <style>
+    :root {
+      --ink: #18243a;
+      --muted: #56647a;
+      --paper: #f5f4ed;
+      --paper-strong: #fffef8;
+      --line: #cfd7d4;
+      --sage: #dce4dc;
+      --sage-deep: #7b908b;
+      --blue: #2383f4;
+      --blue-soft: #d8eaff;
+      --amber: #c77a18;
+      --shadow: 0 18px 50px rgba(24, 36, 58, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(35, 131, 244, 0.10), transparent 34rem),
+        linear-gradient(180deg, #e9efec 0, #f3f2eb 32rem, #e7ece8 100%);
+      font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: #155fb6; text-underline-offset: 0.18em; }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 64px 0 96px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 64px);
+      border: 1px solid rgba(255,255,255,.7);
+      border-radius: 30px;
+      background: rgba(255,254,248,.87);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -120px;
+      top: -160px;
+      border-radius: 50%;
+      border: 72px solid rgba(35,131,244,.10);
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: #2a6172;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { line-height: 1.25; letter-spacing: -.025em; }
+    h1 { max-width: 850px; margin: 0; font-size: clamp(34px, 6vw, 64px); }
+    h2 { margin: 0 0 18px; font-size: clamp(26px, 4vw, 38px); }
+    h3 { margin: 0 0 10px; font-size: 22px; }
+    p { margin: 0 0 14px; }
+
+    .hero .lede {
+      max-width: 830px;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: clamp(17px, 2vw, 21px);
+    }
+
+    .verdict {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 18px;
+      margin-top: 34px;
+    }
+
+    .verdict > div,
+    .card {
+      padding: 22px;
+      border: 1px solid rgba(24,36,58,.10);
+      border-radius: 20px;
+      background: rgba(255,255,255,.68);
+    }
+
+    .verdict strong { display: block; margin-bottom: 7px; font-size: 20px; }
+    .meta { color: var(--muted); font-size: 14px; }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 24px 0 0;
+    }
+
+    nav a {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.64);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    section {
+      margin-top: 72px;
+      scroll-margin-top: 20px;
+    }
+
+    .section-intro { max-width: 830px; color: var(--muted); font-size: 17px; }
+
+    .image-frame {
+      overflow: hidden;
+      margin: 24px 0 0;
+      border: 1px solid rgba(24,36,58,.16);
+      border-radius: 22px;
+      background: #cad5d2;
+      box-shadow: var(--shadow);
+    }
+
+    .image-frame img { display: block; width: 100%; height: auto; }
+
+    .caption {
+      padding: 12px 16px 14px;
+      border-top: 1px solid rgba(24,36,58,.10);
+      background: rgba(255,254,248,.92);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .evidence-grid,
+    .grid-2,
+    .grid-3 {
+      display: grid;
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .evidence-grid { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .evidence-grid .image-frame { margin: 0; border-radius: 18px; }
+    .evidence-grid img { aspect-ratio: 16 / 9; object-fit: cover; }
+
+    .callout {
+      margin-top: 24px;
+      padding: 22px 24px;
+      border-left: 5px solid var(--blue);
+      border-radius: 4px 18px 18px 4px;
+      background: var(--blue-soft);
+    }
+
+    .callout.warn { border-color: var(--amber); background: #fff0d9; }
+    .callout p:last-child, .card p:last-child { margin-bottom: 0; }
+
+    ul, ol { margin: 10px 0 0; padding-left: 1.25em; }
+    li + li { margin-top: 7px; }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.72);
+    }
+
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { padding: 13px 15px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: rgba(220,228,220,.72); font-size: 13px; letter-spacing: .02em; }
+    tr:last-child td { border-bottom: 0; }
+
+    code {
+      padding: .12em .38em;
+      border-radius: .35em;
+      background: rgba(24,36,58,.08);
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: .92em;
+    }
+
+    .concept {
+      padding: clamp(22px, 4vw, 42px);
+      border: 1px solid rgba(24,36,58,.12);
+      border-radius: 28px;
+      background: rgba(255,254,248,.82);
+      box-shadow: 0 14px 36px rgba(24,36,58,.08);
+    }
+
+    .concept + .concept { margin-top: 34px; }
+    .concept .tag { display: inline-block; margin-bottom: 12px; color: #155fb6; font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+    .concept .image-frame { margin-top: 20px; }
+
+    .score {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 18px 0 0;
+    }
+
+    .score div { padding: 10px; border-radius: 12px; background: var(--sage); text-align: center; font-size: 13px; }
+    .score strong { display: block; font-size: 18px; }
+
+    .recommend {
+      padding: clamp(26px, 5vw, 50px);
+      border-radius: 28px;
+      color: white;
+      background: linear-gradient(135deg, #18324d, #155f87 62%, #237fba);
+      box-shadow: var(--shadow);
+    }
+
+    .recommend .section-intro { color: rgba(255,255,255,.78); }
+    .recommend .card { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
+    .recommend code { background: rgba(255,255,255,.15); }
+
+    .steps { counter-reset: step; display: grid; gap: 12px; margin-top: 24px; }
+    .steps > div { position: relative; padding: 18px 18px 18px 64px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.72); }
+    .steps > div::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 18px;
+      top: 17px;
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      background: var(--blue);
+      font-weight: 800;
+    }
+
+    .sources li { word-break: break-word; }
+
+    footer { margin-top: 72px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+
+    @media (max-width: 820px) {
+      .page { width: min(100% - 24px, 1180px); padding-top: 24px; }
+      .hero { border-radius: 22px; }
+      .verdict, .grid-2, .grid-3, .evidence-grid { grid-template-columns: 1fr; }
+      .score { grid-template-columns: repeat(2, 1fr); }
+      section { margin-top: 54px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .page { width: 100%; padding: 0; }
+      .hero, .concept, .recommend, .image-frame { box-shadow: none; break-inside: avoid; }
+      nav { display: none; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">Cannon Golf · design research · 2026-08-16</p>
+      <h1>더 부드럽고, 더 넓고, 더 읽기 쉬운 산악 코스</h1>
+      <p class="lede">현재 코드와 실제 LV1·LV5·LV10 렌더를 확인하고, 지형 생성·메시 처리·카메라·난이도·게임 HUD를 함께 분석했다. 결론은 단순히 폴리곤 수를 늘리는 것이 아니라, <strong>지형의 구조·표본 밀도·표면 표현·카메라·난이도 변수를 분리해서 설계</strong>해야 한다는 것이다.</p>
+
+      <div class="verdict">
+        <div>
+          <strong>권장 방향</strong>
+          1안의 차분한 HUD 구조를 기본으로 하고, 2안의 넓은 능선·원근 단서·목표 간 거리감을 결합한다. 지형 표면은 플레이 가능한 면에서 부드럽게 연결하고, 절벽과 외곽 실루엣에만 제한적으로 면 분할 느낌을 남긴다.
+        </div>
+        <div>
+          <strong>이번 작업 범위</strong>
+          <span class="meta">분석·시안·보고서만 작성했다. 게임 코드, 씬, 리소스, 생성 알고리즘은 수정하지 않았다.</span>
+        </div>
+      </div>
+
+      <nav aria-label="보고서 목차">
+        <a href="#current">현재 문제</a>
+        <a href="#terrain">지형 해법</a>
+        <a href="#difficulty">맵·난이도</a>
+        <a href="#uiux">HUD/UIUX</a>
+        <a href="#concepts">3개 시안</a>
+        <a href="#recommendation">권장안</a>
+        <a href="#sources">근거 자료</a>
+      </nav>
+    </header>
+
+    <section id="current">
+      <p class="eyebrow">01 · current evidence</p>
+      <h2>현재 화면에서 실제로 보이는 문제</h2>
+      <p class="section-intro">fresh capture harness로 같은 빌드의 LV5를 다시 캡처했다. 전체 보기, 최대 확대, 대포 시점이 서로 다른 문제를 분명하게 보여 준다.</p>
+
+      <div class="evidence-grid">
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/current-lv5-overview.png" alt="현재 LV5 전체 지도 화면">
+          <figcaption class="caption"><strong>전체 보기:</strong> 삼각형 색 조각이 지형보다 먼저 보이고, 코스가 넓은 빈 배경 안의 작은 섬처럼 느껴진다.</figcaption>
+        </figure>
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/current-lv5-close.png" alt="현재 LV5 최대 확대 화면">
+          <figcaption class="caption"><strong>최대 확대:</strong> 카메라가 지형 표면에 너무 가까워져 큰 삼각형만 화면을 채운다. 위치 판단에 쓸 단서가 사라진다.</figcaption>
+        </figure>
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/current-lv5-cannon.png" alt="현재 LV5 대포 시점 화면">
+          <figcaption class="caption"><strong>대포 시점:</strong> 가까운 경사가 화면을 크게 가리고, 먼 목표의 크기와 고저차를 판단하기 어렵다.</figcaption>
+        </figure>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>거칠기는 두 문제가 겹친 결과다</h3>
+          <ol>
+            <li><code>trajectory_course_generator.gd</code>는 코스가 커져도 <code>84 × 128</code> 셀 수를 유지한다. 따라서 한 셀이 더 커진다.</li>
+            <li><code>terrain_geometry_factory.gd</code>는 삼각형마다 정점을 복제하고 면 법선을 넣는다. 셰이더의 삼각형별 색 변화까지 더해져 모든 면이 강조된다.</li>
+          </ol>
+        </article>
+        <article class="card">
+          <h3>크기는 늘지만 체감 크기는 약하다</h3>
+          <p>LV10의 실측 생성 범위는 LV1보다 크다. 그러나 전체 보기 카메라가 항상 코스를 화면에 맞추므로 화면 속 코스 크기는 비슷하다. 나무·바위 같은 기준물도 거의 없어 실제 거리 차이가 축약된다.</p>
+        </article>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>레벨</th><th>목표 수</th><th>생성 범위 X × Z</th><th>고저차</th><th>셀 간격</th><th>목표 간 평균 거리</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>LV1</td><td>1</td><td>415 × 243 m</td><td>78.6 m</td><td>5.06 m</td><td>해당 없음</td></tr>
+            <tr><td>LV3</td><td>2</td><td>437 × 635 m</td><td>84.6 m</td><td>5.33 m</td><td>163.7 m</td></tr>
+            <tr><td>LV5</td><td>3</td><td>479 × 695 m</td><td>135.0 m</td><td>5.84 m</td><td>172.8 m</td></tr>
+            <tr><td>LV8</td><td>4</td><td>562 × 850 m</td><td>179.4 m</td><td>6.85 m</td><td>243.7 m</td></tr>
+            <tr><td>LV10</td><td>6</td><td>623 × 942 m</td><td>223.6 m</td><td>7.59 m</td><td>238.4 m</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="meta">수치는 현재 생성기를 직접 실행해 얻은 대표 코스 결과다. 목표 간 평균은 목표가 2개 이상인 레벨에서만 의미가 있다.</p>
+
+      <div class="callout warn">
+        <strong>사양 충돌:</strong> 현재 <code>DESIGN_RULES.md</code>는 지형의 명확한 faceting을 보존하도록 적혀 있다. 사용자의 최신 지시는 표면을 더 부드럽게 만드는 것이므로, 구현 전에 이 문구를 “플레이 면은 부드럽게, 절벽·외곽 실루엣에만 제한적으로 면 분할을 유지”로 고쳐야 한다.
+      </div>
+    </section>
+
+    <section id="terrain">
+      <p class="eyebrow">02 · terrain system</p>
+      <h2>부드러운 지형은 ‘한 번 더 블러’가 아니다</h2>
+      <p class="section-intro">산의 큰 구조와 공이 굴러가는 표면, 화면에 보이는 음영을 서로 다른 단계로 다뤄야 한다. 그래야 고저차를 유지하면서도 울퉁불퉁한 삼각형 표면만 줄일 수 있다.</p>
+
+      <div class="grid-3">
+        <article class="card">
+          <h3>1. 구조</h3>
+          <p>능선·골짜기·분지·발사 지점을 곡선 네트워크로 먼저 정한다. 큰 산형을 먼저 만들고, 곡선 사이를 diffusion/Poisson 계열 보간으로 채운다.</p>
+        </article>
+        <article class="card">
+          <h3>2. 물리 표면</h3>
+          <p>대포, 목표 분지, 의도한 탄도 통로는 정확한 높이·경사 제약으로 보호한다. 나머지 영역만 비수축 평활화에 가까운 필터를 제한적으로 적용한다.</p>
+        </article>
+        <article class="card">
+          <h3>3. 시각 표면</h3>
+          <p>공유 정점과 평균 법선을 사용해 플레이 면을 부드럽게 보이게 한다. 절벽 경계에서는 정점/법선을 분리하고, 삼각형별 무작위 색 차이는 크게 줄인다.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <h3>핵심 생성 제약</h3>
+        <ul>
+          <li><strong>셀 간격 상한:</strong> 맵 크기와 무관하게 약 3.0–3.5 m를 목표로 한다. LV10 규모라면 약 193 × 291 표본이 필요하다.</li>
+          <li><strong>경사 제한:</strong> 현재 50° 상한 하나만 쓰지 말고, 플레이 통로·목표 접근면·외곽 절벽을 별도 등급으로 나눈다.</li>
+          <li><strong>곡률 제한:</strong> 단순 경사뿐 아니라 경사가 얼마나 빠르게 바뀌는지 제한한다. 봉우리와 분지가 꺾이지 않고 이어진다.</li>
+          <li><strong>보호 마스크:</strong> 대포 받침, 목표 원형 분지, 의도한 첫 충돌 영역은 후처리로 밀리거나 묻히지 않게 한다.</li>
+          <li><strong>적응형 비용:</strong> 가까운 플레이 영역은 고밀도, 먼 외곽은 LOD 또는 낮은 밀도를 사용해 전체 정점 증가를 제어한다.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="difficulty">
+      <p class="eyebrow">03 · map scale & difficulty</p>
+      <h2>목표를 멀리 놓되, 난이도를 거리 하나로 만들지 않는다</h2>
+      <p class="section-intro">현재 레벨 인덱스는 목표 수, 지형 높이, 규모, 밀도를 한꺼번에 올린다. 반면 <code>CourseData.difficulty_targets</code>는 비어 있고 실제 생성에서 쓰이지 않는다. 난이도를 여러 축으로 명시해야 “크지만 정상적인” 맵이 된다.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>축</th><th>의미</th><th>권장 사용법</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>발사 거리 사용률</td><td>대포의 인증된 도달 범위 중 얼마를 쓰는가</td><td>초반은 여유 있게, 후반은 길게. 도달 가능성 검사와 항상 연결한다.</td></tr>
+            <tr><td>목표 간 거리</td><td>목표들이 화면과 공간에서 얼마나 분리되는가</td><td>LV3–4 약 180–260 m, LV5–7 약 220–320 m, LV8–10 약 240–380 m를 시작 범위로 검증한다.</td></tr>
+            <tr><td>수직 차이</td><td>발사점과 목표 사이 높이 차</td><td>거리와 동시에 최대치로 올리지 않는다. 한 레벨에서 주 난점은 1–2개로 제한한다.</td></tr>
+            <tr><td>방위 변화</td><td>연속 목표가 좌우로 얼마나 갈라지는가</td><td>대포 위치 전환과 결합해 공간 계획을 만든다.</td></tr>
+            <tr><td>목표 허용도</td><td>분지 크기와 성공 가능한 해의 폭</td><td>초반은 넓고 안정적인 분지, 후반은 작되 시각적으로는 항상 선명하게 한다.</td></tr>
+            <tr><td>순서·대포 의존성</td><td>어떤 대포에서 어떤 목표를 노리는가</td><td>새 메커니즘 없이도 후반 난이도를 만들 수 있다.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>권장 10레벨 흐름</h3>
+          <ul>
+            <li>LV1–2: 목표 1개, 거리 또는 높이 중 하나만 학습</li>
+            <li>LV3–4: 목표 2개, 목표 간 거리와 대포 위치 전환 도입</li>
+            <li>LV5–7: 목표 3–4개, 고저·좌우 분기·장거리 조합</li>
+            <li>LV8–10: 목표 4–6개, 이전 요소를 조합하되 새로운 장치 추가 없음</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>크기를 체감시키는 장치</h3>
+          <ul>
+            <li>나무·바위 크기를 일정하게 유지해 거리 기준을 제공</li>
+            <li>먼 능선의 대비와 채도를 낮춰 대기 원근 생성</li>
+            <li>전체 보기 외에 선택 목표 중심 보기 제공</li>
+            <li>목표는 항상 가시 상태를 유지하고, 가림을 난이도로 쓰지 않음</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="uiux">
+      <p class="eyebrow">04 · HUD & UIUX</p>
+      <h2>HUD는 조작 장치이자 공간 읽기의 안전 여백이어야 한다</h2>
+      <p class="section-intro">현재 HUD는 기능은 갖췄지만 하단 면적이 크고, 값·라벨·키 힌트가 분산되어 있으며, 카메라 버튼이 여러 위치에 흩어져 있다. 월드를 가리는 면적을 줄이는 동시에 입력의 의미는 더 직접적으로 만들어야 한다.</p>
+
+      <div class="grid-3">
+        <article class="card">
+          <h3>상단 왼쪽</h3>
+          <p><strong>LV / 골 진행 / 대포 위치</strong>를 한 묶음으로 둔다. 드롭다운은 쓰지 않고 이미 결정된 좌우 화살표 방식만 유지한다.</p>
+        </article>
+        <article class="card">
+          <h3>하단 조준</h3>
+          <p>좌우·상하·파워마다 라벨과 값을 붙여 읽게 한다. 각 모듈은 − / 짧은 슬라이더 / + 구조를 유지하되 키 힌트는 보조층으로 낮춘다.</p>
+        </article>
+        <article class="card">
+          <h3>카메라와 발사</h3>
+          <p>카메라 동작은 한 군데에 모으고 현재 시점에서 쓸 수 없는 기능은 숨긴다. <strong>발사</strong>만 강한 파란색 주 행동으로 남긴다.</p>
+        </article>
+      </div>
+
+      <div class="callout">
+        <ul>
+          <li>지형 위에서도 읽히도록 패널 배경은 충분히 불투명하게 하고, 글자·아이콘 대비를 확보한다.</li>
+          <li>목표 완료는 깃발색만 바꾸지 않는다. 상단 골 수와 해당 대포/목표 상태도 함께 갱신해 색상 외 단서를 제공한다.</li>
+          <li>버튼은 최소 44–48 px를 유지하고, 키보드 포커스 순서는 화면의 시각 순서와 맞춘다.</li>
+          <li>설명 텍스트를 늘리지 않는다. 평상시에는 조작값과 상태만 보이고 도움말은 별도 진입점에 둔다.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <p class="eyebrow">05 · three visual directions</p>
+      <h2>같은 문제를 푸는 3개 시안</h2>
+      <p class="section-intro">아래 이미지는 현재 LV5 화면과 승인된 지형 진행 이미지를 입력으로 사용한 방향 시안이다. 구현 결과를 보장하는 픽셀 사양이 아니라, 지형 밀도·공간감·HUD 비중의 선택지를 비교하기 위한 기준 이미지다.</p>
+
+      <article class="concept">
+        <span class="tag">DIRECTION 01 · RECOMMENDED BASE</span>
+        <h3>Calm Contour Rail — 기존 스타일을 가장 안전하게 정리</h3>
+        <p>현재의 밝은 종이 패널과 저채도 지형을 유지하면서, 큰 산형과 넓은 목표 간격을 적용한다. 하단 조작부는 하나의 얕은 rail로 정리한다. 기존 코드와 디자인의 연속성이 가장 높다.</p>
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/concept-01-calm-contour-rail.png" alt="Calm Contour Rail 시안: 넓고 부드러운 산악 지형과 통합형 하단 HUD">
+          <figcaption class="caption">장점: 익숙함, 낮은 전환 위험, 빠른 조작. 한계: 거리감은 2안보다 약하므로 원근 단서를 보강해야 한다.</figcaption>
+        </figure>
+        <div class="score">
+          <div><strong>5/5</strong>연속성</div><div><strong>4/5</strong>월드 가시성</div><div><strong>4/5</strong>거리감</div><div><strong>5/5</strong>조작 명료성</div>
+        </div>
+      </article>
+
+      <article class="concept">
+        <span class="tag">DIRECTION 02 · SPATIAL DEPTH</span>
+        <h3>Ridge Survey — 거리와 산악 규모를 가장 강하게 표현</h3>
+        <p>능선과 계곡의 큰 흐름, 나무와 바위의 크기 기준, 먼 지형의 대비 감소를 적극 사용한다. 목표가 멀리 떨어져도 같은 코스에 연결되어 있다는 점이 가장 잘 보인다. 조작부는 세 개의 독립 모듈로 분리한다.</p>
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/concept-02-ridge-survey.png" alt="Ridge Survey 시안: 원근과 크기 단서가 강한 대형 산악 코스">
+          <figcaption class="caption">장점: 강한 공간감과 목표 분리. 한계: 배경 디테일이 늘면 현재의 단순한 조형 언어와 제작 비용을 넘어갈 수 있다.</figcaption>
+        </figure>
+        <div class="score">
+          <div><strong>3/5</strong>연속성</div><div><strong>5/5</strong>월드 가시성</div><div><strong>5/5</strong>거리감</div><div><strong>4/5</strong>조작 명료성</div>
+        </div>
+      </article>
+
+      <article class="concept">
+        <span class="tag">DIRECTION 03 · WORLD-FIRST</span>
+        <h3>Minimal Instrument — HUD를 최소화해 지형을 주인공으로</h3>
+        <p>하단 조작부를 중앙의 작은 계기판으로 압축한다. 화면 가장자리의 정보량이 가장 적고 지형이 넓게 보인다. 빠른 반복 발사에는 유리하지만, 값 조정 영역이 과도하게 작아지지 않도록 실제 1280 × 720 기준 검증이 필요하다.</p>
+        <figure class="image-frame">
+          <img src="assets/terrain-scale-uiux-report/concept-03-minimal-instrument.png" alt="Minimal Instrument 시안: 최소형 하단 조준 패널과 넓은 지형 화면">
+          <figcaption class="caption">장점: 가장 낮은 HUD 점유율. 한계: 미세 조정과 키보드 포커스 표시를 넣을 공간이 적다.</figcaption>
+        </figure>
+        <div class="score">
+          <div><strong>4/5</strong>연속성</div><div><strong>5/5</strong>월드 가시성</div><div><strong>4/5</strong>거리감</div><div><strong>3/5</strong>조작 명료성</div>
+        </div>
+      </article>
+    </section>
+
+    <section id="recommendation" class="recommend">
+      <p class="eyebrow" style="color:#9ed3ff">06 · definitive recommendation</p>
+      <h2>권장안: 1안을 기본으로, 2안의 공간 단서만 흡수</h2>
+      <p class="section-intro">HUD는 1안이 현재 제품과 가장 잘 연결된다. 지형은 2안처럼 넓은 능선·골짜기 흐름과 일정한 크기의 나무·바위, 먼 능선의 낮은 대비를 사용한다. 3안의 작은 HUD는 참고하되, 조작 정확도를 희생할 정도로 압축하지 않는다.</p>
+
+      <div class="grid-2">
+        <article class="card">
+          <h3>채택</h3>
+          <ul>
+            <li>플레이 면의 부드러운 법선과 고정 셀 간격</li>
+            <li>목표 간 명시적 거리 밴드와 탄도 도달 가능성</li>
+            <li>넓은 능선·분지, 절벽에만 제한적인 faceting</li>
+            <li>통합형 상단 상태와 얕은 하단 control rail</li>
+            <li>좌우 화살표 대포 선택, 파란 원형 Goal</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3>제외</h3>
+          <ul>
+            <li>맵 전체를 단순 블러로 뭉개기</li>
+            <li>고정 84 × 128 격자를 더 큰 맵에 그대로 확대</li>
+            <li>목표 가림이나 카메라 충돌을 난이도로 사용</li>
+            <li>예측 착지점·완전한 탄도선·미니맵 추가</li>
+            <li>bounce, slow, gravity, wind 같은 후순위 장치</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="plan">
+      <p class="eyebrow">07 · implementation outline</p>
+      <h2>구현할 때의 순서</h2>
+      <p class="section-intro">아래는 다음 구현 작업의 경계다. 이번 보고서에서는 실행하지 않았다. 각 단계는 이전 단계의 시각·물리 조건을 통과한 뒤 진행해야 한다.</p>
+      <div class="steps">
+        <div><strong>사양 정리:</strong> <code>DESIGN_RULES.md</code>의 faceting 문구를 최신 지시와 맞추고, 플레이 면/절벽의 표현 규칙을 분리한다.</div>
+        <div><strong>생성 계약 분리:</strong> 맵 크기, 셀 간격, 목표 간 거리, 경사, 곡률, 목표 분지, 도달 가능성을 독립 제약으로 만든다.</div>
+        <div><strong>지형 구조 생성:</strong> 능선·골짜기 곡선 네트워크와 제약 기반 보간을 적용하고, 대포·목표·탄도 통로를 보호한다.</div>
+        <div><strong>표면 렌더링:</strong> 공유 정점/평균 법선의 시각 메시를 만들고, 절벽 경계만 hard normal로 분리한다. 삼각형별 색 변동을 줄인다.</div>
+        <div><strong>카메라 안전성:</strong> 구면 cast만 쓰는 close zoom을 camera pyramid/frustum 검사로 보완하고, 지형 침투 시 최소 거리와 시선 중심을 보장한다.</div>
+        <div><strong>난이도 데이터:</strong> 비어 있는 <code>difficulty_targets</code>를 거리·높이·방위·목표 허용도·대포 의존성 벡터로 사용한다.</div>
+        <div><strong>HUD 재배치:</strong> 기존 컴포넌트와 테마를 유지한 채 상단 상태군, 하단 rail, 카메라 동작, 발사 행동의 소유 영역을 정리한다.</div>
+        <div><strong>검증:</strong> LV1/LV5/LV10의 같은 1280 × 720 상태를 비교하고, 정적 제약 검사와 소수의 대표 탄도 경로만 확인한다. 무의미한 수십 발 반복 시험은 하지 않는다.</div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <p class="eyebrow">08 · external evidence</p>
+      <h2>외부 근거</h2>
+      <p class="section-intro">일반적인 게임 참고 이미지보다, 구현 선택을 직접 설명할 수 있는 엔진 문서·원 논문·접근성 지침을 우선했다.</p>
+      <ol class="sources">
+        <li><a href="https://docs.godotengine.org/en/4.7/classes/class_surfacetool.html">Godot 4.7 SurfaceTool</a> — smooth group, normal 생성, index를 통한 정점 재사용.</li>
+        <li><a href="https://docs.godotengine.org/en/4.7/tutorials/3d/procedural_geometry/arraymesh.html">Godot 4.7 ArrayMesh procedural geometry</a> — 배열 기반 절차 메시 구조.</li>
+        <li><a href="https://docs.godotengine.org/en/4.7/tutorials/3d/spring_arm.html">Godot SpringArm3D</a> — 카메라 near-plane 피라미드 충돌 검사와 단순 ray의 한계.</li>
+        <li><a href="https://docs.godotengine.org/en/4.6/tutorials/3d/mesh_lod.html">Godot Mesh LOD</a> — 화면 공간 기준의 메시 단순화.</li>
+        <li><a href="https://doi.org/10.1145/218380.218473">Taubin, A Signal Processing Approach to Fair Surface Design (1995)</a> — 수축을 억제하는 표면 평활화의 기본 근거.</li>
+        <li><a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1467-8659.2010.01806.x">Feature Based Terrain Generation Using Diffusion Equation</a> — 능선·하천·절벽 곡선과 고도·경사·거칠기 제약의 diffusion 기반 지형 생성.</li>
+        <li><a href="https://gigl.scs.carleton.ca/papers/curve-networks-terrain.pdf">Terrain Synthesis Using Curve Networks</a> — 큰 능선과 실루엣을 먼저 정하는 곡선 네트워크 접근.</li>
+        <li><a href="https://mrl.cs.nyu.edu/~perlin/noise/">Ken Perlin, Improved Noise</a> — 미분 불연속을 줄이는 부드러운 보간.</li>
+        <li><a href="https://highways.dot.gov/safety/speed-management/speed-concepts-informational-guide/chapter-4-engineering-and-technical">FHWA, Vertical Curvature and Sight Distance</a> — 경사 변화율과 시야 확보를 별도 조건으로 다루는 근거.</li>
+        <li><a href="https://www.valuesatplay.org/wp-content/uploads/2007/09/sweetser.pdf">GameFlow</a> — 도전-기술 균형, 명확한 목표, 피드백, 통제감.</li>
+        <li><a href="https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/102">Xbox Accessibility Guideline 102</a> — HUD와 비문자 단서의 대비.</li>
+        <li><a href="https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/103">Xbox Accessibility Guideline 103</a> — 색만으로 상태를 전달하지 않는 추가 채널.</li>
+        <li><a href="https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/108">Xbox Accessibility Guideline 108</a> — 난이도를 여러 차원으로 분리하는 설계.</li>
+        <li><a href="https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/109">Xbox Accessibility Guideline 109</a> — 목표와 진행 상태의 명료성.</li>
+        <li><a href="https://learn.microsoft.com/en-us/xbox/accessibility/xbox-accessibility-guidelines/112">Xbox Accessibility Guideline 112</a> — 일관되고 예측 가능한 UI 탐색.</li>
+      </ol>
+    </section>
+
+    <section id="limits">
+      <p class="eyebrow">09 · limits</p>
+      <h2>보고서의 한계</h2>
+      <ul>
+        <li>3개 시안은 방향 비교용 생성 이미지다. 실제 Godot 렌더, 성능, 물리 결과를 대신하지 않는다.</li>
+        <li>권장 셀 간격과 목표 거리 밴드는 현재 코스 크기·탄도 구조를 바탕으로 한 시작값이다. 구현 뒤 정적 제약과 소수 대표 경로로 조정해야 한다.</li>
+        <li>나무·바위는 거리 기준의 예시다. 최종 에셋 스타일과 밀도는 별도 승인 대상이다.</li>
+        <li>새로운 패드, 바람, 중력 변형, 감속 장치는 본 범위에서 제외했다.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p><strong>작성 근거:</strong> 현재 Cannon Golf 코드베이스, canonical specifications, 2026-08-16 fresh runtime captures, 외부 1차·공식 자료.</p>
+      <p>이 문서는 분석 산출물이며 구현 승인이나 실행 계약이 아니다.</p>
+    </footer>
+  </main>
+</body>
+</html>
