@@ -34,7 +34,10 @@ func _run() -> void:
 		"Confirmation must leave the currently selected Start source unchanged."
 	)
 	_assert(not game.select_launcher_source(0), "Goal 1 must remain locked until completed.")
-	_assert(game.select_launcher_source(1), "Completed Goal 2 must be selectable.")
+	var next_source := game._hud.get_node("%LauncherSourceNext") as Button
+	_assert(not next_source.disabled, "A completed goal must enable the next source arrow.")
+	next_source.pressed.emit()
+	_assert(game.selected_launcher_goal_index == 1, "The next arrow must select completed Goal 2.")
 	_assert(
 		Vector2(
 			game._course_builder.launcher.position.x,

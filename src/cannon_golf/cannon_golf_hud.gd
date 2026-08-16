@@ -49,7 +49,10 @@ signal result_primary_requested
 @onready var _result_primary: Button = %ResultPrimary
 @onready var _goal_progress_label: Label = %GoalProgressLabel
 @onready var _launcher_source_panel: PanelContainer = $Root/LauncherSource
-@onready var _launcher_source_button: OptionButton = %LauncherSourceButton
+@onready var _launcher_source_previous: Button = %LauncherSourcePrevious
+@onready var _launcher_source_name: Label = %LauncherSourceName
+@onready var _launcher_source_position: Label = %LauncherSourcePosition
+@onready var _launcher_source_next: Button = %LauncherSourceNext
 @onready var _aim_reticle: Control = %AimReticle
 
 var _syncing := false
@@ -65,7 +68,6 @@ var _level_index := 0
 var _result_has_next := false
 var _launcher_sources: Array[int] = [-1]
 var _selected_launcher_source := -1
-var _syncing_launcher_sources := false
 var _held_slider: HSlider
 var _held_direction := 0.0
 var _hold_elapsed := 0.0
@@ -83,7 +85,8 @@ func _ready() -> void:
 	_connect_step_button(_power_decrease, _power_slider, -1.0)
 	_connect_step_button(_power_increase, _power_slider, 1.0)
 	_oblique_button.pressed.connect(func() -> void: view_requested.emit(&"oblique"))
-	_launcher_source_button.item_selected.connect(_on_launcher_source_selected)
+	_launcher_source_previous.pressed.connect(_step_launcher_source.bind(-1))
+	_launcher_source_next.pressed.connect(_step_launcher_source.bind(1))
 	_cannon_button.pressed.connect(func() -> void: view_requested.emit(&"cannon"))
 	_follow_button.pressed.connect(func() -> void: follow_requested.emit())
 	_zoom_in_button.pressed.connect(func() -> void: camera_zoom_requested.emit(1.0))
@@ -142,8 +145,8 @@ func set_launch_availability(active_shots: int, cleared: bool) -> void:
 	_retry_button.disabled = _cleared or _active_shot_count <= 0
 	_pause_retry.disabled = _cleared or _active_shot_count <= 0
 	_follow_button.disabled = _cleared or _active_shot_count <= 0
-	_launcher_source_button.disabled = _cleared or _launcher_sources.size() <= 1
-	_launcher_source_panel.visible = not _cleared and _launcher_sources.size() > 1
+	_launcher_source_panel.visible = not _cleared
+	_refresh_launcher_source_selector()
 	_refresh_setup_button_states()
 
 
@@ -168,7 +171,7 @@ func set_launcher_sources(completed_goal_indices: Array[int], selected_goal_inde
 	# Sorting places Start (-1) first and keeps stable goal numbering.
 	_selected_launcher_source = selected_goal_index \
 			if _launcher_sources.has(selected_goal_index) else -1
-	_rebuild_launcher_source_items()
+	_refresh_launcher_source_selector()
 	set_launch_availability(_active_shot_count, _cleared)
 
 
@@ -275,7 +278,7 @@ func apply_language(language: String) -> void:
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
 	_update_goal_progress_copy()
 	_update_result_copy()
-	_rebuild_launcher_source_items()
+	_refresh_launcher_source_selector()
 	set_launch_availability(_active_shot_count, _cleared)
 	_refresh_camera_buttons()
 
@@ -302,13 +305,14 @@ func _on_setup_control_changed(_value: float) -> void:
 		)
 
 
-func _on_launcher_source_selected(item_index: int) -> void:
-	if _syncing_launcher_sources or item_index < 0 \
-			or item_index >= _launcher_source_button.item_count:
+func _step_launcher_source(direction: int) -> void:
+	if _cleared or direction == 0:
 		return
-	var source: Variant = _launcher_source_button.get_item_metadata(item_index)
-	if source is int:
-		launcher_source_requested.emit(int(source))
+	var current_index := _launcher_sources.find(_selected_launcher_source)
+	var next_index := current_index + signi(direction)
+	if current_index < 0 or next_index < 0 or next_index >= _launcher_sources.size():
+		return
+	launcher_source_requested.emit(_launcher_sources[next_index])
 
 
 func _update_setup_labels() -> void:
@@ -341,28 +345,30 @@ func _update_result_copy() -> void:
 		_result_primary.text = "REPLAY %s" % level if english else "%s 다시 하기" % level
 
 
-func _rebuild_launcher_source_items() -> void:
-	if _launcher_source_button == null:
+func _refresh_launcher_source_selector() -> void:
+	if _launcher_source_previous == null or _launcher_source_next == null:
 		return
-	_syncing_launcher_sources = true
-	_launcher_source_button.clear()
 	var english := _language == "en"
-	var selected_item := 0
-	for source_index in range(_launcher_sources.size()):
-		var goal_index := _launcher_sources[source_index]
-		var label := ("CANNON · START" if english else "대포 · 시작점") \
-				if goal_index < 0 else (
-					("CANNON · GOAL %d" if english else "대포 · 골 %d") % (goal_index + 1)
-				)
-		_launcher_source_button.add_item(label)
-		_launcher_source_button.set_item_metadata(source_index, goal_index)
-		if goal_index == _selected_launcher_source:
-			selected_item = source_index
-	_launcher_source_button.select(selected_item)
-	_launcher_source_button.tooltip_text = "Choose cannon position" if english \
-			else "대포 위치 선택"
-	_launcher_source_button.set("accessibility_name", _launcher_source_button.tooltip_text)
-	_syncing_launcher_sources = false
+	var selected_index := maxi(_launcher_sources.find(_selected_launcher_source), 0)
+	var selected_goal := _launcher_sources[selected_index]
+	_launcher_source_name.text = ("START" if english else "시작점") if selected_goal < 0 \
+			else (("GOAL %d" if english else "골 %d") % (selected_goal + 1))
+	_launcher_source_position.text = (
+		("CANNON POSITION %d / %d" if english else "대포 위치 %d / %d") % [
+			selected_index + 1,
+			_launcher_sources.size(),
+		]
+	)
+	_launcher_source_previous.disabled = _cleared or selected_index <= 0
+	_launcher_source_next.disabled = _cleared or selected_index >= _launcher_sources.size() - 1
+	_set_icon_copy(
+		_launcher_source_previous,
+		"Previous cannon position" if english else "이전 대포 위치"
+	)
+	_set_icon_copy(
+		_launcher_source_next,
+		"Next cannon position" if english else "다음 대포 위치"
+	)
 
 
 func _connect_step_button(button: Button, slider: HSlider, direction: float) -> void:
@@ -459,7 +465,8 @@ func _set_icon_copy(button: Button, accessible_copy: String) -> void:
 
 func _install_focus_order() -> void:
 	var controls: Array[Control] = [
-		_launcher_source_button,
+		_launcher_source_previous,
+		_launcher_source_next,
 		_horizontal_decrease,
 		_horizontal_slider,
 		_horizontal_increase,

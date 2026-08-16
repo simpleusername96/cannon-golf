@@ -335,8 +335,8 @@ func _capture() -> void:
 		var relay_launcher := game._course_builder.launcher
 		var relay_fire_button := game._hud.get_node("%FireButton") as Button
 		var relay_progress := game._hud.get_node("%GoalProgressLabel") as Label
-		var source_selector := game._hud.get_node("%LauncherSourceButton") as OptionButton
-		var selected_source := int(source_selector.get_item_metadata(source_selector.selected))
+		var source_name := game._hud.get_node("%LauncherSourceName") as Label
+		var source_position := game._hud.get_node("%LauncherSourcePosition") as Label
 		if game.active_course().course_id != &"deep_relay" \
 				or game.completed_goal_indices != [0] \
 				or game.selected_launcher_goal_index != 0 \
@@ -351,17 +351,16 @@ func _capture() -> void:
 						game._course_builder.goals[0].global_position.z
 					)
 				) \
-				or source_selector.item_count != 2 or selected_source != 0 \
-				or relay_progress.text != "골 1 / 2":
+				or source_name.text != "골 1" or source_position.text != "대포 위치 2 / 2" \
+				or relay_progress.text != "LV 4 · 골 1 / 2":
 			push_error("Confirmed multi-goal capture did not retain free choice and the selected source.")
 			quit(1)
 			return
 	if game != null and requested_state == "launcher_source":
-		var source_selector := game._hud.get_node("%LauncherSourceButton") as OptionButton
-		var selected_source := int(source_selector.get_item_metadata(source_selector.selected))
+		var source_name := game._hud.get_node("%LauncherSourceName") as Label
 		if game.completed_goal_indices.size() != 1 \
 				or game.selected_launcher_goal_index < 0 \
-				or selected_source != game.selected_launcher_goal_index \
+				or source_name.text != "골 %d" % (game.selected_launcher_goal_index + 1) \
 				or game.planning_view != &"cannon" \
 				or game._camera_rig.camera_mode != &"planning":
 			push_error("Launcher-source capture did not retain its selected completed goal.")
