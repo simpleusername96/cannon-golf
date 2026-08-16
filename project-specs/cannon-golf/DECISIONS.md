@@ -715,6 +715,23 @@ in `OPEN_QUESTIONS.md`.
   surface pivot and its boom-radius footprint. Do not force a low artificial
   valley at the geometric center and do not change the camera controller.
 
+### D-047 — Mark goal terrain directly and use a rear-upper cannon perspective
+
+- Status: accepted on 2026-08-16; supersedes the exact cannon-first-person
+  clauses in D-038 through D-045. It refines goal presentation without changing
+  basin collision, completion state, or terrain generation.
+- Tint the connected terrain surface inside every scoring region incomplete
+  blue. The tint follows the heightfield and therefore cannot be buried or
+  z-fight with it. It is not collision geometry and does not change on goal
+  completion; completion still changes only the fixed flag from blue to gold.
+- Cannon perspective is a fixed source-relative camera behind, above, and to one
+  side of the physical launcher. It looks toward a near point on the selected
+  launch ray so the cannon, local terrain, physical barrel, and center reticle
+  remain legible together. Uniformly reduce the overview partial aim curve in
+  this view so its connected arrow stays compact near the camera. Cannon
+  perspective does not select or frame a goal, and overview remains the sole
+  map-exploration camera.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

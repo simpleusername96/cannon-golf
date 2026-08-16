@@ -16,6 +16,7 @@ const ARROW_RADIUS := 2.5
 # curve may extend beyond this legacy logical cue envelope at extreme bearings.
 const RADIUS := 13.0
 const PRESENTATION_TOP_HEIGHT := 31.0
+const CANNON_PERSPECTIVE_SCALE := 0.32
 
 var _elevation_degrees := 50.0
 var _launch_direction := Vector3.FORWARD
@@ -79,8 +80,9 @@ func presentation_top_height() -> float:
 	return PRESENTATION_TOP_HEIGHT
 
 
-func set_cannon_view_active(active: bool, _cannon_eye_offset: Vector3) -> void:
-	visible = not active
+func set_cannon_view_active(active: bool) -> void:
+	visible = true
+	scale = Vector3.ONE * CANNON_PERSPECTIVE_SCALE if active else Vector3.ONE
 
 
 func _build_visuals() -> void:

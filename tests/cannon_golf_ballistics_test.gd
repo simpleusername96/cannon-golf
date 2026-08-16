@@ -96,12 +96,16 @@ func _initialize() -> void:
 		shadows_disabled = shadows_disabled \
 				and guide_mesh.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_assert_true(shadows_disabled, "Every aim-curve mesh must remain shadow-free.")
-	launcher.set_first_person_visuals_hidden(true)
+	launcher.set_cannon_view_active(true)
 	_assert_true(
-		not halo.visible and not launcher.get_node("LauncherVisualRoot").visible,
-		"Cannon first-person must hide the large world-space aim curve."
+		halo.visible \
+				and halo.scale.is_equal_approx(
+					Vector3.ONE * CannonGolfAimHalo.CANNON_PERSPECTIVE_SCALE
+				) \
+				and launcher.get_node("LauncherVisualRoot").visible,
+		"Cannon perspective must retain the cannon and a compact partial guide."
 	)
-	launcher.set_first_person_visuals_hidden(false)
+	launcher.set_cannon_view_active(false)
 	_assert_true(
 		halo.visible and halo.position.is_zero_approx() and halo.scale.is_equal_approx(Vector3.ONE),
 		"Returning to overview must restore the world-space aim curve."

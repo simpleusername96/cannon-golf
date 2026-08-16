@@ -217,9 +217,13 @@ func _capture() -> void:
 		var halo := game._course_builder.launcher.get_node_or_null("AimHalo") \
 				as CannonGolfAimHalo
 		var reticle := game._hud.get_node_or_null("%AimReticle") as Control
-		if halo == null or halo.visible or reticle == null or not reticle.is_visible_in_tree() \
+		if halo == null or not halo.visible \
+				or not halo.scale.is_equal_approx(
+					Vector3.ONE * CannonGolfAimHalo.CANNON_PERSPECTIVE_SCALE
+				) \
+				or reticle == null or not reticle.is_visible_in_tree() \
 				or not game._camera.global_transform.is_finite():
-			push_error("Exact-down cannon view must hide the world curve and keep a finite reticle.")
+			push_error("Exact-down cannon perspective must keep a compact finite guide.")
 			quit(1)
 			return
 	if game != null and requested_state == "panned":

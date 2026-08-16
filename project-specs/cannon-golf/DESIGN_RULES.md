@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-16
 canonical_for: Current visual composition and UI direction for the provisional Cannon Golf project
 scope: Camera, terrain readability, impact marks, settlement goals, devices, HUD, and visual hierarchy
 source: Paint Mountain design system plus user direction recorded on 2026-08-12
@@ -67,16 +67,18 @@ coefficients, stage data formats, or code ownership.
 - Do not treat the inherited frontal Aim View as the default composition.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
-- Use a true first-person view at the selected cannon source to show its actual
-  launch direction. In overview, draw one large, thin, deep-navy world-space
+- Use a fixed rear-upper perspective at the selected cannon source. Keep the
+  physical cannon, nearby terrain, and selected direction in one frame by
+  looking toward a near point on the real launch ray. Draw one large, thin,
+  deep-navy world-space
   curve from a raised point above the launcher through only the first capped portion
   of the current ballistic motion. Connect a thick amber arrowhead to the final
   curve tangent. The curve must not reach a goal or show a landing/impact point.
   Keep the curve depth-tested and shadow-free; only the compact arrowhead may
-  bypass depth testing. Hide this large world guide in cannon view, where the
-  small center reticle and physical barrel direction are sufficient. Exact
-  vertical cannon aim must keep a finite, stable camera basis without reducing
-  the legal elevation range.
+  bypass depth testing. Uniformly reduce the same guide in cannon perspective so
+  its connected arrow stays compact near the camera; keep the physical barrel
+  and small center reticle. Exact vertical cannon aim must keep a finite, stable
+  camera basis without reducing the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In overview, left-drag pans, right-drag orbits around the bounded course
   focus, the wheel changes distance, and arrow keys pan. A click without drag
@@ -90,7 +92,7 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon first-person is a persistent selectable aim preset but not an
+- Cannon perspective is a persistent selectable aim preset but not an
   exploration camera. Overview remains the complete-course planning owner.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
@@ -158,8 +160,9 @@ coefficients, stage data formats, or code ownership.
   heightfield. Its near-flat floor and broad gradual shoulder must be visible
   from the authored overview.
 - Do not add a separate physical plate floor, low fence, retaining wall, raised
-  lip, or state-dependent boundary. A flush non-colliding disc and fixed flag
-  may identify the scoring floor.
+  lip, or state-dependent boundary. Tint the terrain surface inside the scoring
+  region blue so it cannot disappear below the heightfield. A flush
+  non-colliding disc and fixed flag may reinforce the scoring floor.
 - The basin must be shallow relative to the macro terrain and wide enough to
   read as normal landform shaping rather than a locally cut crater or cliff.
 - Entering a goal is not enough: a ball that bounces out before settlement must

@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-15
+last_reviewed: 2026-08-16
 canonical_for: Current product requirements for the provisional Cannon Golf project
 scope: Game concept and observable player experience; three-course prototype implemented and later device progression specified
 source: User direction recorded on 2026-08-12
@@ -180,8 +180,9 @@ cannon composition.
 - Requirement: every current-catalog goal is a smooth, terrain-owned basin in
   the connected heightfield. It has a near-flat scoring floor and a broad,
   gradual transition to the surrounding terrain, with no separate physical
-  plate floor, fence, retaining wall, or raised lip. A flush non-colliding disc
-  and fixed flag identify the goal without changing its terrain boundary. Goal
+  plate floor, fence, retaining wall, or raised lip. The terrain surface inside
+  the scoring region is blue, and a flush non-colliding disc and fixed flag may
+  reinforce it without changing its terrain boundary. Goal
   completion changes only the flag material color in the world; the basin,
   disc, pole, flag transform, locator, and collision remain unchanged.
   A ball counts only after it remains inside the basin under the stage's
@@ -230,9 +231,13 @@ cannon composition.
 ### FR-8: Planning cameras
 
 - Requirement: planning supports one terrain-reading high-oblique overview and
-  one true first-person view at the currently selected cannon source. The
-  first-person camera looks along the real launch direction and never tracks,
-  frames, or implies a next goal. Fire immediately follows the newest ball.
+  one fixed rear-upper cannon perspective at the currently selected source.
+  Cannon perspective keeps the physical cannon, nearby terrain, and selected
+  launch direction in one frame by looking toward a near point on the real
+  launch ray. Its physical barrel and center reticle accompany a uniformly
+  reduced version of the overview partial aim curve. It does not frame or imply
+  a next goal.
+  Fire immediately follows the newest ball.
   `Tab` restores the exact overview or cannon state stored before follow; a
   second launch retargets follow without replacing that stored state.
   Confirming any goal ends Shot Follow immediately and restores that exact
@@ -250,7 +255,8 @@ cannon composition.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
   The high-oblique reset frames the complete presentation bounds. Cannon view
-  is a fixed first-person aim pose; map exploration remains owned by overview.
+  is a fixed source-relative perspective pose; map exploration remains owned by
+  overview.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
@@ -408,8 +414,10 @@ cannon composition.
 ### AC-5: Strategic composition
 
 - Applies to: FR-8, FR-10.
-- Conditions for done: planning provides one top/oblique view and one true
-  cannon first-person view in which settled balls, retained marks, and the
+- Conditions for done: planning provides one top/oblique view and one rear-upper
+  cannon perspective in which the physical cannon, compact partial guide,
+  center reticle, and local terrain remain legible and settled balls, retained
+  marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete
   planning state and does not strand the player in an invalid framing. Firing

@@ -18,6 +18,10 @@ const PAN_RESPONSE := 0.30
 const MAXIMUM_PAN_EVENT_SPAN_RATIO := 0.02
 const ARROW_PAN_SPAN_RATIO := 0.01
 const CANNON_FIELD_OF_VIEW := 70.0
+const CANNON_BACK_DISTANCE := 16.0
+const CANNON_SIDE_DISTANCE := 5.0
+const CANNON_HEIGHT := 8.0
+const CANNON_LOOK_AHEAD := 12.0
 
 var view_mode: StringName = &"oblique"
 var camera_mode: StringName = MODE_PLANNING
@@ -34,7 +38,7 @@ var _base_focus := Vector3.ZERO
 var _terrain_bounds := Rect2()
 var _height_sampler := Callable()
 var _collision_exclusions: Array[RID] = []
-var _cannon_eye := Vector3.ZERO
+var _cannon_anchor := Vector3.ZERO
 var _cannon_direction := Vector3.FORWARD
 var _cannon_heading := Vector3.FORWARD
 var _planning_position := Vector3.ZERO
@@ -67,7 +71,7 @@ func configure(
 	_terrain_bounds = terrain_bounds
 	_height_sampler = height_sampler
 	_collision_exclusions = collision_exclusions.duplicate()
-	_cannon_eye = course.cannon_position + Vector3.UP * 2.55
+	_cannon_anchor = course.cannon_position + Vector3.UP * 2.55
 	_set_cannon_direction(
 		_yaw_forward(course.shot_axis_yaw_degrees), course.shot_axis_yaw_degrees
 	)
@@ -104,16 +108,16 @@ func set_view(next_view: StringName) -> bool:
 func set_planning_context(
 		frame_bounds: AABB,
 		focus: Vector3,
-		cannon_eye: Vector3,
+		cannon_anchor: Vector3,
 		cannon_direction: Vector3,
 		cannon_yaw_degrees: float = NAN
 ) -> bool:
-	if not frame_bounds.has_volume() or not focus.is_finite() or not cannon_eye.is_finite() \
+	if not frame_bounds.has_volume() or not focus.is_finite() or not cannon_anchor.is_finite() \
 			or not cannon_direction.is_finite() or cannon_direction.is_zero_approx():
 		return false
 	_frame_bounds = frame_bounds
 	_base_focus = focus
-	_cannon_eye = cannon_eye
+	_cannon_anchor = cannon_anchor
 	_set_cannon_direction(cannon_direction, cannon_yaw_degrees)
 	pan_offset = Vector3.ZERO
 	zoom = DEFAULT_ZOOM
@@ -124,13 +128,13 @@ func set_planning_context(
 
 
 func set_cannon_pose(
-		eye: Vector3,
+		anchor: Vector3,
 		direction: Vector3,
 		cannon_yaw_degrees: float = NAN
 ) -> bool:
-	if not eye.is_finite() or not direction.is_finite() or direction.is_zero_approx():
+	if not anchor.is_finite() or not direction.is_finite() or direction.is_zero_approx():
 		return false
-	_cannon_eye = eye
+	_cannon_anchor = anchor
 	_set_cannon_direction(direction, cannon_yaw_degrees)
 	_pose_dirty = true
 	return true
@@ -138,7 +142,7 @@ func set_cannon_pose(
 
 func set_cannon_yaw(world_yaw_degrees: float) -> bool:
 	return set_cannon_pose(
-		_cannon_eye, _yaw_forward(world_yaw_degrees), world_yaw_degrees
+		_cannon_anchor, _yaw_forward(world_yaw_degrees), world_yaw_degrees
 	)
 
 
@@ -308,19 +312,18 @@ func _apply_planning(delta: float) -> void:
 		candidate = _validated_camera_position(candidate, _last_valid_position, boom_origin)
 		_rendered_focus = boom_origin
 	else:
-		_rendered_focus = candidate + _cannon_direction * 20.0
+		_rendered_focus = _planning_focus
 	_last_valid_position = candidate
 	_camera.global_position = candidate
-	_camera.look_at(
-		_rendered_focus,
-		_cannon_view_up() if view_mode == &"cannon" else Vector3.UP
-	)
+	_camera.look_at(_rendered_focus, Vector3.UP)
 
 
 func _resolve_pose(size: Vector2) -> void:
 	if view_mode == &"cannon":
-		_planning_position = _cannon_eye
-		_planning_focus = _cannon_eye + _cannon_direction * 20.0
+		var camera_right := _cannon_heading.cross(Vector3.UP).normalized()
+		_planning_position = _cannon_anchor - _cannon_heading * CANNON_BACK_DISTANCE \
+				+ camera_right * CANNON_SIDE_DISTANCE + Vector3.UP * CANNON_HEIGHT
+		_planning_focus = _cannon_anchor + _cannon_direction * CANNON_LOOK_AHEAD
 	else:
 		_planning_focus = planning_focus()
 		var pose := OverviewSolver.resolve_pose(
@@ -342,14 +345,6 @@ func _set_cannon_direction(direction: Vector3, cannon_yaw_degrees: float = NAN) 
 	var horizontal := Vector3(_cannon_direction.x, 0.0, _cannon_direction.z)
 	if not horizontal.is_zero_approx():
 		_cannon_heading = horizontal.normalized()
-
-
-func _cannon_view_up() -> Vector3:
-	# Pitch world up around the current horizontal heading. This stays continuous
-	# through vertical aim and never gives look_at() colinear direction/up vectors.
-	var vertical := clampf(_cannon_direction.y, -1.0, 1.0)
-	var horizontal_weight := sqrt(maxf(1.0 - vertical * vertical, 0.0))
-	return (Vector3.UP * horizontal_weight - _cannon_heading * vertical).normalized()
 
 
 func _apply_follow(delta: float) -> void:

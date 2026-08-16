@@ -26,7 +26,7 @@ func _run() -> void:
 		)
 		_assert_true(rig.set_planning_context(
 			builder.presentation_bounds(), builder.course.content_bounds.get_center(),
-			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction(),
+			builder.launcher.cannon_perspective_anchor(), builder.launcher.launch_direction(),
 			builder.launcher.yaw_degrees
 		), "Camera context must accept the launcher pose.")
 		rig.snap_to_planning()
@@ -70,13 +70,18 @@ func _run() -> void:
 		rig.snap_to_planning()
 		_assert_camera_boom_clear(rig, camera, builder, "Orbited overview")
 
-		_assert_true(rig.set_view(&"cannon"), "Cannon first-person must be available.")
+		_assert_true(rig.set_view(&"cannon"), "Cannon perspective must be available.")
 		rig.snap_to_planning()
 		var camera_forward := -camera.global_transform.basis.z
+		var expected_cannon_focus := builder.launcher.cannon_perspective_anchor() \
+				+ builder.launcher.launch_direction() * CannonGolfCourseCameraRig.CANNON_LOOK_AHEAD
 		_assert_true(
-			camera.global_position.distance_to(builder.launcher.first_person_eye_position()) < 0.01
-					and rad_to_deg(camera_forward.angle_to(builder.launcher.launch_direction())) < 0.1,
-			"Cannon view must use the exact launcher eye and launch direction."
+			camera.global_position.distance_to(builder.launcher.cannon_perspective_anchor()) > 10.0
+					and camera.global_position.y > builder.launcher.global_position.y \
+					and rad_to_deg(camera_forward.angle_to(
+						(expected_cannon_focus - camera.global_position).normalized()
+					)) < 0.1,
+			"Cannon perspective must stay behind and above the physical launcher."
 		)
 		for vertical_sign in [-1.0, 1.0]:
 			var previous_up := Vector3.ZERO
@@ -84,7 +89,7 @@ func _run() -> void:
 				builder.launcher.set_setup(162.0, vertical_sign * absolute_angle, 50.0)
 				_assert_true(
 					rig.set_cannon_pose(
-						builder.launcher.first_person_eye_position(),
+						builder.launcher.cannon_perspective_anchor(),
 						builder.launcher.launch_direction(),
 						builder.launcher.yaw_degrees
 					),
@@ -93,12 +98,17 @@ func _run() -> void:
 				rig.snap_to_planning()
 				camera_forward = -camera.global_transform.basis.z
 				var camera_up := camera.global_transform.basis.y
+				expected_cannon_focus = builder.launcher.cannon_perspective_anchor() \
+						+ builder.launcher.launch_direction() \
+						* CannonGolfCourseCameraRig.CANNON_LOOK_AHEAD
 				_assert_true(
 					camera.global_transform.basis.is_finite() \
 							and rad_to_deg(
-								camera_forward.angle_to(builder.launcher.launch_direction())
+								camera_forward.angle_to(
+									(expected_cannon_focus - camera.global_position).normalized()
+								)
 							) < 0.1,
-					"Exact vertical cannon aim must retain a finite, aligned camera basis."
+					"Exact vertical cannon aim must retain a finite perspective basis."
 				)
 				if not previous_up.is_zero_approx():
 					_assert_true(
@@ -108,14 +118,14 @@ func _run() -> void:
 				previous_up = camera_up
 		builder.launcher.set_setup(50.0, 90.0, 50.0)
 		rig.set_cannon_pose(
-			builder.launcher.first_person_eye_position(),
+			builder.launcher.cannon_perspective_anchor(),
 			builder.launcher.launch_direction(),
 			builder.launcher.yaw_degrees
 		)
 		rig.snap_to_planning()
 		builder.launcher.set_setup(162.0, 90.0, 50.0)
 		rig.set_cannon_pose(
-			builder.launcher.first_person_eye_position(),
+			builder.launcher.cannon_perspective_anchor(),
 			builder.launcher.launch_direction(),
 			builder.launcher.yaw_degrees
 		)
@@ -123,7 +133,7 @@ func _run() -> void:
 		var vertical_reaim_up := camera.global_transform.basis.y
 		builder.launcher.set_setup(162.0, 89.0, 50.0)
 		rig.set_cannon_pose(
-			builder.launcher.first_person_eye_position(),
+			builder.launcher.cannon_perspective_anchor(),
 			builder.launcher.launch_direction(),
 			builder.launcher.yaw_degrees
 		)
@@ -134,7 +144,7 @@ func _run() -> void:
 		)
 		builder.launcher.set_setup(50.0, 50.0, 50.0)
 		rig.set_cannon_pose(
-			builder.launcher.first_person_eye_position(), builder.launcher.launch_direction(),
+			builder.launcher.cannon_perspective_anchor(), builder.launcher.launch_direction(),
 			builder.launcher.yaw_degrees
 		)
 		rig.snap_to_planning()
@@ -165,7 +175,7 @@ func _run() -> void:
 		rig.queue_free()
 		await process_frame
 	if not _failed:
-		print("Cannon Golf overview, first-person, and follow camera contract passed.")
+		print("Cannon Golf overview, cannon perspective, and follow camera contract passed.")
 	quit(1 if _failed else 0)
 
 

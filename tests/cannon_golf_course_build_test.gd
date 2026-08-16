@@ -22,14 +22,23 @@ func _run() -> void:
 		_assert_true(builder.course.content_bounds.has_point(builder.course.cannon_position), "Content bounds must include the launcher.")
 		_assert_true(builder.course.content_bounds.has_point(builder.course.goal_position), "Content bounds must include an authored goal.")
 		_assert_true(
-			not builder.goal.find_children("*", "StaticBody3D", true, false).is_empty(),
-			"Each physical goal plate must own its floor and wall collision."
+			builder.goal.find_children("*", "StaticBody3D", true, false).is_empty(),
+			"Terrain-owned goals must not add floor or wall collision."
 		)
 		_assert_true(builder.get_node_or_null("Mechanisms") == null, "Fresh courses must not contain devices.")
 		_assert_true(
 			(builder.terrain_body.get_node("TerrainMesh") as MeshInstance3D).mesh \
 					== builder.prepared_course.render_mesh,
 			"Runtime terrain must use the prepared render mesh without rebuilding it."
+		)
+		var terrain_material := (
+			builder.terrain_body.get_node("TerrainMesh") as MeshInstance3D
+		).material_override as ShaderMaterial
+		_assert_true(
+			terrain_material != null \
+					and int(terrain_material.get_shader_parameter(&"goal_region_count")) \
+					== builder.goals.size(),
+			"The terrain material must mark every generated scoring region."
 		)
 		var first_anchor := builder.launcher.position
 		for goal_index in range(course.leg_count()):

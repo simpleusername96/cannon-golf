@@ -272,7 +272,7 @@ func fire() -> bool:
 	)
 	current_ball = ball
 	_camera_rig.follow(ball)
-	_course_builder.launcher.set_first_person_visuals_hidden(false)
+	_course_builder.launcher.set_cannon_view_active(false)
 	_hud.set_camera_mode(&"follow")
 	launch_state = LaunchState.FLYING
 	last_launch_outcome = &""
@@ -342,7 +342,7 @@ func apply_language(language: String) -> void:
 func set_planning_view(view_mode: StringName) -> void:
 	if not _camera_rig.set_view(view_mode):
 		return
-	_course_builder.launcher.set_first_person_visuals_hidden(view_mode == &"cannon")
+	_course_builder.launcher.set_cannon_view_active(view_mode == &"cannon")
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
 
@@ -350,13 +350,13 @@ func set_planning_view(view_mode: StringName) -> void:
 func toggle_shot_camera() -> bool:
 	if _camera_rig.camera_mode == &"follow":
 		_camera_rig.return_to_planning()
-		_course_builder.launcher.set_first_person_visuals_hidden(_camera_rig.view_mode == &"cannon")
+		_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 		_hud.set_camera_mode(&"planning")
 		return true
 	if current_ball == null or not is_instance_valid(current_ball):
 		return false
 	_camera_rig.follow(current_ball)
-	_course_builder.launcher.set_first_person_visuals_hidden(false)
+	_course_builder.launcher.set_cannon_view_active(false)
 	_hud.set_camera_mode(&"follow")
 	return true
 
@@ -365,7 +365,7 @@ func return_to_planning_view() -> bool:
 	if _camera_rig.camera_mode != &"follow":
 		return false
 	_camera_rig.return_to_planning(true)
-	_course_builder.launcher.set_first_person_visuals_hidden(_camera_rig.view_mode == &"cannon")
+	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 	_hud.set_camera_mode(&"planning")
 	return true
 
@@ -398,7 +398,7 @@ func _ensure_overview_view() -> void:
 	if _camera_rig.view_mode == &"oblique":
 		return
 	_camera_rig.set_view(&"oblique")
-	_course_builder.launcher.set_first_person_visuals_hidden(false)
+	_course_builder.launcher.set_cannon_view_active(false)
 	_hud.set_view(&"oblique")
 	_hud.set_camera_mode(&"planning")
 
@@ -406,7 +406,7 @@ func _ensure_overview_view() -> void:
 func reset_planning_camera() -> void:
 	_end_planning_drag()
 	_camera_rig.reset_planning_view()
-	_course_builder.launcher.set_first_person_visuals_hidden(false)
+	_course_builder.launcher.set_cannon_view_active(false)
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
 
@@ -415,7 +415,7 @@ func _activate_planning_camera() -> void:
 	if _camera_rig.camera_mode != &"follow":
 		return
 	_camera_rig.return_to_planning()
-	_course_builder.launcher.set_first_person_visuals_hidden(_camera_rig.view_mode == &"cannon")
+	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 	_hud.set_camera_mode(&"planning")
 
 
@@ -542,7 +542,7 @@ func _sync_cannon_camera_pose() -> void:
 	if launcher == null:
 		return
 	_camera_rig.set_cannon_pose(
-		launcher.first_person_eye_position(),
+		launcher.cannon_perspective_anchor(),
 		launcher.launch_direction(),
 		launcher.yaw_degrees
 	)
@@ -641,7 +641,7 @@ func _confirm_goal(ball: CannonGolfBall = null, goal_index: int = -1) -> void:
 	_remove_live_ball(winning_ball, true, false)
 	# Restore the exact planning snapshot instead of flying toward the basin.
 	_camera_rig.return_to_planning(true)
-	_course_builder.launcher.set_first_person_visuals_hidden(
+	_course_builder.launcher.set_cannon_view_active(
 		_camera_rig.view_mode == &"cannon"
 	)
 	_hud.set_view(_camera_rig.view_mode)
@@ -674,7 +674,7 @@ func _set_camera_context_for_leg(index: int) -> bool:
 	return _camera_rig.set_planning_context(
 		_course_builder.frame_bounds_for_leg(index),
 		_course_builder.course.planning_focus,
-		_course_builder.launcher.first_person_eye_position(),
+		_course_builder.launcher.cannon_perspective_anchor(),
 		_course_builder.launcher.launch_direction(),
 		_course_builder.launcher.yaw_degrees
 	)
@@ -684,7 +684,7 @@ func _set_camera_context_for_launcher() -> bool:
 	return _camera_rig.set_planning_context(
 		_course_builder.presentation_bounds(),
 		_course_builder.course.content_bounds.get_center(),
-		_course_builder.launcher.first_person_eye_position(),
+		_course_builder.launcher.cannon_perspective_anchor(),
 		_course_builder.launcher.launch_direction(),
 		_course_builder.launcher.yaw_degrees
 	)
@@ -705,7 +705,7 @@ func _select_launcher_source(goal_index: int) -> bool:
 	_set_camera_context_for_launcher()
 	_sync_cannon_camera_pose()
 	_camera_rig.set_view(stored_view)
-	_course_builder.launcher.set_first_person_visuals_hidden(stored_view == &"cannon")
+	_course_builder.launcher.set_cannon_view_active(stored_view == &"cannon")
 	_hud.set_setup(
 		_course_builder.launcher.horizontal_aim,
 		_course_builder.launcher.elevation_degrees,

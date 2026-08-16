@@ -80,6 +80,7 @@ func _build(
 	var terrain_mesh := MeshInstance3D.new()
 	terrain_mesh.name = "TerrainMesh"
 	terrain_mesh.mesh = prepared_course.render_mesh
+	terrain_mesh.material_override = _terrain_material_with_goal_regions()
 	terrain_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	terrain_body.add_child(terrain_mesh)
 	launcher = CannonGolfLauncher.new()
@@ -271,6 +272,28 @@ func _build_goals() -> void:
 		settlement_goal.visual_state = CannonGolfSettlementGoal.VisualState.ACTIVE
 		add_child(settlement_goal)
 		goals.append(settlement_goal)
+
+
+## Marks the scoring regions in the shared terrain material. This avoids a
+## raised plate or a flat overlay that can intersect the basin's triangles.
+func _terrain_material_with_goal_regions() -> ShaderMaterial:
+	var source := prepared_course.render_mesh.surface_get_material(0) as ShaderMaterial
+	if source == null:
+		return null
+	var material := source.duplicate() as ShaderMaterial
+	var regions := PackedVector4Array()
+	for prepared in prepared_course.legs:
+		regions.append(Vector4(
+			prepared.goal_position.x,
+			prepared.goal_position.z,
+			prepared.goal_radius,
+			0.0
+		))
+	while regions.size() < 6:
+		regions.append(Vector4.ZERO)
+	material.set_shader_parameter(&"goal_regions", regions)
+	material.set_shader_parameter(&"goal_region_count", prepared_course.legs.size())
+	return material
 
 
 func _add_dressing() -> void:
