@@ -124,10 +124,10 @@ coefficients, stage data formats, or code ownership.
 - Keep the active mountain footprint compact enough for one high-oblique reset
   view. Progression comes from more elevation tiers, branching ridges, shelves,
   and valleys, not from an increasingly empty rectangular map.
-- Preserve a broad low area at the reset pivot and a rising terrain-clear
-  channel along the existing camera boom. The generator must prevent the reset
-  camera from collapsing against a nearby mountain face without rewriting the
-  camera controller.
+- Preserve a terrain-clear channel along the existing camera boom. Its
+  generator check must begin at the same terrain-safe surface pivot used by the
+  runtime camera, so a central ridge or summit is not flattened into an
+  artificial reset valley. Do not rewrite the camera controller for this rule.
 - Use `assets/terrain-progression-early.png`, `terrain-progression-mid.png`, and
   `terrain-progression-late.png` as the visual family contract. Early terrain
   has one dominant mountain relationship and few broad levels; middle terrain
@@ -138,6 +138,15 @@ coefficients, stage data formats, or code ownership.
   launcher-to-goal flight corridor remain explicit protected constraints.
   Do not globally smooth away the reference structure or create an isolated
   spike merely to increase a numeric relief value.
+- Expand the physical terrain envelope to `1.35` times the authored route
+  domain on both horizontal axes while keeping route stations unchanged. At
+  least `1.08` authored rectangles of active terrain must remain connected.
+  No adjacent active internal heightfield edge may exceed `50°`; the vertical
+  outside skirt is not an internal landform slope.
+- A goal basin is a shallow recess inside a local summit or ridge, not a hole at
+  the bottom of surrounding terrain. The final goal is a summit. Earlier goals
+  may be summits or ridge centers according to the admitted flight and overview
+  channels; ridge orientation is not fixed to the shot axis.
 - Each stage needs a readable direct route or a readable reason why a device is
   necessary.
 - Decorative rocks and trees may communicate scale but must not hide goals,

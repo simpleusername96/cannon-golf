@@ -348,6 +348,11 @@ cannon composition.
   canonical terrain-progression references. The final grid must keep the
   intended flight corridor clear, keep the existing overview camera boom clear
   from its reset pivot, and keep every flag visible from that high-oblique view.
+  Terrain bounds expand to `1.35` times the authored route domain on both
+  horizontal axes without lengthening shots; active terrain covers at least
+  `1.08` times the authored rectangle. Every active internal heightfield edge
+  is at most `50°`, existing relief admission remains in force, and every goal
+  is admitted only when its local landform reads as a summit or ridge.
   These are generator admission rules, not visible trajectory or range overlays
   and not a post-hoc large physics search.
 - Reason: the course supplies the spatial problem while the player supplies all

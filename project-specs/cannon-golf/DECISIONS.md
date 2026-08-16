@@ -694,6 +694,27 @@ in `OPEN_QUESTIONS.md`.
 - D-042 remains in force. Do not implement or use bounce, damping, airflow,
   gravity, camera rewrites, or unrelated UI work as part of this terrain slice.
 
+### D-046 — Broaden generated terrain and admit summit-or-ridge goals
+
+- Status: accepted on 2026-08-16; refines D-045's terrain envelope, reset-pivot,
+  slope, and goal-landform clauses without changing ballistics, camera code,
+  goal state, devices, or UI.
+- Keep launcher and goal route planning inside the authored route domain. Expand
+  only the generated terrain bounds by `1.35` on both horizontal axes and
+  require connected active terrain area of at least `1.08` times the authored
+  rectangular area.
+- Retain D-045's catalog relief admission. Admit the final heightfield only when
+  every adjacent active internal edge is at most `50°`; do not count the
+  vertical outside skirt as an internal terrain slope and do not flatten relief
+  merely to satisfy the angle rule.
+- Carve every goal's existing shallow basin into a local summit or ridge
+  landform. The final goal is a summit. Earlier goals may resolve as summits or
+  ridge centers, and a ridge may follow or cross the shot axis when required by
+  the intended flight or overview channel.
+- Evaluate overview boom clearance from the runtime-equivalent terrain-safe
+  surface pivot and its boom-radius footprint. Do not force a low artificial
+  valley at the geometric center and do not change the camera controller.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
