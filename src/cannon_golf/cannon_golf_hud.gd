@@ -232,6 +232,11 @@ func apply_language(language: String) -> void:
 	%HorizontalLabel.text = "H" if english else "좌우"
 	%ElevationLabel.text = "V" if english else "상하"
 	%PowerLabel.text = "PWR" if english else "파워"
+	_oblique_button.text = "MAP" if english else "전체"
+	_cannon_button.text = "CANNON" if english else "대포"
+	_follow_button.text = "FOLLOW" if english else "추적"
+	_retry_button.text = "RETRY" if english else "재발사"
+	_camera_reset_button.text = "RESET" if english else "초기"
 	_set_icon_copy(_horizontal_decrease, "Decrease horizontal aim (Q)" if english else "좌우 조준 감소 (Q)")
 	_set_icon_copy(_horizontal_increase, "Increase horizontal aim (E)" if english else "좌우 조준 증가 (E)")
 	_set_icon_copy(_elevation_decrease, "Decrease elevation (S)" if english else "상하 조준 감소 (S)")
@@ -467,24 +472,22 @@ func _install_focus_order() -> void:
 	var controls: Array[Control] = [
 		_launcher_source_previous,
 		_launcher_source_next,
-		_horizontal_decrease,
-		_horizontal_slider,
-		_horizontal_increase,
-		_elevation_decrease,
-		_elevation_slider,
-		_elevation_increase,
-		_power_decrease,
-		_power_slider,
-		_power_increase,
-		_zoom_in_button,
-		_camera_reset_button,
-		_zoom_out_button,
-		_shortcut_button,
 		_oblique_button,
 		_cannon_button,
 		_follow_button,
 		_retry_button,
+		_zoom_in_button,
+		_camera_reset_button,
+		_zoom_out_button,
+		_shortcut_button,
 		%PauseButton,
+		_elevation_increase,
+		_horizontal_decrease,
+		_horizontal_increase,
+		_elevation_decrease,
+		_power_decrease,
+		_power_slider,
+		_power_increase,
 		_fire_button,
 	]
 	for index in range(controls.size()):
@@ -493,13 +496,13 @@ func _install_focus_order() -> void:
 		control.focus_previous = control.focus_neighbor_left
 		control.focus_neighbor_right = controls[(index + 1) % controls.size()].get_path()
 		control.focus_next = control.focus_neighbor_right
-	_zoom_in_button.focus_neighbor_top = _zoom_out_button.get_path()
-	_zoom_in_button.focus_neighbor_bottom = _camera_reset_button.get_path()
-	_camera_reset_button.focus_neighbor_top = _zoom_in_button.get_path()
-	_camera_reset_button.focus_neighbor_bottom = _zoom_out_button.get_path()
-	_zoom_out_button.focus_neighbor_top = _camera_reset_button.get_path()
-	_zoom_out_button.focus_neighbor_bottom = _shortcut_button.get_path()
-	_shortcut_button.focus_neighbor_top = _zoom_out_button.get_path()
-	_shortcut_button.focus_neighbor_bottom = _zoom_in_button.get_path()
+	_elevation_increase.focus_neighbor_bottom = _elevation_decrease.get_path()
+	_elevation_decrease.focus_neighbor_top = _elevation_increase.get_path()
+	_horizontal_decrease.focus_neighbor_right = _horizontal_increase.get_path()
+	_horizontal_increase.focus_neighbor_left = _horizontal_decrease.get_path()
+	_power_decrease.focus_neighbor_right = _power_slider.get_path()
+	_power_slider.focus_neighbor_left = _power_decrease.get_path()
+	_power_slider.focus_neighbor_right = _power_increase.get_path()
+	_power_increase.focus_neighbor_left = _power_slider.get_path()
 	_shortcut_close_button.focus_next = _shortcut_button.get_path()
 	_shortcut_close_button.focus_previous = _shortcut_button.get_path()

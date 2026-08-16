@@ -18,8 +18,8 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	_assert(hud.get_node_or_null("Root/AimPanel") is PanelContainer, "Normal play needs one compact aim panel.")
-	_assert(hud.get_node_or_null("Root/ActionDock") is PanelContainer, "Normal play needs one compact action dock.")
-	_assert(hud.get_node_or_null("Root/CameraDock") is PanelContainer, "Normal play needs one compact camera dock.")
+	_assert(hud.get_node_or_null("Root/ShotPanel") is PanelContainer, "Normal play needs one compact power/fire panel.")
+	_assert(hud.get_node_or_null("Root/TopActions") is PanelContainer, "Normal play needs one compact top action strip.")
 	_assert(hud.get_node_or_null("Root/GoalProgress") is PanelContainer, "Normal play needs one compact goal tally.")
 	_assert(hud.get_node_or_null("Root/LauncherSource") is PanelContainer, "Normal play needs one compact cannon-source selector.")
 	_assert((hud.get_node("Root/LauncherSource") as Control).visible, "Every level must show the cannon-position selector.")
@@ -39,24 +39,22 @@ func _run() -> void:
 	var normal_controls: Array[Control] = [
 		hud.get_node("%LauncherSourcePrevious"),
 		hud.get_node("%LauncherSourceNext"),
-		hud.get_node("%HorizontalDecrease"),
-		hud.get_node("%HorizontalSlider"),
-		hud.get_node("%HorizontalIncrease"),
-		hud.get_node("%ElevationDecrease"),
-		hud.get_node("%ElevationSlider"),
-		hud.get_node("%ElevationIncrease"),
-		hud.get_node("%PowerDecrease"),
-		hud.get_node("%PowerSlider"),
-		hud.get_node("%PowerIncrease"),
-		hud.get_node("%ZoomInButton"),
-		hud.get_node("%CameraResetButton"),
-		hud.get_node("%ZoomOutButton"),
-		hud.get_node("%ShortcutButton"),
 		hud.get_node("%ObliqueButton"),
 		hud.get_node("%CannonButton"),
 		hud.get_node("%FollowButton"),
 		hud.get_node("%RetryButton"),
+		hud.get_node("%ZoomInButton"),
+		hud.get_node("%CameraResetButton"),
+		hud.get_node("%ZoomOutButton"),
+		hud.get_node("%ShortcutButton"),
 		hud.get_node("%PauseButton"),
+		hud.get_node("%ElevationIncrease"),
+		hud.get_node("%HorizontalDecrease"),
+		hud.get_node("%HorizontalIncrease"),
+		hud.get_node("%ElevationDecrease"),
+		hud.get_node("%PowerDecrease"),
+		hud.get_node("%PowerSlider"),
+		hud.get_node("%PowerIncrease"),
 		hud.get_node("%FireButton"),
 	]
 	for control in normal_controls:
@@ -80,18 +78,24 @@ func _run() -> void:
 
 	var center_seventy := Rect2(Vector2(192.0, 108.0), Vector2(896.0, 504.0))
 	_assert(not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(center_seventy), "Aim panel must not occupy the center 70%.")
-	_assert(not (hud.get_node("Root/ActionDock") as Control).get_global_rect().intersects(center_seventy), "Action dock must not occupy the center 70%.")
-	_assert(not (hud.get_node("Root/CameraDock") as Control).get_global_rect().intersects(center_seventy), "Camera dock must not occupy the center 70%.")
+	_assert(not (hud.get_node("Root/ShotPanel") as Control).get_global_rect().intersects(center_seventy), "Power/fire panel must not occupy the center 70%.")
+	_assert(not (hud.get_node("Root/TopActions") as Control).get_global_rect().intersects(center_seventy), "Top action strip must not occupy the center 70%.")
 	for control_name in [
 		"HorizontalValue", "HorizontalDecrease", "HorizontalSlider", "HorizontalIncrease",
 		"ElevationValue", "ElevationDecrease", "ElevationSlider", "ElevationIncrease",
-		"PowerValue", "PowerDecrease", "PowerSlider", "PowerIncrease",
 	]:
 		_assert(
 			(hud.get_node("Root/AimPanel") as Control).get_global_rect().encloses(
 				(hud.get_node("%%%s" % control_name) as Control).get_global_rect()
 			),
 			"Aim panel must enclose the complete control: %s." % control_name
+		)
+	for control_name in ["PowerValue", "PowerDecrease", "PowerSlider", "PowerIncrease", "FireButton"]:
+		_assert(
+			(hud.get_node("Root/ShotPanel") as Control).get_global_rect().encloses(
+				(hud.get_node("%%%s" % control_name) as Control).get_global_rect()
+			),
+			"Power/fire dock must enclose the complete control: %s." % control_name
 		)
 	var normal_primary_count := 0
 	for node in _all_descendants(hud):
@@ -103,7 +107,7 @@ func _run() -> void:
 	hud.set_launch_availability(1, false)
 	await process_frame
 	var fire_button := hud.get_node("%FireButton") as Button
-	var action_dock := hud.get_node("Root/ActionDock") as Control
+	var action_dock := hud.get_node("Root/ShotPanel") as Control
 	_assert(
 		fire_button.size.x >= 112.0 and action_dock.get_global_rect().encloses(fire_button.get_global_rect()),
 		"Selected cannon view must not squeeze or clip Fire; fire %s, dock %s." % [
@@ -265,7 +269,7 @@ func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: Str
 	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
 	var paths := [
 		"Root/GoalProgress", "Root/LauncherSource", "Root/AimPanel",
-		"Root/ActionDock", "Root/CameraDock",
+		"Root/ShotPanel", "Root/TopActions",
 	]
 	if hud.is_shortcut_panel_visible():
 		paths.append("Root/ShortcutPanel")
@@ -277,7 +281,7 @@ func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: Str
 		)
 	_assert(
 		not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(
-			(hud.get_node("Root/ActionDock") as Control).get_global_rect()
+			(hud.get_node("Root/ShotPanel") as Control).get_global_rect()
 		),
 		"Aim and action docks must not overlap at %s." % label
 	)
