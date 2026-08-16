@@ -13,7 +13,15 @@ Create durable planning artifacts only when they reduce material uncertainty or
 execution risk, and give future executors one decision-complete contract and one
 progress source.
 
-## When a Durable Artifact Is Required
+## Scope
+
+This policy governs every research checklist and execution contract stored
+under `.agents/execplans/`. It does not make a durable plan mandatory for small,
+low-risk work that repository guidance and a concise task response can govern.
+
+## Rules
+
+### When a Durable Artifact Is Required
 
 Use one for:
 
@@ -32,11 +40,20 @@ Do not use one for:
 - routine append-only note capture;
 - work where repository instructions and a concise chat update are sufficient.
 
-## Canonical Location and Naming
+### Canonical Location and Naming
 
 - Treat this file as policy, not as an active task plan.
 - Store every durable research checklist or execution contract under
   `.agents/execplans/`.
+- Keep task-specific findings in the relevant artifact. Store synthesized
+  evidence reused by multiple plans under `.agents/research/` and record each
+  consuming plan's accepted or rejected implications locally.
+- Store retained screenshots, logs, measurements, render comparisons,
+  validation transcripts, and other proof under `.agents/evidence/`; link them
+  instead of embedding large raw artifacts in the plan.
+- When an accepted research conclusion becomes a project constraint, update its
+  canonical specification, decision record, or runbook and keep the research
+  advisory.
 - Name each artifact `YYYY-MM-DD-<outcome-slug>.md` with a short lowercase ASCII
   kebab-case outcome.
 - Do not add `plan`, `execplan`, `final`, `v2`, model names, or session IDs to
@@ -52,7 +69,7 @@ Do not use one for:
 `.agents/Plan.md` is a compatibility pointer only. It is never an active plan or
 template.
 
-## Planning Modes
+### Planning Modes
 
 - A research or decision checklist may contain bounded investigation and open
   questions because resolving them is its work. It must not imply implementation
@@ -73,7 +90,7 @@ An execution contract contains only the sections that prevent a real failure:
 - Progress and Next Steps
 - Completion and Stop Conditions
 
-## Checkpoint and Rework Rules
+### Checkpoint and Rework Rules
 
 - Use task checkboxes in the relevant active artifact as the only task-progress
   ledger.
@@ -90,7 +107,7 @@ An execution contract contains only the sections that prevent a real failure:
 - Do not mirror active task state into `Documentation.md`, policy files, or a
   second plan.
 
-## Lifecycle
+### Lifecycle
 
 - Use `type: plan` and `status: active` while a planning artifact is current.
 - Change an execution contract to `done` only after its implementation acceptance
