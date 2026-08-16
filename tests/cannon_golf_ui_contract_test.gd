@@ -199,6 +199,12 @@ func _run() -> void:
 		_assert(_find_named(course_select, removed) == null, "Course-select filler must be absent: %s." % removed)
 	for required in ["Play", "CourseSelect", "Settings", "Quit"]:
 		_assert(_find_named(main_menu, required) is Button, "Main menu must retain %s." % required)
+	var brand_panel := main_menu.get_node("BrandPanel") as PanelContainer
+	var menu_title := main_menu.get_node("BrandPanel/Margin/Content/Title") as Label
+	_assert(is_equal_approx(brand_panel.size.x, 356.0), "Main-menu panel must retain its compact width.")
+	_assert(menu_title.text == "CANNON\nGOLF", "Main-menu title must use the compact two-line lockup.")
+	_assert(menu_title.get_theme_font_size(&"font_size") == 60, "Main-menu title must retain the compact type size.")
+	_assert(is_equal_approx((main_menu.get_node("%Play") as Button).size.x, 288.0), "Main-menu actions must retain their compact width.")
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	_assert(
@@ -235,10 +241,17 @@ func _run() -> void:
 			pressed_cards += 1
 	_assert(pressed_cards == 1, "Only one course card may appear selected.")
 	_assert(course_select.course_buttons()[1].has_focus(), "Selected course card must own keyboard focus.")
-	_assert(
-		course_select.course_buttons()[1].get_theme_stylebox(&"focus") != course_select.course_buttons()[1].get_theme_stylebox(&"pressed"),
-		"Course-card focus and selected styles must remain distinct."
-	)
+	var normal_style := course_select.course_buttons()[1].get_theme_stylebox(&"normal") as StyleBoxFlat
+	var selected_style := course_select.course_buttons()[1].get_theme_stylebox(&"pressed") as StyleBoxFlat
+	var focus_style := course_select.course_buttons()[1].get_theme_stylebox(&"focus") as StyleBoxFlat
+	_assert(normal_style.shadow_size == 0 and normal_style.corner_radius_top_left == 6, "Course rows must not look like floating cards.")
+	_assert(selected_style.border_width_left == 3 and selected_style.border_width_top == 0 \
+			and selected_style.border_width_right == 0 and selected_style.border_width_bottom == 0,
+		"Selected course rows must use one left-edge accent.")
+	_assert(focus_style.border_width_left == 2 and focus_style.expand_margin_left == 0.0 \
+			and focus_style.expand_margin_top == 0.0 and focus_style.expand_margin_right == 0.0 \
+			and focus_style.expand_margin_bottom == 0.0,
+		"Course-card focus must remain visible without an expanded outline.")
 	quit(1 if _failed else 0)
 
 

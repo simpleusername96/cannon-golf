@@ -55,7 +55,7 @@ horizontal_scroll_mode = 0
 [node name="Cards" type="VBoxContainer" parent="CardsPanel/Margin/Scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 6
 
 [node name="Back" type="Button" parent="."]
 unique_name_in_owner = true

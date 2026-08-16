@@ -27,15 +27,15 @@ color = Color(0.98, 0.97, 0.94, 0.58)
 [node name="BrandPanel" type="PanelContainer" parent="."]
 layout_mode = 0
 offset_left = 56.0
-offset_top = 158.0
-offset_right = 500.0
-offset_bottom = 562.0
+offset_top = 112.0
+offset_right = 412.0
+offset_bottom = 608.0
 
 [node name="Margin" type="MarginContainer" parent="BrandPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 34
+theme_override_constants/margin_left = 33
 theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 34
+theme_override_constants/margin_right = 33
 theme_override_constants/margin_bottom = 30
 
 [node name="Content" type="VBoxContainer" parent="BrandPanel/Margin"]
@@ -45,7 +45,8 @@ theme_override_constants/separation = 12
 [node name="Title" type="Label" parent="BrandPanel/Margin/Content"]
 layout_mode = 2
 theme_type_variation = &"MenuTitle"
-text = "CANNON GOLF"
+theme_override_constants/line_spacing = -8
+text = "CANNON\nGOLF"
 
 [node name="Spacer" type="Control" parent="BrandPanel/Margin/Content"]
 custom_minimum_size = Vector2(0, 10)
