@@ -471,6 +471,7 @@ func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void
 	)
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
+	_hud.set_level(course_index)
 	_hud.set_goal_progress(completed_goal_indices.size(), _course_builder.leg_count())
 	_sync_launcher_sources()
 	_refresh_hud_availability()

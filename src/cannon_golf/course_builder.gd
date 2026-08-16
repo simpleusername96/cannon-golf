@@ -160,7 +160,12 @@ func select_launcher_source(goal_index: int) -> bool:
 	if goal_index >= 0:
 		source_position = goals[goal_index].position + Vector3.UP * 0.05
 	launcher.position = source_position
-	launcher.shot_axis_yaw_degrees = _map_center_yaw(source_position)
+	# A completed checkpoint owns the next generated leg's protected departure
+	# corridor. Reuse that authored axis instead of aiming at the map center,
+	# which can send the default shot straight into an unrelated ridge.
+	launcher.shot_axis_yaw_degrees = prepared_course.legs[goal_index + 1].shot_axis_yaw_degrees \
+			if goal_index >= 0 and goal_index + 1 < prepared_course.legs.size() \
+			else _map_center_yaw(source_position)
 	launcher.set_setup(50.0, 50.0, 50.0)
 	course.cannon_position = source_position
 	course.shot_axis_yaw_degrees = launcher.shot_axis_yaw_degrees

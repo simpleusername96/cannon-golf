@@ -67,9 +67,8 @@ func set_selected_course_index(index: int) -> bool:
 func apply_language(language: String) -> void:
 	_language = language
 	var english := language == "en"
-	$Heading.text = "COURSE SELECT" if english else "코스 선택"
+	$Heading.text = "LEVEL SELECT" if english else "레벨 선택"
 	_back.text = "BACK" if english else "뒤로"
-	_start.text = "START COURSE" if english else "코스 시작"
 	_refresh_course_copy()
 
 
@@ -92,10 +91,11 @@ func _refresh_course_copy() -> void:
 	elif _preparation_state == CoursePreparationState.FAILED:
 		_start.text = "PREPARATION FAILED" if _language == "en" else "준비 실패"
 	else:
-		_start.text = "START COURSE" if _language == "en" else "코스 시작"
+		var level := CannonGolfCourseCatalog.level_label(_selected_course_index)
+		_start.text = "START %s" % level if _language == "en" else "%s 시작" % level
 	for index in range(_course_buttons.size()):
 		var button := _course_buttons[index]
-		button.text = _course_label(_courses[index])
+		button.text = _course_label(index)
 		button.set("accessibility_name", button.text)
 		button.button_pressed = _selected_course_index == index
 
@@ -110,7 +110,7 @@ func _build_course_buttons() -> void:
 	_course_buttons.clear()
 	for index in range(_courses.size()):
 		var button := Button.new()
-		button.name = "Course%02d" % (index + 1)
+		button.name = "Level%02d" % (index + 1)
 		button.custom_minimum_size = Vector2(0.0, 68.0)
 		button.theme_type_variation = &"StageCardButton"
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
@@ -173,7 +173,8 @@ func _install_course_focus_order() -> void:
 	_start.focus_previous = _course_buttons[-1].get_path()
 
 
-func _course_label(course: CannonGolfCourseData) -> String:
-	if _language != "en":
-		return course.display_name
-	return String(course.course_id).replace("_", " ").to_upper()
+func _course_label(index: int) -> String:
+	var level := CannonGolfCourseCatalog.level_label(index)
+	var rank := "%d / %d" % [index + 1, CannonGolfCourseCatalog.level_count()]
+	return "%s  ·  DIFFICULTY %s" % [level, rank] if _language == "en" \
+			else "%s  ·  난이도 %s" % [level, rank]

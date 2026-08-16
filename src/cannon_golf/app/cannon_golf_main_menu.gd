@@ -31,7 +31,7 @@ func begin_passive_focus_session() -> void:
 func apply_language(language: String) -> void:
 	var english := language == "en"
 	_play.text = "PLAY" if english else "플레이"
-	_course_select.text = "COURSE SELECT" if english else "코스 선택"
+	_course_select.text = "LEVEL SELECT" if english else "레벨 선택"
 	_settings.text = "SETTINGS" if english else "설정"
 	_quit.text = "QUIT" if english else "종료"
 

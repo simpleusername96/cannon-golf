@@ -31,5 +31,15 @@ static func index_of(course_id: StringName) -> int:
 	return -1
 
 
+## Public level numbering follows catalog order. Authored course names and IDs
+## remain internal terrain/content identities.
+static func level_label(index: int) -> String:
+	return "LV %d" % (clampi(index, 0, all_courses().size() - 1) + 1)
+
+
+static func level_count() -> int:
+	return all_courses().size()
+
+
 static func prepared_path_for(course: CannonGolfCourseData) -> String:
 	return "res://resources/cannon_golf/prepared/%s.res" % course.course_id if course != null and not course.course_id.is_empty() else ""

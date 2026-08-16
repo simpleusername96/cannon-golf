@@ -71,7 +71,7 @@ script = ExtResource("4_reticle")
 layout_mode = 0
 offset_left = 24.0
 offset_top = 24.0
-offset_right = 140.0
+offset_right = 184.0
 offset_bottom = 66.0
 mouse_filter = 2
 theme_type_variation = &"HudStagePanel"
@@ -80,16 +80,16 @@ theme_type_variation = &"HudStagePanel"
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HudSection"
-text = "골 0 / 1"
+text = "LV 1 · 골 0 / 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="LauncherSource" type="PanelContainer" parent="Root"]
 visible = false
 layout_mode = 0
-offset_left = 148.0
+offset_left = 192.0
 offset_top = 24.0
-offset_right = 340.0
+offset_right = 384.0
 offset_bottom = 68.0
 mouse_filter = 2
 theme_type_variation = &"HudDockPanel"
@@ -459,7 +459,7 @@ text = "Shift + R"
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HudBody"
-text = "코스 초기화"
+text = "레벨 다시 시작"
 [node name="ViewKey" type="Label" parent="Root/ShortcutPanel/Margin/Rows/Items"]
 layout_mode = 2
 theme_type_variation = &"HudCaption"
@@ -711,7 +711,7 @@ theme_override_constants/separation = 18
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"ResultTitle"
-text = "완료"
+text = "LV 1 완료"
 horizontal_alignment = 1
 
 [node name="ResultPrimary" type="Button" parent="Root/ResultOverlay/Panel/Margin/Rows"]
@@ -719,7 +719,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 theme_type_variation = &"PrimaryButton"
-text = "다음 코스"
+text = "LV 2 시작"
 
 [node name="PauseOverlay" type="Control" parent="Root"]
 unique_name_in_owner = true
@@ -792,7 +792,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_type_variation = &"QuietButton"
-text = "코스 초기화"
+text = "레벨 다시 시작"
 
 [node name="PauseSettings" type="Button" parent="Root/PauseOverlay/Center/Panel/Margin/Rows"]
 unique_name_in_owner = true
@@ -806,7 +806,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 theme_type_variation = &"QuietButton"
-text = "코스 선택"
+text = "레벨 선택"
 
 [node name="PauseMainMenu" type="Button" parent="Root/PauseOverlay/Center/Panel/Margin/Rows"]
 unique_name_in_owner = true

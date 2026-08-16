@@ -61,6 +61,8 @@ var _camera_mode: StringName = &"planning"
 var _language := "ko"
 var _completed_goal_count := 0
 var _total_goal_count := 1
+var _level_index := 0
+var _result_has_next := false
 var _launcher_sources: Array[int] = [-1]
 var _selected_launcher_source := -1
 var _syncing_launcher_sources := false
@@ -151,6 +153,11 @@ func set_goal_progress(completed_goal_count: int, total_goal_count: int) -> void
 	_update_goal_progress_copy()
 
 
+func set_level(index: int) -> void:
+	_level_index = clampi(index, 0, CannonGolfCourseCatalog.level_count() - 1)
+	_update_goal_progress_copy()
+
+
 func set_launcher_sources(completed_goal_indices: Array[int], selected_goal_index: int) -> void:
 	_launcher_sources.clear()
 	_launcher_sources.append(-1)
@@ -175,13 +182,14 @@ func set_camera_mode(mode: StringName) -> void:
 	_refresh_camera_buttons()
 
 
-func show_clear(_course: CannonGolfCourseData, has_next: bool) -> void:
+func show_clear(course: CannonGolfCourseData, has_next: bool) -> void:
 	_end_step_hold()
 	set_shortcut_panel_visible(false)
-	var english := _language == "en"
-	_result_title.text = "COMPLETE" if english else "완료"
-	_result_primary.text = ("NEXT COURSE" if english else "다음 코스") if has_next \
-			else ("PLAY AGAIN" if english else "다시 하기")
+	var resolved_index := CannonGolfCourseCatalog.index_of(course.course_id) if course != null else -1
+	if resolved_index >= 0:
+		_level_index = resolved_index
+	_result_has_next = has_next
+	_update_result_copy()
 	_result_overlay.visible = true
 	_result_primary.grab_focus.call_deferred()
 
@@ -247,7 +255,7 @@ func apply_language(language: String) -> void:
 	%ShortcutFire.text = "Fire" if english else "발사"
 	%ShortcutPlanning.text = "Return to aim" if english else "조준으로 복귀"
 	%ShortcutRetry.text = "Relaunch same setup" if english else "같은 설정 재발사"
-	%ShortcutReset.text = "Reset course" if english else "코스 초기화"
+	%ShortcutReset.text = "Restart level" if english else "레벨 다시 시작"
 	%ShortcutView.text = "Overview / cannon view" if english else "전체 / 대포 시점"
 	%DragKey.text = "L / R Drag" if english else "좌 / 우 드래그"
 	%ShortcutDrag.text = "Move / orbit view" if english else "화면 이동 / 회전"
@@ -261,11 +269,12 @@ func apply_language(language: String) -> void:
 	%PauseTitle.text = "PAUSED" if english else "일시정지"
 	%Resume.text = "RESUME" if english else "계속하기"
 	_pause_retry.text = "RELAUNCH" if english else "같은 설정으로 재발사"
-	%PauseReset.text = "RESET COURSE" if english else "코스 초기화"
+	%PauseReset.text = "RESTART LEVEL" if english else "레벨 다시 시작"
 	%PauseSettings.text = "SETTINGS" if english else "설정"
-	%PauseStages.text = "COURSE SELECT" if english else "코스 선택"
+	%PauseStages.text = "LEVEL SELECT" if english else "레벨 선택"
 	%PauseMainMenu.text = "MAIN MENU" if english else "메인 메뉴"
 	_update_goal_progress_copy()
+	_update_result_copy()
 	_rebuild_launcher_source_items()
 	set_launch_availability(_active_shot_count, _cleared)
 	_refresh_camera_buttons()
@@ -309,10 +318,27 @@ func _update_setup_labels() -> void:
 
 
 func _update_goal_progress_copy() -> void:
-	_goal_progress_label.text = ("GOALS %d / %d" if _language == "en" else "골 %d / %d") % [
+	var progress := ("GOALS %d / %d" if _language == "en" else "골 %d / %d") % [
 		_completed_goal_count,
 		_total_goal_count,
 	]
+	_goal_progress_label.text = "%s · %s" % [
+		CannonGolfCourseCatalog.level_label(_level_index),
+		progress,
+	]
+
+
+func _update_result_copy() -> void:
+	if _result_title == null or _result_primary == null:
+		return
+	var english := _language == "en"
+	var level := CannonGolfCourseCatalog.level_label(_level_index)
+	_result_title.text = "%s COMPLETE" % level if english else "%s 완료" % level
+	if _result_has_next:
+		var next_level := CannonGolfCourseCatalog.level_label(_level_index + 1)
+		_result_primary.text = "START %s" % next_level if english else "%s 시작" % next_level
+	else:
+		_result_primary.text = "REPLAY %s" % level if english else "%s 다시 하기" % level
 
 
 func _rebuild_launcher_source_items() -> void:

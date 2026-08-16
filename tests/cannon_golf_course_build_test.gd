@@ -57,6 +57,14 @@ func _run() -> void:
 						and builder.launcher.power_percent == 50.0,
 				"Every newly selected source must use the canonical defaults."
 			)
+			if goal_index + 1 < builder.prepared_course.legs.size():
+				_assert_true(
+					is_equal_approx(
+						builder.launcher.shot_axis_yaw_degrees,
+						builder.prepared_course.legs[goal_index + 1].shot_axis_yaw_degrees
+					),
+					"A relay source must face its generated outgoing corridor."
+				)
 		if course.leg_count() > 1:
 			_assert_true(not builder.launcher.position.is_equal_approx(first_anchor), "A multi-goal course must relocate its reusable launcher.")
 		_assert_true(builder.select_launcher_source(-1), "Builder must restore the original source for the next build.")

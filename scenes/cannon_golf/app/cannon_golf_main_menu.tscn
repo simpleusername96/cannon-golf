@@ -63,7 +63,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_type_variation = &"QuietButton"
-text = "코스 선택"
+text = "레벨 선택"
 
 [node name="Settings" type="Button" parent="BrandPanel/Margin/Content"]
 unique_name_in_owner = true
