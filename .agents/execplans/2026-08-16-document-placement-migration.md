@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-16
 scope: Separate Cannon Golf product specifications from reusable agent research while preserving the canonical owner decision queue
 ---
@@ -60,7 +60,8 @@ Known link owners are root `AGENTS.md`, `project-specs/cannon-golf/AGENTS.md`, t
 - [x] **3.1 Run `git diff --check`, path existence checks, and `git diff --name-status -- AGENTS.md project-specs docs .agents`.**
   - Accept: only migration-owned documentation paths changed; no runtime, asset, resource, or test path is staged.
   - Evidence: patch hygiene, exact staged-scope comparison, target/source existence checks, and stale-link checks passed; unrelated implementation files remain unstaged.
-- [ ] **3.2 Record evidence, set `status: done`, and commit the scoped migration.**
+- [x] **3.2 Record evidence, set `status: done`, and commit the scoped migration.**
+  - Evidence: commit `2031a22` contains only the two research moves, placement guidance, consuming-link repairs, and this contract's validated implementation progress.
 
 ## Validation and Rework Controls
 
@@ -77,9 +78,9 @@ Known link owners are root `AGENTS.md`, `project-specs/cannon-golf/AGENTS.md`, t
 ## Progress and Next Steps
 
 - Canonical progress: this contract's checkboxes.
-- Current phase: Phase 3, migration implementation validated.
-- Next task: 3.2 Commit the scoped migration, then close this contract in a separate plan-state commit.
-- Last completed gate: scoped stage, patch hygiene, source/target path, lifecycle, and stale-link validation.
+- Current phase: Complete.
+- Next task: None.
+- Last completed gate: scoped migration commit `2031a22`; source/target path, lifecycle, patch hygiene, and stale-link validation passed before commit.
 
 ## Completion and Stop Conditions
 
