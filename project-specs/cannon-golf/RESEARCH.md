@@ -276,3 +276,45 @@ persistent-log growth and no remaining owned process:
   placement-device tolerances, and confirmed-ball collision treatment still
   require owner decisions. The direct-shot certification tolerance is accepted
   separately in `DECISIONS.md` D-032.
+
+## HUD external-model review, 2026-08-16
+
+Antigravity job `20260816T113512517Z-f6364710-43a1-4eb2-b0ac-febe14b9128d`
+reviewed the current HUD scene, script, specifications, and fresh 1280 by 720
+planning, cannon, and shortcut captures. Its saved answer is immutable at
+`C:\Users\BK\.codex\tools\model-cli-mcp\logs\jobs\20260816T113512517Z-f6364710-43a1-4eb2-b0ac-febe14b9128d\answer.md`.
+The saved artifact contains an explicit truncated middle section, so only its
+preserved statements are treated as external-model evidence. A later concise
+job did not reconstruct the missing content and is not used as substitute
+evidence.
+
+Codex accepted these points after checking them against the current source and
+product rules:
+
+- Keep the bottom-center cannon and near-ground view clear. The current 792 px
+  aim panel crosses the screen center and obscures the cannon-view origin.
+- Standardize the top status/source controls to one baseline and about 48 px
+  height; standardize bottom control surfaces to one baseline and about 80 px
+  height.
+- Keep all three aim modules editable in both overview and cannon views. Do not
+  solve occlusion by hiding the controls.
+- Replace the current single wrapping focus chain with spatially coherent
+  cluster navigation that matches visible control groups.
+- Keep Fire fixed as the sole primary action. Reveal Follow and Quick Retry only
+  when a live ball makes those decisions relevant, expanding leftward without
+  moving Fire.
+- Treat overview zoom/reset as overview-only exploration controls. Cannon view
+  is a fixed aim preset, so it must not present the same exploration dock.
+- Prefer short text for the two persistent view choices and familiar icons only
+  for unambiguous utility actions; the current Unicode view/follow glyphs do not
+  explain their state well enough.
+
+Rejected directions:
+
+- World-space target cards, a complete trajectory, or a predicted landing
+  marker.
+- Dashboard cards, multiple tabs, or permanently expanded help.
+- Drag-only aiming that removes the exact steppers, sliders, values, and key
+  pairs required by D-027.
+- Collapsing aim controls in cannon view, borderless controls without a clear
+  focus state, or color-only selected/disabled state.
