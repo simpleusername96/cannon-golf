@@ -18,3 +18,11 @@ screenshots/*.png.import
 docs/**/*.import
 project-specs/**/*.import
 resources/generated_stage_catalogs/.*.staging/
+
+# Local course-generation experiments are not runtime inputs.
+resources/cannon_golf/prepared.failed/
+resources/cannon_golf/prepared.failed2/
+resources/cannon_golf/prepared.next/
+resources/cannon_golf/prepared.preview/
+resources/cannon_golf/prepared.rollback/
+tests/tmp_*.gd*

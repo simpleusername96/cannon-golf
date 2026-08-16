@@ -1,0 +1,257 @@
+name: Verify and deploy itch.io Web build
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".agents/**"
+      - "docs/**"
+      - "project-specs/**"
+      - "screenshots/**"
+      - ".editorconfig"
+      - ".gitattributes"
+      - ".gitignore"
+      - "AGENTS.md"
+      - "README.md"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the verified Web build to itch.io
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cannon-golf-itch-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_RELEASE: 4.7.1-stable
+  GODOT_TEMPLATE_VERSION: 4.7.1.stable
+  ITCH_PROJECT_URL: https://itchioprofile1351321.itch.io/cannon-golf
+
+jobs:
+  verify-build-publish:
+    name: Verify, build, and publish when authorized
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check deployment credential
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        shell: pwsh
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:BUTLER_API_KEY)) {
+              throw 'The BUTLER_API_KEY GitHub Actions secret is missing.'
+          }
+
+      - name: Resolve exact itch.io project target
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        shell: pwsh
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $headers = @{ Authorization = "Bearer $env:BUTLER_API_KEY" }
+          $profile = Invoke-RestMethod -Uri 'https://api.itch.io/profile' -Headers $headers
+          $response = Invoke-RestMethod -Uri 'https://api.itch.io/profile/games' -Headers $headers
+          $expectedUrl = ([Uri]$env:ITCH_PROJECT_URL).AbsoluteUri.TrimEnd('/')
+          $matches = @($response.games | Where-Object {
+              ([Uri]$_.url).AbsoluteUri.TrimEnd('/') -ieq $expectedUrl
+          })
+          if ($matches.Count -ne 1) {
+              throw "Expected one itch.io project at '$expectedUrl', found $($matches.Count)."
+          }
+
+          $gameUrl = [Uri]$matches[0].url
+          if ($gameUrl.Scheme -ne 'https' -or -not $gameUrl.Host.EndsWith('.itch.io')) {
+              throw "Unexpected itch.io project URL: $gameUrl"
+          }
+          $username = $gameUrl.Host.Substring(0, $gameUrl.Host.Length - '.itch.io'.Length)
+          $slug = $gameUrl.AbsolutePath.Trim('/')
+          if ([string]::IsNullOrWhiteSpace($username) -or
+              [string]::IsNullOrWhiteSpace($slug) -or $slug.Contains('/')) {
+              throw "Could not derive a Butler target from $gameUrl"
+          }
+          if ([string]$profile.user.username -ne $username) {
+              throw "The API key belongs to '$($profile.user.username)', but the project belongs to '$username'."
+          }
+
+          "ITCH_WEB_TARGET=${username}/${slug}:html5" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Resolved itch.io project: $($gameUrl.AbsoluteUri)"
+
+      - name: Restore pinned Godot tools
+        id: godot-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: |
+            ~/.cache/cannon-golf/godot/4.7.1-stable
+            ~/.local/share/godot/export_templates/4.7.1.stable
+          key: cannon-golf-godot-${{ runner.os }}-4.7.1-stable-web-v1
+
+      - name: Prepare pinned Godot editor and Web template
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          function Assert-FileHash {
+              param(
+                  [Parameter(Mandatory = $true)][string]$Path,
+                  [Parameter(Mandatory = $true)][string]$Algorithm,
+                  [Parameter(Mandatory = $true)][string]$Expected
+              )
+              $actual = (Get-FileHash -LiteralPath $Path -Algorithm $Algorithm).Hash
+              if ($actual -ne $Expected) {
+                  throw "Checksum mismatch for $Path. Expected $Expected, received $actual."
+              }
+          }
+
+          $toolRoot = Join-Path $env:HOME ".cache/cannon-golf/godot/$env:GODOT_RELEASE"
+          $godotName = "Godot_v$($env:GODOT_RELEASE)_linux.x86_64"
+          $godotPath = Join-Path $toolRoot $godotName
+          $templateRoot = Join-Path $env:HOME ".local/share/godot/export_templates/$env:GODOT_TEMPLATE_VERSION"
+          $templatePath = Join-Path $templateRoot 'web_nothreads_release.zip'
+
+          if (-not (Test-Path -LiteralPath $godotPath -PathType Leaf)) {
+              New-Item -ItemType Directory -Path $toolRoot -Force | Out-Null
+              $godotArchive = Join-Path $env:RUNNER_TEMP "Godot_v$($env:GODOT_RELEASE)_linux.x86_64.zip"
+              $godotUrl = "https://github.com/godotengine/godot-builds/releases/download/$env:GODOT_RELEASE/Godot_v$($env:GODOT_RELEASE)_linux.x86_64.zip"
+              Invoke-WebRequest -UseBasicParsing -Uri $godotUrl -OutFile $godotArchive
+              Assert-FileHash -Path $godotArchive -Algorithm SHA512 -Expected '4CCDAB7A48EECCBE8819A2FC1F6262F8D72065D98601BCB3743FCBD7EBD39F373758A788EE3293A05EC5B2C48538266C437404312E372225CD2DF273945A2DE9'
+              Expand-Archive -LiteralPath $godotArchive -DestinationPath $toolRoot -Force
+          }
+
+          if (-not (Test-Path -LiteralPath $templatePath -PathType Leaf)) {
+              New-Item -ItemType Directory -Path $templateRoot -Force | Out-Null
+              $templateArchive = Join-Path $env:RUNNER_TEMP "Godot_v$($env:GODOT_RELEASE)_export_templates.tpz"
+              $templateUrl = "https://github.com/godotengine/godot-builds/releases/download/$env:GODOT_RELEASE/Godot_v$($env:GODOT_RELEASE)_export_templates.tpz"
+              Invoke-WebRequest -UseBasicParsing -Uri $templateUrl -OutFile $templateArchive
+              Assert-FileHash -Path $templateArchive -Algorithm SHA512 -Expected 'AFCC83D8D3D298038F19C58744A0D660FA75DD4BAA33CB55D1011BB2565A2A8C2381728924564CB909E37C205A23F21B521B23BD057993AFD43AE4DA0B2F9D47'
+
+              Add-Type -AssemblyName System.IO.Compression.FileSystem
+              $archive = [System.IO.Compression.ZipFile]::OpenRead($templateArchive)
+              try {
+                  $entry = $archive.GetEntry('templates/web_nothreads_release.zip')
+                  if ($null -eq $entry) {
+                      throw 'Godot template archive does not contain templates/web_nothreads_release.zip.'
+                  }
+                  [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $templatePath, $true)
+              }
+              finally {
+                  $archive.Dispose()
+              }
+          }
+
+          & chmod '+x' '--' $godotPath
+          $reportedVersion = (& $godotPath --version).Trim()
+          if ($LASTEXITCODE -ne 0 -or $reportedVersion -notlike '4.7.1.stable*') {
+              throw "Unexpected Godot version: $reportedVersion"
+          }
+          "GODOT_BIN=$godotPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Verify project import and startup
+        shell: pwsh
+        run: ./scripts/verify.ps1 -GodotPath $env:GODOT_BIN
+
+      - name: Run Cannon Golf test suite
+        shell: pwsh
+        run: ./scripts/test-cannon-golf.ps1 -GodotPath $env:GODOT_BIN
+
+      - name: Export and verify Web release
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $releaseDirectory = Join-Path $env:RUNNER_TEMP "cannon-golf-web-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          New-Item -ItemType Directory -Path $releaseDirectory | Out-Null
+          $entryPath = Join-Path $releaseDirectory 'index.html'
+          $output = & $env:GODOT_BIN --headless --path $env:GITHUB_WORKSPACE --export-release Web $entryPath 2>&1
+          $exitCode = $LASTEXITCODE
+          $output | ForEach-Object { Write-Host $_ }
+          $outputText = $output | Out-String
+          if ($exitCode -ne 0) {
+              throw "Web release export failed with exit code $exitCode."
+          }
+          if ($outputText -match '(?m)^(SCRIPT ERROR|ERROR):') {
+              throw 'Web release export reported a script or runtime error.'
+          }
+          if (-not (Test-Path -LiteralPath $entryPath -PathType Leaf)) {
+              throw "Web release did not produce $entryPath."
+          }
+
+          $shortCommit = $env:GITHUB_SHA.Substring(0, 7)
+          $buildVersion = "alpha.$env:GITHUB_RUN_NUMBER+$shortCommit"
+          $pckPath = Join-Path $releaseDirectory 'index.pck'
+          $pckHash = (Get-FileHash -LiteralPath $pckPath -Algorithm SHA256).Hash
+          @(
+              'Cannon Golf itch.io Web alpha build'
+              "version=$buildVersion"
+              "commit=$env:GITHUB_SHA"
+              "built_at=$([DateTime]::UtcNow.ToString('o'))"
+              "pck_sha256=$pckHash"
+          ) | Set-Content -LiteralPath (Join-Path $releaseDirectory 'build-info.txt') -Encoding utf8
+
+          ./scripts/verify-web-release.ps1 -ReleaseDirectory $releaseDirectory
+          $webBytes = (Get-ChildItem -LiteralPath $releaseDirectory -Recurse -File | Measure-Object -Property Length -Sum).Sum
+          "WEB_RELEASE_DIRECTORY=$releaseDirectory" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "BUILD_VERSION=$buildVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "WEB_BUILD_SHA256=$pckHash" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "WEB_BUILD_BYTES=$webBytes" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Validate and publish verified Web build
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.publish)
+        shell: pwsh
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+
+          $butlerArchive = Join-Path $env:RUNNER_TEMP 'butler-linux-amd64-v15.30.0.zip'
+          $butlerUrl = 'https://github.com/itchio/butler/releases/download/v15.30.0/butler-linux-amd64.zip'
+          Invoke-WebRequest -UseBasicParsing -Uri $butlerUrl -OutFile $butlerArchive
+          $butlerHash = (Get-FileHash -LiteralPath $butlerArchive -Algorithm SHA256).Hash
+          $expectedButlerHash = 'F2CAE7D24EBA0605048F71D0CC056F65C3B7FF9F73724F504C731CF3645BEF08'
+          if ($butlerHash -ne $expectedButlerHash) {
+              throw "Butler checksum mismatch. Expected $expectedButlerHash, received $butlerHash."
+          }
+
+          $butlerRoot = Join-Path $env:RUNNER_TEMP 'butler-v15.30.0'
+          Expand-Archive -LiteralPath $butlerArchive -DestinationPath $butlerRoot -Force
+          $butlerPath = Join-Path $butlerRoot 'linux-amd64/butler'
+          if (-not (Test-Path -LiteralPath $butlerPath -PathType Leaf)) {
+              throw 'The Butler archive did not contain linux-amd64/butler.'
+          }
+          & chmod '+x' '--' $butlerPath
+          & $butlerPath validate $env:WEB_RELEASE_DIRECTORY
+          if ($LASTEXITCODE -ne 0) {
+              throw "Butler validation failed with exit code $LASTEXITCODE."
+          }
+          & $butlerPath push $env:WEB_RELEASE_DIRECTORY $env:ITCH_WEB_TARGET --userversion $env:BUILD_VERSION
+          if ($LASTEXITCODE -ne 0) {
+              throw "Butler Web push failed with exit code $LASTEXITCODE."
+          }
+
+          @(
+              '### itch.io Web deployment'
+              ''
+              "- Browser channel: ``$env:ITCH_WEB_TARGET``"
+              "- Version: ``$env:BUILD_VERSION``"
+              "- Commit: ``$env:GITHUB_SHA``"
+              "- Extracted bytes: ``$env:WEB_BUILD_BYTES``"
+              "- index.pck SHA-256: ``$env:WEB_BUILD_SHA256``"
+          ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
