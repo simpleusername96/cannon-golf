@@ -14,31 +14,22 @@ mouse_filter = 1
 script = ExtResource("1_select")
 theme = ExtResource("1_theme")
 
-[node name="Shade" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.98, 0.97, 0.94, 0.34)
-
 [node name="Heading" type="Label" parent="."]
 layout_mode = 0
-offset_left = 42.0
-offset_top = 28.0
-offset_right = 500.0
-offset_bottom = 78.0
+offset_left = 48.0
+offset_top = 32.0
+offset_right = 360.0
+offset_bottom = 72.0
 theme_type_variation = &"ScreenTitle"
+theme_override_font_sizes/font_size = 28
 text = "레벨 선택"
 
 [node name="Scroll" type="ScrollContainer" parent="."]
 layout_mode = 0
-offset_left = 42.0
-offset_top = 98.0
-offset_right = 420.0
-offset_bottom = 624.0
+offset_left = 48.0
+offset_top = 126.0
+offset_right = 360.0
+offset_bottom = 626.0
 horizontal_scroll_mode = 0
 
 [node name="CourseList" type="VBoxContainer" parent="Scroll"]
@@ -50,26 +41,26 @@ theme_override_constants/separation = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(112, 48)
 layout_mode = 0
-offset_left = 42.0
+offset_left = 48.0
 offset_top = 648.0
-offset_right = 154.0
+offset_right = 160.0
 offset_bottom = 696.0
-theme_type_variation = &"QuietButton"
-text = "뒤로"
+theme_type_variation = &"BareTextButton"
+text = "←  뒤로"
 
 [node name="Start" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(220, 52)
+custom_minimum_size = Vector2(112, 112)
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -262.0
-offset_top = -76.0
-offset_right = -42.0
-offset_bottom = -24.0
+offset_left = -160.0
+offset_top = -144.0
+offset_right = -48.0
+offset_bottom = -32.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_type_variation = &"PrimaryButton"
-text = "LV 1 시작"
+theme_type_variation = &"AmberCircleButton"
+text = "시작"

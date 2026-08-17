@@ -229,16 +229,30 @@ coefficients, stage data formats, or code ownership.
 
 ### Overlay HUD to reuse
 
-- Retain Paint Mountain's Quiet Context qualities: warm paper-white surfaces,
-  navy type, saturated blue for the sole primary action, Pretendard, Korean-first
-  copy, edge alignment, generous padding, and minimal containment.
-- Keep the course center open. Normal play may persist only one compact
-  three-module aim panel, Fire, and overview, cannon-view, ball-follow,
-  quick-retry, pause, a compact completed-goals/total-goals tally, camera, and
-  help icon actions at safe edges. The help icon may open one concise shortcut
-  panel at the upper-right edge; it stays collapsed by default and manages
-  keyboard focus. Put full course reset, settings, course selection, and
-  main-menu navigation in the pause overlay.
+- Preserve the rendered world as the dominant surface. Normal play uses navy
+  typography and controls directly over the world, with no persistent white or
+  cream panel, dashboard card, or mobile-style directional pad. Use a local
+  outline, shadow, or restrained low-alpha line only when a reachable world
+  value would otherwise reduce contrast.
+- Keep the course center open. Put the compact level/goal tally and cannon-source
+  selector at the upper-left, routine view/retry/help/pause actions at the
+  upper-right, and horizontal aim, elevation, power, and Fire on one continuous
+  transparent bottom rail. The setup groups share a baseline instead of owning
+  detached modules. The help icon may open one concise shortcut panel at the
+  upper-right edge; it stays collapsed by default and manages keyboard focus.
+  Put full course reset, settings, course selection, and main-menu navigation in
+  the pause overlay.
+- Fire is the sole primary action during setup. Present it as a circular amber
+  outline action at the far-right end of the bottom rail, not a saturated blue
+  rectangle. Amber also marks current selection; reserve cyan for trajectory and
+  incomplete-goal semantics already present in the world.
+- Course selection keeps one direct, transparent scrolling list beside the
+  unchanged real course preview. Unselected rows have no filled surface. The
+  selected row uses stronger type plus a short amber edge mark and shows goal
+  count once. Opening or changing selection must scroll the selected row into
+  view. Do not add a list card, vertical section divider, difficulty label,
+  stars, score, or duplicated level metadata. Back remains a surface-free text
+  action and Start uses the same circular amber action language as Fire.
 - Use one primary action per state. During launch setup, that action is Fire.
 - After the final goal confirms, place the existing stage-clear panel at the
   viewport center and focus its one primary result action.

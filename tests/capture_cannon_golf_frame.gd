@@ -351,7 +351,7 @@ func _capture() -> void:
 						game._course_builder.goals[0].global_position.z
 					)
 				) \
-				or source_name.text != "골 1" or source_position.text != "대포 위치 2 / 2" \
+				or source_name.text != "골 1" or source_position.text != "2 / 2" \
 				or relay_progress.text != "LV 4 · 골 1 / 2":
 			push_error("Confirmed multi-goal capture did not retain free choice and the selected source.")
 			quit(1)

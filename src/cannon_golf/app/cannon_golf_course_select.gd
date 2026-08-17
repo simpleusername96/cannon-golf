@@ -36,6 +36,7 @@ func _ready() -> void:
 func open() -> void:
 	visible = true
 	focus_primary()
+	_ensure_selected_visible.call_deferred()
 
 
 func focus_primary() -> void:
@@ -55,6 +56,7 @@ func select_course(index: int, emit_signal: bool = true) -> bool:
 	_selected_course_index = index
 	_refresh_course_copy()
 	_course_buttons[index].grab_focus.call_deferred()
+	_ensure_selected_visible.call_deferred()
 	if emit_signal:
 		selection_changed.emit(_selected_course_index)
 	return true
@@ -68,7 +70,7 @@ func apply_language(language: String) -> void:
 	_language = language
 	var english := language == "en"
 	$Heading.text = "LEVEL SELECT" if english else "레벨 선택"
-	_back.text = "BACK" if english else "뒤로"
+	_back.text = "←  BACK" if english else "←  뒤로"
 	_refresh_course_copy()
 
 
@@ -91,13 +93,14 @@ func _refresh_course_copy() -> void:
 	elif _preparation_state == CoursePreparationState.FAILED:
 		_start.text = "PREPARATION FAILED" if _language == "en" else "준비 실패"
 	else:
-		var level := CannonGolfCourseCatalog.level_label(_selected_course_index)
-		_start.text = "START %s" % level if _language == "en" else "%s 시작" % level
+		_start.text = "START" if _language == "en" else "시작"
 	for index in range(_course_buttons.size()):
 		var button := _course_buttons[index]
-		button.text = _course_label(index)
+		button.text = _course_label(index, _selected_course_index == index)
+		button.add_theme_font_size_override(&"font_size", 20 if _selected_course_index == index else 18)
 		button.set("accessibility_name", button.text)
 		button.button_pressed = _selected_course_index == index
+	_ensure_selected_visible.call_deferred()
 
 
 func course_buttons() -> Array[Button]:
@@ -111,8 +114,8 @@ func _build_course_buttons() -> void:
 	for index in range(_courses.size()):
 		var button := Button.new()
 		button.name = "Level%02d" % (index + 1)
-		button.custom_minimum_size = Vector2(0.0, 52.0)
-		button.theme_type_variation = &"QuietButton"
+		button.custom_minimum_size = Vector2(0.0, 58.0)
+		button.theme_type_variation = &"CourseRowButton"
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		button.toggle_mode = true
@@ -173,5 +176,17 @@ func _install_course_focus_order() -> void:
 	_start.focus_previous = _course_buttons[-1].get_path()
 
 
-func _course_label(index: int) -> String:
-	return CannonGolfCourseCatalog.level_label(index)
+func _course_label(index: int, selected: bool = false) -> String:
+	var level := CannonGolfCourseCatalog.level_label(index)
+	if not selected:
+		return level
+	var goals := _courses[index].leg_count()
+	return "%s    %d GOALS" % [level, goals] if _language == "en" \
+			else "%s    목표 %d개" % [level, goals]
+
+
+func _ensure_selected_visible() -> void:
+	if not is_inside_tree() or _selected_course_index < 0 \
+			or _selected_course_index >= _course_buttons.size():
+		return
+	_scroll.ensure_control_visible(_course_buttons[_selected_course_index])

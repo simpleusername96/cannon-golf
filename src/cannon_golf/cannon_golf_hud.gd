@@ -48,7 +48,7 @@ signal result_primary_requested
 @onready var _result_title: Label = %ResultTitle
 @onready var _result_primary: Button = %ResultPrimary
 @onready var _goal_progress_label: Label = %GoalProgressLabel
-@onready var _launcher_source_panel: PanelContainer = $Root/LauncherSource
+@onready var _launcher_source_panel: Control = $Root/LauncherSource
 @onready var _launcher_source_previous: Button = %LauncherSourcePrevious
 @onready var _launcher_source_name: Label = %LauncherSourceName
 @onready var _launcher_source_position: Label = %LauncherSourcePosition
@@ -232,10 +232,10 @@ func apply_language(language: String) -> void:
 	%HorizontalLabel.text = "H" if english else "좌우"
 	%ElevationLabel.text = "V" if english else "상하"
 	%PowerLabel.text = "PWR" if english else "파워"
-	_oblique_button.text = "MAP" if english else "전체"
-	_cannon_button.text = "CANNON" if english else "대포"
+	_oblique_button.text = "◎"
+	_cannon_button.text = "⌾"
 	_follow_button.text = "FOLLOW" if english else "추적"
-	_retry_button.text = "RETRY" if english else "재발사"
+	_retry_button.text = "↻"
 	_camera_reset_button.text = "RESET" if english else "초기"
 	_set_icon_copy(_horizontal_decrease, "Decrease horizontal aim (Q)" if english else "좌우 조준 감소 (Q)")
 	_set_icon_copy(_horizontal_increase, "Increase horizontal aim (E)" if english else "좌우 조준 증가 (E)")
@@ -358,12 +358,10 @@ func _refresh_launcher_source_selector() -> void:
 	var selected_goal := _launcher_sources[selected_index]
 	_launcher_source_name.text = ("START" if english else "시작점") if selected_goal < 0 \
 			else (("GOAL %d" if english else "골 %d") % (selected_goal + 1))
-	_launcher_source_position.text = (
-		("CANNON POSITION %d / %d" if english else "대포 위치 %d / %d") % [
-			selected_index + 1,
-			_launcher_sources.size(),
-		]
-	)
+	_launcher_source_position.text = "%d / %d" % [
+		selected_index + 1,
+		_launcher_sources.size(),
+	]
 	_launcher_source_previous.disabled = _cleared or selected_index <= 0
 	_launcher_source_next.disabled = _cleared or selected_index >= _launcher_sources.size() - 1
 	_set_icon_copy(
@@ -474,17 +472,15 @@ func _install_focus_order() -> void:
 		_launcher_source_next,
 		_oblique_button,
 		_cannon_button,
-		_follow_button,
 		_retry_button,
-		_zoom_in_button,
-		_camera_reset_button,
-		_zoom_out_button,
 		_shortcut_button,
 		%PauseButton,
-		_elevation_increase,
 		_horizontal_decrease,
+		_horizontal_slider,
 		_horizontal_increase,
 		_elevation_decrease,
+		_elevation_slider,
+		_elevation_increase,
 		_power_decrease,
 		_power_slider,
 		_power_increase,
@@ -496,10 +492,6 @@ func _install_focus_order() -> void:
 		control.focus_previous = control.focus_neighbor_left
 		control.focus_neighbor_right = controls[(index + 1) % controls.size()].get_path()
 		control.focus_next = control.focus_neighbor_right
-	_elevation_increase.focus_neighbor_bottom = _elevation_decrease.get_path()
-	_elevation_decrease.focus_neighbor_top = _elevation_increase.get_path()
-	_horizontal_decrease.focus_neighbor_right = _horizontal_increase.get_path()
-	_horizontal_increase.focus_neighbor_left = _horizontal_decrease.get_path()
 	_power_decrease.focus_neighbor_right = _power_slider.get_path()
 	_power_slider.focus_neighbor_left = _power_decrease.get_path()
 	_power_slider.focus_neighbor_right = _power_increase.get_path()

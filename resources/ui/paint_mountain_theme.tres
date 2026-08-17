@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=43 format=3]
+[gd_resource type="Theme" load_steps=54 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/pretendard/PretendardVariable.woff2" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/panel_neutral_depth.png" id="2_neutral_depth"]
@@ -210,6 +210,124 @@ corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxEmpty" id="QuietButtonNormal"]
 
+[sub_resource type="StyleBoxEmpty" id="TransparentControl"]
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="TransparentHover"]
+bg_color = Color(0.09, 0.145, 0.22, 0.08)
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="TransparentPressed"]
+bg_color = Color(0, 0, 0, 0)
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+border_width_bottom = 2
+border_color = Color(0.89, 0.604, 0.055, 0.9)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="TransparentFocus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.09, 0.145, 0.22, 0.82)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="CourseRowSelected"]
+bg_color = Color(0, 0, 0, 0)
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+border_width_left = 4
+border_color = Color(0.89, 0.604, 0.055, 1)
+
+[sub_resource type="StyleBoxFlat" id="CourseRowFocus"]
+bg_color = Color(0, 0, 0, 0)
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+border_width_left = 4
+border_color = Color(0.89, 0.604, 0.055, 1)
+
+[sub_resource type="StyleBoxFlat" id="AmberCircle"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.89, 0.604, 0.055, 1)
+corner_radius_top_left = 64
+corner_radius_top_right = 64
+corner_radius_bottom_right = 64
+corner_radius_bottom_left = 64
+
+[sub_resource type="StyleBoxFlat" id="AmberCircleHover"]
+bg_color = Color(0.89, 0.604, 0.055, 0.12)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.89, 0.604, 0.055, 1)
+corner_radius_top_left = 64
+corner_radius_top_right = 64
+corner_radius_bottom_right = 64
+corner_radius_bottom_left = 64
+
+[sub_resource type="StyleBoxFlat" id="AmberCircleDisabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.407843, 0.45098, 0.517647, 0.55)
+corner_radius_top_left = 64
+corner_radius_top_right = 64
+corner_radius_bottom_right = 64
+corner_radius_bottom_left = 64
+
+[sub_resource type="StyleBoxFlat" id="HudRailTrack"]
+bg_color = Color(0.09, 0.145, 0.22, 0.28)
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="HudRailFill"]
+bg_color = Color(0.09, 0.145, 0.22, 0.82)
+content_margin_top = 2.0
+content_margin_bottom = 2.0
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
 [sub_resource type="StyleBoxFlat" id="StageCardNormal"]
 bg_color = Color(0.968627, 0.972549, 0.980392, 0.62)
 content_margin_left = 16.0
@@ -347,6 +465,39 @@ QuietButton/styles/hover = SubResource("ButtonHover")
 QuietButton/styles/pressed = SubResource("ButtonPressed")
 QuietButton/styles/disabled = SubResource("QuietButtonNormal")
 QuietButton/styles/focus = SubResource("Focus")
+BareTextButton/base_type = &"Button"
+BareTextButton/styles/normal = SubResource("TransparentControl")
+BareTextButton/styles/hover = SubResource("TransparentHover")
+BareTextButton/styles/pressed = SubResource("TransparentPressed")
+BareTextButton/styles/hover_pressed = SubResource("TransparentPressed")
+BareTextButton/styles/disabled = SubResource("TransparentControl")
+BareTextButton/styles/focus = SubResource("TransparentFocus")
+CourseRowButton/base_type = &"Button"
+CourseRowButton/fonts/font = SubResource("FontWeight500")
+CourseRowButton/font_sizes/font_size = 18
+CourseRowButton/styles/normal = SubResource("TransparentControl")
+CourseRowButton/styles/hover = SubResource("TransparentHover")
+CourseRowButton/styles/pressed = SubResource("CourseRowSelected")
+CourseRowButton/styles/hover_pressed = SubResource("CourseRowSelected")
+CourseRowButton/styles/disabled = SubResource("TransparentControl")
+CourseRowButton/styles/focus = SubResource("CourseRowFocus")
+AmberCircleButton/base_type = &"Button"
+AmberCircleButton/colors/font_color = Color(0.89, 0.604, 0.055, 1)
+AmberCircleButton/colors/font_hover_color = Color(0.89, 0.604, 0.055, 1)
+AmberCircleButton/colors/font_pressed_color = Color(0.89, 0.604, 0.055, 1)
+AmberCircleButton/colors/font_focus_color = Color(0.89, 0.604, 0.055, 1)
+AmberCircleButton/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.82)
+AmberCircleButton/fonts/font = SubResource("FontWeight600")
+AmberCircleButton/font_sizes/font_size = 20
+AmberCircleButton/styles/normal = SubResource("AmberCircle")
+AmberCircleButton/styles/hover = SubResource("AmberCircleHover")
+AmberCircleButton/styles/pressed = SubResource("AmberCircleHover")
+AmberCircleButton/styles/disabled = SubResource("AmberCircleDisabled")
+AmberCircleButton/styles/focus = SubResource("AmberCircleHover")
+HudRailSlider/base_type = &"HSlider"
+HudRailSlider/styles/slider = SubResource("HudRailTrack")
+HudRailSlider/styles/grabber_area = SubResource("HudRailFill")
+HudRailSlider/styles/grabber_area_highlight = SubResource("HudRailFill")
 ModePanel/base_type = &"PanelContainer"
 ModePanel/styles/panel = SubResource("ModePanel")
 DebugPanel/base_type = &"PanelContainer"

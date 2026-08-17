@@ -17,11 +17,14 @@ func _run() -> void:
 	root.add_child(hud)
 	await process_frame
 	await process_frame
-	_assert(hud.get_node_or_null("Root/AimPanel") is PanelContainer, "Normal play needs one compact aim panel.")
-	_assert(hud.get_node_or_null("Root/ShotPanel") is PanelContainer, "Normal play needs one compact power/fire panel.")
-	_assert(hud.get_node_or_null("Root/TopActions") is PanelContainer, "Normal play needs one compact top action strip.")
-	_assert(hud.get_node_or_null("Root/GoalProgress") is PanelContainer, "Normal play needs one compact goal tally.")
-	_assert(hud.get_node_or_null("Root/LauncherSource") is PanelContainer, "Normal play needs one compact cannon-source selector.")
+	_assert(hud.get_node_or_null("Root/BottomRail") is Control, "Normal play needs one transparent bottom rail.")
+	_assert(hud.get_node_or_null("Root/BottomRail/AimPanel") is HBoxContainer, "The rail must own horizontal and elevation groups.")
+	_assert(hud.get_node_or_null("Root/BottomRail/ShotPanel") is HBoxContainer, "The rail must own power and Fire.")
+	_assert(hud.get_node_or_null("Root/TopActions") is Control, "Normal play needs one surface-free top action row.")
+	_assert(hud.get_node_or_null("Root/GoalProgress") is Control, "Normal play needs one surface-free goal tally.")
+	_assert(hud.get_node_or_null("Root/LauncherSource") is Control, "Normal play needs one surface-free cannon-source selector.")
+	for path in ["Root/BottomRail", "Root/TopActions", "Root/GoalProgress", "Root/LauncherSource"]:
+		_assert(not (hud.get_node(path) is PanelContainer), "Persistent normal-play chrome must not use a panel surface: %s." % path)
 	_assert((hud.get_node("Root/LauncherSource") as Control).visible, "Every level must show the cannon-position selector.")
 	_assert((hud.get_node("%LauncherSourcePrevious") as Button).disabled \
 			and (hud.get_node("%LauncherSourceNext") as Button).disabled,
@@ -31,7 +34,8 @@ func _run() -> void:
 	_assert(hud.get_node_or_null("Root/ShortcutPanel") is PanelContainer, "Normal play needs on-demand shortcut help.")
 	_assert(not hud.is_shortcut_panel_visible(), "Shortcut help must be collapsed by default.")
 	for retired_node in [
-		"CoursePanel", "CourseNavigation", "FeedbackPanel",
+		"CoursePanel", "CourseNavigation", "FeedbackPanel", "TopLeftSpacer",
+		"TopRightSpacer", "BottomLeftSpacer", "BottomRightSpacer",
 		"ViewPanel", "ResetButton", "ResultBody",
 	]:
 		_assert(_find_named(hud, retired_node) == null, "Retired HUD owner must be absent: %s." % retired_node)
@@ -41,17 +45,15 @@ func _run() -> void:
 		hud.get_node("%LauncherSourceNext"),
 		hud.get_node("%ObliqueButton"),
 		hud.get_node("%CannonButton"),
-		hud.get_node("%FollowButton"),
 		hud.get_node("%RetryButton"),
-		hud.get_node("%ZoomInButton"),
-		hud.get_node("%CameraResetButton"),
-		hud.get_node("%ZoomOutButton"),
 		hud.get_node("%ShortcutButton"),
 		hud.get_node("%PauseButton"),
-		hud.get_node("%ElevationIncrease"),
 		hud.get_node("%HorizontalDecrease"),
+		hud.get_node("%HorizontalSlider"),
 		hud.get_node("%HorizontalIncrease"),
 		hud.get_node("%ElevationDecrease"),
+		hud.get_node("%ElevationSlider"),
+		hud.get_node("%ElevationIncrease"),
 		hud.get_node("%PowerDecrease"),
 		hud.get_node("%PowerSlider"),
 		hud.get_node("%PowerIncrease"),
@@ -77,22 +79,21 @@ func _run() -> void:
 		_assert(not String(button.get("accessibility_name")).is_empty(), "Icon action needs an accessible name: %s." % button_name)
 
 	var center_seventy := Rect2(Vector2(192.0, 108.0), Vector2(896.0, 504.0))
-	_assert(not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(center_seventy), "Aim panel must not occupy the center 70%.")
-	_assert(not (hud.get_node("Root/ShotPanel") as Control).get_global_rect().intersects(center_seventy), "Power/fire panel must not occupy the center 70%.")
+	_assert(not (hud.get_node("Root/BottomRail") as Control).get_global_rect().intersects(center_seventy), "The bottom rail must not occupy the center 70%.")
 	_assert(not (hud.get_node("Root/TopActions") as Control).get_global_rect().intersects(center_seventy), "Top action strip must not occupy the center 70%.")
 	for control_name in [
 		"HorizontalValue", "HorizontalDecrease", "HorizontalSlider", "HorizontalIncrease",
 		"ElevationValue", "ElevationDecrease", "ElevationSlider", "ElevationIncrease",
 	]:
 		_assert(
-			(hud.get_node("Root/AimPanel") as Control).get_global_rect().encloses(
+			(hud.get_node("Root/BottomRail/AimPanel") as Control).get_global_rect().encloses(
 				(hud.get_node("%%%s" % control_name) as Control).get_global_rect()
 			),
 			"Aim panel must enclose the complete control: %s." % control_name
 		)
 	for control_name in ["PowerValue", "PowerDecrease", "PowerSlider", "PowerIncrease", "FireButton"]:
 		_assert(
-			(hud.get_node("Root/ShotPanel") as Control).get_global_rect().encloses(
+			(hud.get_node("Root/BottomRail/ShotPanel") as Control).get_global_rect().encloses(
 				(hud.get_node("%%%s" % control_name) as Control).get_global_rect()
 			),
 			"Power/fire dock must enclose the complete control: %s." % control_name
@@ -100,16 +101,17 @@ func _run() -> void:
 	var normal_primary_count := 0
 	for node in _all_descendants(hud):
 		if node is Button and node.is_visible_in_tree() \
-				and (node as Button).theme_type_variation == &"PrimaryButton":
+				and (node as Button).theme_type_variation == &"AmberCircleButton":
 			normal_primary_count += 1
 	_assert(normal_primary_count == 1, "Fire must be the only normal-play primary action.")
 	hud.set_view(&"cannon")
 	hud.set_launch_availability(1, false)
 	await process_frame
 	var fire_button := hud.get_node("%FireButton") as Button
-	var action_dock := hud.get_node("Root/ShotPanel") as Control
+	var action_dock := hud.get_node("Root/BottomRail/ShotPanel") as Control
 	_assert(
-		fire_button.size.x >= 112.0 and action_dock.get_global_rect().encloses(fire_button.get_global_rect()),
+		fire_button.size.x >= 88.0 and is_equal_approx(fire_button.size.x, fire_button.size.y) \
+				and action_dock.get_global_rect().encloses(fire_button.get_global_rect()),
 		"Selected cannon view must not squeeze or clip Fire; fire %s, dock %s." % [
 			fire_button.get_global_rect(), action_dock.get_global_rect(),
 		]
@@ -141,7 +143,7 @@ func _run() -> void:
 		"Start must disable Previous and enable Next when one completed goal is available."
 	)
 	_assert((hud.get_node("%LauncherSourceName") as Label).text == "시작점" \
-			and (hud.get_node("%LauncherSourcePosition") as Label).text == "대포 위치 1 / 2",
+			and (hud.get_node("%LauncherSourcePosition") as Label).text == "1 / 2",
 		"The arrow selector must identify Start and its available-source position."
 	)
 	var requested_sources: Array[int] = []
@@ -154,7 +156,7 @@ func _run() -> void:
 		"Choosing a completed goal must emit its stable source identity."
 	)
 	var korean_copy := _visible_copy(hud)
-	for required in ["좌우", "상하", "파워", "발사", "골 1 / 2", "시작점", "대포 위치 1 / 2"]:
+	for required in ["좌우", "상하", "파워", "발사", "골 1 / 2", "시작점", "1 / 2"]:
 		_assert(korean_copy.contains(required), "Normal Korean HUD must expose %s." % required)
 	hud.set_shortcut_panel_visible(true)
 	await process_frame
@@ -165,7 +167,7 @@ func _run() -> void:
 	hud.apply_language("en")
 	await process_frame
 	var english_copy := _visible_copy(hud)
-	for required in ["H", "V", "PWR", "FIRE", "GOALS 1 / 2", "START", "CANNON POSITION 1 / 2"]:
+	for required in ["H", "V", "PWR", "FIRE", "GOALS 1 / 2", "START", "1 / 2"]:
 		_assert(english_copy.contains(required), "Normal English HUD must expose %s." % required)
 	for label_name in ["HorizontalLabel", "ElevationLabel", "PowerLabel", "HorizontalValue", "ElevationValue", "PowerValue"]:
 		var label := hud.get_node("%%%s" % label_name) as Label
@@ -251,8 +253,8 @@ func _run() -> void:
 	var selected_style := course_select.course_buttons()[1].get_theme_stylebox(&"pressed") as StyleBoxFlat
 	var focus_style := course_select.course_buttons()[1].get_theme_stylebox(&"focus") as StyleBoxFlat
 	_assert(normal_style is StyleBoxEmpty, "Unselected course rows must remain flat without card surfaces.")
-	_assert(selected_style != null and selected_style.bg_color.a > 0.0,
-		"Selected course rows must retain a visible state.")
+	_assert(selected_style != null and selected_style.border_width_left >= 4,
+		"Selected course rows must retain a visible amber edge state without a filled card.")
 	_assert(focus_style != null and focus_style.border_width_left >= 2,
 		"Course-row keyboard focus must remain visible.")
 	quit(1 if _failed else 0)
@@ -284,8 +286,7 @@ func _all_descendants(parent: Node) -> Array[Node]:
 func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: String) -> void:
 	var viewport_rect := Rect2(Vector2.ZERO, viewport_size)
 	var paths := [
-		"Root/GoalProgress", "Root/LauncherSource", "Root/AimPanel",
-		"Root/ShotPanel", "Root/TopActions",
+		"Root/GoalProgress", "Root/LauncherSource", "Root/BottomRail", "Root/TopActions",
 	]
 	if hud.is_shortcut_panel_visible():
 		paths.append("Root/ShortcutPanel")
@@ -296,10 +297,10 @@ func _assert_hud_edge_fit(hud: CannonGolfHUD, viewport_size: Vector2, label: Str
 			"HUD edge control must remain inside %s: %s at %s." % [label, path, control.get_global_rect()]
 		)
 	_assert(
-		not (hud.get_node("Root/AimPanel") as Control).get_global_rect().intersects(
-			(hud.get_node("Root/ShotPanel") as Control).get_global_rect()
+		not (hud.get_node("Root/BottomRail/AimPanel") as Control).get_global_rect().intersects(
+			(hud.get_node("Root/BottomRail/ShotPanel") as Control).get_global_rect()
 		),
-		"Aim and action docks must not overlap at %s." % label
+		"Aim and shot groups must not overlap inside the bottom rail at %s." % label
 	)
 
 

@@ -1,40 +1,7 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/cannon_golf/cannon_golf_hud.gd" id="1_hud"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/minus.png" id="2_minus"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/plus.png" id="3_plus"]
 [ext_resource type="Script" path="res://src/cannon_golf/cannon_aim_reticle.gd" id="4_reticle"]
-
-[sub_resource type="StyleBoxFlat" id="FireNormal"]
-bg_color = Color(0.145, 0.518, 1, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.075, 0.36, 0.74, 1)
-
-[sub_resource type="StyleBoxFlat" id="FireHover"]
-bg_color = Color(0.09, 0.43, 0.91, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.44, 0.67, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="FireDisabled"]
-bg_color = Color(0.62, 0.65, 0.69, 0.72)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
 
 [node name="CannonGolfHUD" type="CanvasLayer"]
 process_mode = 3
@@ -67,239 +34,227 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4_reticle")
 
-[node name="GoalProgress" type="PanelContainer" parent="Root"]
+[node name="GoalProgress" type="Control" parent="Root"]
 layout_mode = 0
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 152.0
-offset_bottom = 64.0
+offset_left = 40.0
+offset_top = 28.0
+offset_right = 368.0
+offset_bottom = 60.0
 mouse_filter = 2
-theme_type_variation = &"HudStagePanel"
 
 [node name="GoalProgressLabel" type="Label" parent="Root/GoalProgress"]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"HudSection"
+theme_override_font_sizes/font_size = 22
 text = "LV 1 · 골 0 / 1"
-horizontal_alignment = 1
+horizontal_alignment = 0
 vertical_alignment = 1
 
-[node name="LauncherSource" type="PanelContainer" parent="Root"]
+[node name="LauncherSource" type="Control" parent="Root"]
 layout_mode = 0
-offset_left = 160.0
-offset_top = 16.0
-offset_right = 460.0
-offset_bottom = 64.0
+offset_left = 32.0
+offset_top = 76.0
+offset_right = 368.0
+offset_bottom = 124.0
 mouse_filter = 2
-theme_type_variation = &"HudStagePanel"
 
-[node name="Margin" type="MarginContainer" parent="Root/LauncherSource"]
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
-
-[node name="Controls" type="HBoxContainer" parent="Root/LauncherSource/Margin"]
-layout_mode = 2
+[node name="Controls" type="HBoxContainer" parent="Root/LauncherSource"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_override_constants/separation = 4
 
-[node name="LauncherSourcePrevious" type="Button" parent="Root/LauncherSource/Margin/Controls"]
+[node name="LauncherSourcePrevious" type="Button" parent="Root/LauncherSource/Controls"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
+theme_type_variation = &"BareTextButton"
 theme_override_font_sizes/font_size = 24
 tooltip_text = "이전 대포 위치"
 accessibility_name = "이전 대포 위치"
 text = "‹"
 
-[node name="Copy" type="VBoxContainer" parent="Root/LauncherSource/Margin/Controls"]
-custom_minimum_size = Vector2(204, 40)
+[node name="Copy" type="HBoxContainer" parent="Root/LauncherSource/Controls"]
+custom_minimum_size = Vector2(224, 40)
 layout_mode = 2
 size_flags_horizontal = 3
 alignment = 1
-theme_override_constants/separation = 0
+theme_override_constants/separation = 12
 
-[node name="LauncherSourceName" type="Label" parent="Root/LauncherSource/Margin/Controls/Copy"]
+[node name="LauncherSourceName" type="Label" parent="Root/LauncherSource/Controls/Copy"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_type_variation = &"HudSection"
 text = "시작점"
-horizontal_alignment = 1
 text_overrun_behavior = 3
+vertical_alignment = 1
 
-[node name="LauncherSourcePosition" type="Label" parent="Root/LauncherSource/Margin/Controls/Copy"]
+[node name="LauncherSourcePosition" type="Label" parent="Root/LauncherSource/Controls/Copy"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"HudBody"
-text = "대포 위치 1 / 1"
-horizontal_alignment = 1
+text = "1 / 1"
+vertical_alignment = 1
 
-[node name="LauncherSourceNext" type="Button" parent="Root/LauncherSource/Margin/Controls"]
+[node name="LauncherSourceNext" type="Button" parent="Root/LauncherSource/Controls"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
+theme_type_variation = &"BareTextButton"
 theme_override_font_sizes/font_size = 24
 tooltip_text = "다음 대포 위치"
 accessibility_name = "다음 대포 위치"
 text = "›"
 
-[node name="AimPanel" type="PanelContainer" parent="Root"]
+[node name="BottomRail" type="Control" parent="Root"]
 layout_mode = 0
+anchor_right = 1.0
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -192.0
-offset_right = 192.0
+offset_left = 32.0
+offset_top = -108.0
+offset_right = -32.0
 offset_bottom = -16.0
+grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 1
-theme_type_variation = &"HudStagePanel"
 
-[node name="Margin" type="MarginContainer" parent="Root/AimPanel"]
+[node name="AimPanel" type="HBoxContainer" parent="Root/BottomRail"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 0.68
+anchor_bottom = 1.0
+offset_right = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 24
+
+[node name="HorizontalGroup" type="VBoxContainer" parent="Root/BottomRail/AimPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
-[node name="Controls" type="GridContainer" parent="Root/AimPanel/Margin"]
+[node name="Header" type="HBoxContainer" parent="Root/BottomRail/AimPanel/HorizontalGroup"]
 layout_mode = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
-columns = 3
+alignment = 1
+theme_override_constants/separation = 8
 
-[node name="TopLeftSpacer" type="Control" parent="Root/AimPanel/Margin/Controls"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-
-[node name="ElevationIncrease" type="Button" parent="Root/AimPanel/Margin/Controls"]
+[node name="HorizontalLabel" type="Label" parent="Root/BottomRail/AimPanel/HorizontalGroup/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(56, 48)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
-theme_override_font_sizes/font_size = 23
-tooltip_text = "상하 조준 증가 (W)"
-accessibility_name = "상하 조준 증가 (W)"
-text = "↑"
+theme_type_variation = &"HudSection"
+text = "좌우"
 
-[node name="TopRightSpacer" type="Control" parent="Root/AimPanel/Margin/Controls"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-
-[node name="HorizontalDecrease" type="Button" parent="Root/AimPanel/Margin/Controls"]
+[node name="HorizontalValue" type="Label" parent="Root/BottomRail/AimPanel/HorizontalGroup/Header"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 56)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
-theme_override_font_sizes/font_size = 23
+theme_type_variation = &"HudControlValue"
+theme_override_font_sizes/font_size = 22
+text = "50"
+
+[node name="Input" type="HBoxContainer" parent="Root/BottomRail/AimPanel/HorizontalGroup"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="HorizontalDecrease" type="Button" parent="Root/BottomRail/AimPanel/HorizontalGroup/Input"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
 tooltip_text = "좌우 조준 감소 (Q)"
 accessibility_name = "좌우 조준 감소 (Q)"
 text = "←"
 
-[node name="Readout" type="VBoxContainer" parent="Root/AimPanel/Margin/Controls"]
-custom_minimum_size = Vector2(56, 56)
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 0
-
-[node name="Horizontal" type="HBoxContainer" parent="Root/AimPanel/Margin/Controls/Readout"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 2
-
-[node name="HorizontalLabel" type="Label" parent="Root/AimPanel/Margin/Controls/Readout/Horizontal"]
+[node name="HorizontalSlider" type="HSlider" parent="Root/BottomRail/AimPanel/HorizontalGroup/Input"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 44)
 layout_mode = 2
-theme_type_variation = &"HudCaption"
-text = "좌우"
-
-[node name="HorizontalValue" type="Label" parent="Root/AimPanel/Margin/Controls/Readout/Horizontal"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HudControlValue"
-theme_override_font_sizes/font_size = 17
-text = "50"
-
-[node name="Elevation" type="HBoxContainer" parent="Root/AimPanel/Margin/Controls/Readout"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 2
-
-[node name="ElevationLabel" type="Label" parent="Root/AimPanel/Margin/Controls/Readout/Elevation"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HudCaption"
-text = "상하"
-
-[node name="ElevationValue" type="Label" parent="Root/AimPanel/Margin/Controls/Readout/Elevation"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HudControlValue"
-theme_override_font_sizes/font_size = 17
-text = "50°"
-
-[node name="HorizontalKeyHint" type="Label" parent="Root/AimPanel/Margin/Controls/Readout"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HudCaption"
-theme_override_font_sizes/font_size = 10
-text = "Q/E  ·  W/S"
-horizontal_alignment = 1
-
-[node name="ElevationKeyHint" type="Label" parent="Root/AimPanel/Margin/Controls/Readout"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-text = "W / S"
-
-[node name="HorizontalIncrease" type="Button" parent="Root/AimPanel/Margin/Controls"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(48, 56)
-layout_mode = 2
-theme_type_variation = &"HudIconButton"
-theme_override_font_sizes/font_size = 23
-tooltip_text = "좌우 조준 증가 (E)"
-accessibility_name = "좌우 조준 증가 (E)"
-text = "→"
-
-[node name="BottomLeftSpacer" type="Control" parent="Root/AimPanel/Margin/Controls"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-
-[node name="ElevationDecrease" type="Button" parent="Root/AimPanel/Margin/Controls"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(56, 48)
-layout_mode = 2
-theme_type_variation = &"HudIconButton"
-theme_override_font_sizes/font_size = 23
-tooltip_text = "상하 조준 감소 (S)"
-accessibility_name = "상하 조준 감소 (S)"
-text = "↓"
-
-[node name="BottomRightSpacer" type="Control" parent="Root/AimPanel/Margin/Controls"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-
-[node name="HorizontalSlider" type="HSlider" parent="Root/AimPanel"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 0
+size_flags_horizontal = 3
+theme_type_variation = &"HudRailSlider"
 min_value = -62.0
 max_value = 162.0
 step = 1.0
 value = 50.0
 
-[node name="ElevationSlider" type="HSlider" parent="Root/AimPanel"]
+[node name="HorizontalIncrease" type="Button" parent="Root/BottomRail/AimPanel/HorizontalGroup/Input"]
 unique_name_in_owner = true
-visible = false
-layout_mode = 0
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
+tooltip_text = "좌우 조준 증가 (E)"
+accessibility_name = "좌우 조준 증가 (E)"
+text = "→"
+
+[node name="ElevationGroup" type="VBoxContainer" parent="Root/BottomRail/AimPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Header" type="HBoxContainer" parent="Root/BottomRail/AimPanel/ElevationGroup"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="ElevationLabel" type="Label" parent="Root/BottomRail/AimPanel/ElevationGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudSection"
+text = "상하"
+
+[node name="ElevationValue" type="Label" parent="Root/BottomRail/AimPanel/ElevationGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudControlValue"
+theme_override_font_sizes/font_size = 22
+text = "50°"
+
+[node name="Input" type="HBoxContainer" parent="Root/BottomRail/AimPanel/ElevationGroup"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ElevationDecrease" type="Button" parent="Root/BottomRail/AimPanel/ElevationGroup/Input"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
+tooltip_text = "상하 조준 감소 (S)"
+accessibility_name = "상하 조준 감소 (S)"
+text = "↓"
+
+[node name="ElevationSlider" type="HSlider" parent="Root/BottomRail/AimPanel/ElevationGroup/Input"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 44)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HudRailSlider"
 min_value = -90.0
 max_value = 90.0
 step = 1.0
 value = 50.0
+
+[node name="ElevationIncrease" type="Button" parent="Root/BottomRail/AimPanel/ElevationGroup/Input"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
+tooltip_text = "상하 조준 증가 (W)"
+accessibility_name = "상하 조준 증가 (W)"
+text = "↑"
 
 [node name="ShortcutPanel" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true
@@ -464,36 +419,36 @@ layout_mode = 2
 theme_type_variation = &"HudBody"
 text = "일시정지"
 
-[node name="TopActions" type="PanelContainer" parent="Root"]
+[node name="TopActions" type="Control" parent="Root"]
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -536.0
-offset_top = 16.0
-offset_right = -16.0
-offset_bottom = 64.0
+offset_left = -280.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = 72.0
 grow_horizontal = 0
 mouse_filter = 2
-theme_type_variation = &"HudDockPanel"
 
 [node name="Margin" type="MarginContainer" parent="Root/TopActions"]
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Actions" type="HBoxContainer" parent="Root/TopActions/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 4
+theme_override_constants/separation = 8
 
 [node name="ObliqueButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
-theme_type_variation = &"HudModeButton"
+theme_type_variation = &"BareTextButton"
 toggle_mode = true
-text = "전체"
+text = "◎"
 tooltip_text = "전체 보기 (1)"
 accessibility_name = "전체 보기 (1)"
 
@@ -501,16 +456,18 @@ accessibility_name = "전체 보기 (1)"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
-theme_type_variation = &"HudModeButton"
+theme_type_variation = &"BareTextButton"
 toggle_mode = true
-text = "대포"
+text = "⌾"
 tooltip_text = "대포 시점 (2)"
 accessibility_name = "대포 시점 (2)"
 
 [node name="FollowButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
+focus_mode = 0
 theme_type_variation = &"HudModeButton"
 toggle_mode = true
 disabled = true
@@ -522,16 +479,19 @@ accessibility_name = "공 따라가기"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(70, 40)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
 disabled = true
-text = "재발사"
+text = "↻"
 tooltip_text = "빠른 재발사 (R)"
 accessibility_name = "빠른 재발사 (R)"
 
 [node name="ZoomInButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+focus_mode = 0
 theme_type_variation = &"HudIconButton"
 text = "+"
 tooltip_text = "확대 (휠 위)"
@@ -539,8 +499,10 @@ accessibility_name = "확대 (휠 위)"
 
 [node name="CameraResetButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(48, 40)
 layout_mode = 2
+focus_mode = 0
 theme_type_variation = &"HudIconButton"
 text = "초기"
 tooltip_text = "시점 원위치 (Home) · 왼쪽 드래그 이동 · 오른쪽 드래그 회전"
@@ -548,8 +510,10 @@ accessibility_name = "시점 원위치 (Home) · 왼쪽 드래그 이동 · 오�
 
 [node name="ZoomOutButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
+focus_mode = 0
 theme_type_variation = &"HudIconButton"
 text = "−"
 tooltip_text = "축소 (휠 아래)"
@@ -559,7 +523,7 @@ accessibility_name = "축소 (휠 아래)"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
+theme_type_variation = &"BareTextButton"
 toggle_mode = true
 text = "?"
 tooltip_text = "조작법 보기"
@@ -569,114 +533,91 @@ accessibility_name = "조작법 보기"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
+theme_type_variation = &"BareTextButton"
 text = "Ⅱ"
 tooltip_text = "일시정지 (Esc)"
 accessibility_name = "일시정지 (Esc)"
 
-[node name="ShotPanel" type="PanelContainer" parent="Root"]
-layout_mode = 0
-anchor_left = 1.0
-anchor_top = 1.0
+[node name="ShotPanel" type="HBoxContainer" parent="Root/BottomRail"]
+layout_mode = 1
+anchor_left = 0.68
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -192.0
-offset_top = -144.0
-offset_right = -16.0
-offset_bottom = -16.0
-grow_horizontal = 0
-grow_vertical = 0
+offset_left = 12.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-theme_type_variation = &"HudStagePanel"
+theme_override_constants/separation = 16
 
-[node name="Margin" type="MarginContainer" parent="Root/ShotPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="Controls" type="VBoxContainer" parent="Root/ShotPanel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="Header" type="HBoxContainer" parent="Root/ShotPanel/Margin/Controls"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="PowerLabel" type="Label" parent="Root/ShotPanel/Margin/Controls/Header"]
-unique_name_in_owner = true
+[node name="PowerGroup" type="VBoxContainer" parent="Root/BottomRail/ShotPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"HudBody"
+theme_override_constants/separation = 4
+
+[node name="Header" type="HBoxContainer" parent="Root/BottomRail/ShotPanel/PowerGroup"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="PowerLabel" type="Label" parent="Root/BottomRail/ShotPanel/PowerGroup/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HudSection"
 text = "파워"
 vertical_alignment = 1
 
-[node name="PowerKeyHint" type="Label" parent="Root/ShotPanel/Margin/Controls/Header"]
+[node name="PowerValue" type="Label" parent="Root/BottomRail/ShotPanel/PowerGroup/Header"]
 unique_name_in_owner = true
-layout_mode = 2
-theme_type_variation = &"HudCaption"
-text = "A / D"
-vertical_alignment = 1
-
-[node name="PowerValue" type="Label" parent="Root/ShotPanel/Margin/Controls/Header"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(50, 28)
 layout_mode = 2
 theme_type_variation = &"HudControlValue"
+theme_override_font_sizes/font_size = 22
 text = "50%"
-horizontal_alignment = 2
 vertical_alignment = 1
 
-[node name="PowerInput" type="HBoxContainer" parent="Root/ShotPanel/Margin/Controls"]
+[node name="PowerInput" type="HBoxContainer" parent="Root/BottomRail/ShotPanel/PowerGroup"]
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="PowerDecrease" type="Button" parent="Root/ShotPanel/Margin/Controls/PowerInput"]
+[node name="PowerDecrease" type="Button" parent="Root/BottomRail/ShotPanel/PowerGroup/PowerInput"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
-icon = ExtResource("2_minus")
-expand_icon = true
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
 tooltip_text = "파워 감소 (A)"
 accessibility_name = "파워 감소 (A)"
+text = "−"
 
-[node name="PowerSlider" type="HSlider" parent="Root/ShotPanel/Margin/Controls/PowerInput"]
+[node name="PowerSlider" type="HSlider" parent="Root/BottomRail/ShotPanel/PowerGroup/PowerInput"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 40)
+custom_minimum_size = Vector2(148, 44)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_type_variation = &"HudRailSlider"
 min_value = 10.0
 max_value = 100.0
 step = 1.0
 value = 50.0
 
-[node name="PowerIncrease" type="Button" parent="Root/ShotPanel/Margin/Controls/PowerInput"]
+[node name="PowerIncrease" type="Button" parent="Root/BottomRail/ShotPanel/PowerGroup/PowerInput"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
-theme_type_variation = &"HudIconButton"
-icon = ExtResource("3_plus")
-expand_icon = true
+theme_type_variation = &"BareTextButton"
+theme_override_font_sizes/font_size = 22
 tooltip_text = "파워 증가 (D)"
 accessibility_name = "파워 증가 (D)"
+text = "+"
 
-[node name="FireButton" type="Button" parent="Root/ShotPanel/Margin/Controls"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(160, 44)
+[node name="FireCenter" type="CenterContainer" parent="Root/BottomRail/ShotPanel"]
+custom_minimum_size = Vector2(92, 92)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_type_variation = &"PrimaryButton"
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
-theme_override_colors/font_disabled_color = Color(1, 1, 1, 0.45)
-theme_override_styles/normal = SubResource("FireNormal")
-theme_override_styles/hover = SubResource("FireHover")
-theme_override_styles/pressed = SubResource("FireHover")
-theme_override_styles/disabled = SubResource("FireDisabled")
+
+[node name="FireButton" type="Button" parent="Root/BottomRail/ShotPanel/FireCenter"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_type_variation = &"AmberCircleButton"
 text = "발사"
 
 [node name="ResultOverlay" type="Control" parent="Root"]

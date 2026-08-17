@@ -18,10 +18,18 @@ func _run() -> void:
 	course_select.start_requested.connect(func(index: int) -> void: starts.append(index))
 	var rows := course_select.course_buttons()
 	_assert(rows.size() == 15, "Course selection must expose fifteen catalog rows.")
-	_assert(course_select.select_course(1), "A non-default course must be selectable.")
+	_assert(course_select.select_course(11), "LV 12 must be selectable.")
+	await process_frame
 	await process_frame
 	_assert(_pressed_count(rows) == 1, "Exactly one course row must remain pressed.")
-	_assert(rows[1].has_focus(), "The selected course row must own keyboard focus.")
+	_assert(rows[11].has_focus(), "The selected course row must own keyboard focus.")
+	_assert(rows[11].text == "LV 12    목표 5개", "The selected row must show one factual goal count without difficulty copy.")
+	_assert(
+		(course_select.get_node("Scroll") as ScrollContainer).get_global_rect().encloses(
+			rows[11].get_global_rect()
+		),
+		"Selecting LV 12 must automatically reveal its complete row."
+	)
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.PREPARING)
 	_assert((course_select.get_node("%Start") as Button).disabled, "Preparing must disable Start.")
@@ -32,13 +40,13 @@ func _run() -> void:
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.FAILED)
 	_assert((course_select.get_node("%Start") as Button).disabled, "Preparation failure must disable Start.")
 	_assert((course_select.get_node("%Start") as Button).text.contains("실패"), "Failure copy must be concise and local.")
-	_assert(course_select.select_course(1), "Selecting the failed row again must permit a local retry.")
+	_assert(course_select.select_course(11), "Selecting the failed row again must permit a local retry.")
 	_assert(_pressed_count(rows) == 1, "Retry must retain exactly one selected row.")
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.READY)
 	_assert(not (course_select.get_node("%Start") as Button).disabled, "Ready must enable Start.")
 	(course_select.get_node("%Start") as Button).emit_signal("pressed")
-	_assert(starts == [1], "Only a ready selection may emit its start request.")
+	_assert(starts == [11], "Only a ready selection may emit its start request.")
 	quit(1 if _failed else 0)
 
 

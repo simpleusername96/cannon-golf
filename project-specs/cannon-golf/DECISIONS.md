@@ -785,6 +785,30 @@ in `OPEN_QUESTIONS.md`.
   state. Every retained live ball continues to own independent settlement and
   resolution state.
 
+### D-051 — Use transparent world-first gameplay and course-selection UI
+
+- Status: accepted on 2026-08-17; supersedes the persistent warm-white HUD
+  surfaces and saturated-blue normal-play primary action in the prior overlay
+  direction. It does not change gameplay, camera, course preparation, settings,
+  pause, result, or navigation behavior.
+- Preserve the current rendered world, camera composition, terrain, launcher,
+  and goals. Normal play places the level/goal tally and cannon-source selector
+  directly at the upper-left, routine icon actions at the upper-right, and all
+  three launch parameters on one transparent bottom rail. Retire the persistent
+  goal, source, aim, action, and power cards and the desktop D-pad composition.
+- Fire is an amber circular outline action at the bottom rail's far-right edge.
+  Navy typography remains the neutral UI language; amber identifies selection
+  and the current primary action; existing cyan world semantics remain unchanged.
+- Course selection retains one direct thin-scroll catalog beside the unchanged
+  course preview. The selected row is automatically visible and uses stronger
+  type, a short amber edge mark, and one goal-count fact. It does not add a list
+  card, section divider, difficulty, stars, score, or repeated level metadata.
+  Start uses the same circular amber action language and Back stays surface-free.
+- All routine controls retain minimum target sizes, keyboard focus order,
+  accessible names, truthful disabled/preparing/failed states, and Korean and
+  English text fit. Selected and focus states must remain distinguishable without
+  relying on hue alone.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
