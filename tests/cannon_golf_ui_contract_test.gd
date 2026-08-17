@@ -209,12 +209,13 @@ func _run() -> void:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	_assert(
 		course_select.course_buttons().size() == 15,
-		"Course select must create ten reusable catalog cards."
+		"Course select must create fifteen reusable catalog rows."
 	)
-	_assert(course_select.get_node_or_null("CardsPanel/Margin/Scroll") is ScrollContainer, "Course cards need a scroll owner.")
-	var course_scroll := course_select.get_node("CardsPanel/Margin/Scroll") as ScrollContainer
+	_assert(course_select.get_node_or_null("CardsPanel") == null, "The course list must not be wrapped in a card panel.")
+	_assert(course_select.get_node_or_null("Scroll/CourseList") is VBoxContainer, "Course rows need one direct scroll owner.")
+	var course_scroll := course_select.get_node("Scroll") as ScrollContainer
 	_assert(
-		course_scroll.get_v_scroll_bar().get_combined_minimum_size().x <= 8.0,
+		course_scroll.get_v_scroll_bar().get_combined_minimum_size().x <= 4.0,
 		"The course list scrollbar must remain visually narrow."
 	)
 	for index in range(course_select.course_buttons().size()):
@@ -223,9 +224,14 @@ func _run() -> void:
 		_assert(
 			course_button.get_theme_color(&"font_color").a >= 0.9 \
 					and course_button.get_theme_font_size(&"font_size") >= 16,
-			"Course-card text must remain visibly sized and opaque."
+			"Course-row text must remain visibly sized and opaque."
 		)
 		_assert(not String(course_button.get("accessibility_name")).is_empty(), "Course buttons need accessible names.")
+		_assert(
+			not course_button.text.contains("난이도") \
+					and not course_button.text.contains("DIFFICULTY"),
+			"Course rows must not repeat the level number as difficulty."
+		)
 		var expected_next: Control = course_select.get_node("%Start") \
 				if index == course_select.course_buttons().size() - 1 \
 				else course_select.course_buttons()[index + 1]
@@ -233,25 +239,22 @@ func _run() -> void:
 			course_button.focus_next == expected_next.get_path(),
 			"Catalog buttons must retain explicit forward focus order."
 		)
-	_assert(course_select.select_course(1), "A non-default course card must be selectable.")
+	_assert(course_select.select_course(1), "A non-default course row must be selectable.")
 	await process_frame
-	var pressed_cards := 0
+	var pressed_rows := 0
 	for course_button in course_select.course_buttons():
 		if course_button.button_pressed:
-			pressed_cards += 1
-	_assert(pressed_cards == 1, "Only one course card may appear selected.")
-	_assert(course_select.course_buttons()[1].has_focus(), "Selected course card must own keyboard focus.")
-	var normal_style := course_select.course_buttons()[1].get_theme_stylebox(&"normal") as StyleBoxFlat
+			pressed_rows += 1
+	_assert(pressed_rows == 1, "Only one course row may appear selected.")
+	_assert(course_select.course_buttons()[1].has_focus(), "Selected course row must own keyboard focus.")
+	var normal_style := course_select.course_buttons()[1].get_theme_stylebox(&"normal")
 	var selected_style := course_select.course_buttons()[1].get_theme_stylebox(&"pressed") as StyleBoxFlat
 	var focus_style := course_select.course_buttons()[1].get_theme_stylebox(&"focus") as StyleBoxFlat
-	_assert(normal_style.shadow_size == 0 and normal_style.corner_radius_top_left == 6, "Course rows must not look like floating cards.")
-	_assert(selected_style.border_width_left == 3 and selected_style.border_width_top == 0 \
-			and selected_style.border_width_right == 0 and selected_style.border_width_bottom == 0,
-		"Selected course rows must use one left-edge accent.")
-	_assert(focus_style.border_width_left == 2 and focus_style.expand_margin_left == 0.0 \
-			and focus_style.expand_margin_top == 0.0 and focus_style.expand_margin_right == 0.0 \
-			and focus_style.expand_margin_bottom == 0.0,
-		"Course-card focus must remain visible without an expanded outline.")
+	_assert(normal_style is StyleBoxEmpty, "Unselected course rows must remain flat without card surfaces.")
+	_assert(selected_style != null and selected_style.bg_color.a > 0.0,
+		"Selected course rows must retain a visible state.")
+	_assert(focus_style != null and focus_style.border_width_left >= 2,
+		"Course-row keyboard focus must remain visible.")
 	quit(1 if _failed else 0)
 
 

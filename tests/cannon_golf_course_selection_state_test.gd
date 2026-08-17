@@ -16,12 +16,12 @@ func _run() -> void:
 	await process_frame
 	var starts: Array[int] = []
 	course_select.start_requested.connect(func(index: int) -> void: starts.append(index))
-	var cards := course_select.course_buttons()
-	_assert(cards.size() == 15, "Course selection must expose fifteen catalog cards.")
+	var rows := course_select.course_buttons()
+	_assert(rows.size() == 15, "Course selection must expose fifteen catalog rows.")
 	_assert(course_select.select_course(1), "A non-default course must be selectable.")
 	await process_frame
-	_assert(_pressed_count(cards) == 1, "Exactly one course card must remain pressed.")
-	_assert(cards[1].has_focus(), "The selected course card must own keyboard focus.")
+	_assert(_pressed_count(rows) == 1, "Exactly one course row must remain pressed.")
+	_assert(rows[1].has_focus(), "The selected course row must own keyboard focus.")
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.PREPARING)
 	_assert((course_select.get_node("%Start") as Button).disabled, "Preparing must disable Start.")
@@ -32,8 +32,8 @@ func _run() -> void:
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.FAILED)
 	_assert((course_select.get_node("%Start") as Button).disabled, "Preparation failure must disable Start.")
 	_assert((course_select.get_node("%Start") as Button).text.contains("실패"), "Failure copy must be concise and local.")
-	_assert(course_select.select_course(1), "Selecting the failed card again must permit a local retry.")
-	_assert(_pressed_count(cards) == 1, "Retry must retain exactly one selected card.")
+	_assert(course_select.select_course(1), "Selecting the failed row again must permit a local retry.")
+	_assert(_pressed_count(rows) == 1, "Retry must retain exactly one selected row.")
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.READY)
 	_assert(not (course_select.get_node("%Start") as Button).disabled, "Ready must enable Start.")
@@ -42,10 +42,10 @@ func _run() -> void:
 	quit(1 if _failed else 0)
 
 
-func _pressed_count(cards: Array[Button]) -> int:
+func _pressed_count(rows: Array[Button]) -> int:
 	var count := 0
-	for card in cards:
-		if card.button_pressed:
+	for row in rows:
+		if row.button_pressed:
 			count += 1
 	return count
 

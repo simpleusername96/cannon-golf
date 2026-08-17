@@ -8,6 +8,7 @@ func _initialize() -> void:
 
 
 func _run() -> void:
+	await _assert_constructed_opening_contact(&"skyline_crossing")
 	for course_index in range(CannonGolfCourseCatalog.all_courses().size()):
 		var course := CannonGolfCourseCatalog.course_at(course_index)
 		var prepared := _prepared_for(course)
@@ -43,6 +44,44 @@ func _run() -> void:
 		)
 	print("Cannon Golf certified solutions replayed; constructed courses passed structural setup checks.")
 	quit(0)
+
+
+func _assert_constructed_opening_contact(course_id: StringName) -> void:
+	var course_index := CannonGolfCourseCatalog.index_of(course_id)
+	var course := CannonGolfCourseCatalog.course_at(course_index)
+	var prepared := _prepared_for(course)
+	var game := GAME_SCENE.instantiate() as CannonGolfGame
+	game.initial_course_index = course_index
+	game.initial_prepared_course = prepared
+	root.add_child(game)
+	await process_frame
+	await process_frame
+	var first_leg := prepared.legs[0]
+	_assert_true(
+		is_equal_approx(
+			game._course_builder.launcher.shot_axis_yaw_degrees,
+			first_leg.shot_axis_yaw_degrees
+		),
+		"The LV 12 Start source must face its prepared opening corridor."
+	)
+	game._course_builder.launcher.set_setup(
+		first_leg.intended_setup.x,
+		first_leg.intended_setup.y,
+		first_leg.intended_setup.z
+	)
+	_assert_true(game.fire(), "The LV 12 intended opening launch must fire.")
+	for _frame in range(60 * 12):
+		await physics_frame
+		if game._impact_history.count() > 0:
+			break
+	_assert_true(
+		game._impact_history.count() > 0 \
+				and game._impact_history.newest_position().distance_to(first_leg.goal_position) \
+						<= first_leg.goal_radius,
+		"The LV 12 intended opening launch must reach its goal basin before terrain contact."
+	)
+	game.queue_free()
+	await process_frame
 
 
 func _replay(course_index: int, use_solution: bool, default_leg_index: int = 0) -> Dictionary:

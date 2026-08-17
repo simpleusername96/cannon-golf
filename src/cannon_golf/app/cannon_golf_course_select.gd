@@ -11,8 +11,8 @@ enum CoursePreparationState {
 	FAILED,
 }
 
-@onready var _cards: VBoxContainer = $CardsPanel/Margin/Scroll/Cards
-@onready var _scroll: ScrollContainer = $CardsPanel/Margin/Scroll
+@onready var _course_list: VBoxContainer = $Scroll/CourseList
+@onready var _scroll: ScrollContainer = $Scroll
 @onready var _back: Button = %Back
 @onready var _start: Button = %Start
 
@@ -105,43 +105,43 @@ func course_buttons() -> Array[Button]:
 
 
 func _build_course_buttons() -> void:
-	for child in _cards.get_children():
+	for child in _course_list.get_children():
 		child.queue_free()
 	_course_buttons.clear()
 	for index in range(_courses.size()):
 		var button := Button.new()
 		button.name = "Level%02d" % (index + 1)
-		button.custom_minimum_size = Vector2(0.0, 68.0)
-		button.theme_type_variation = &"StageCardButton"
+		button.custom_minimum_size = Vector2(0.0, 52.0)
+		button.theme_type_variation = &"QuietButton"
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		button.toggle_mode = true
 		button.button_group = _course_button_group
 		button.pressed.connect(select_course.bind(index))
-		_cards.add_child(button)
+		_course_list.add_child(button)
 		_course_buttons.append(button)
 	_install_course_focus_order()
 
 
 func _configure_thin_scrollbar() -> void:
 	var bar := _scroll.get_v_scroll_bar()
-	bar.custom_minimum_size.x = 7.0
+	bar.custom_minimum_size.x = 4.0
 	var track := StyleBoxFlat.new()
 	track.bg_color = Color(0.09, 0.145, 0.22, 0.08)
-	track.content_margin_left = 3.0
-	track.content_margin_right = 3.0
-	track.corner_radius_top_left = 3
-	track.corner_radius_top_right = 3
-	track.corner_radius_bottom_right = 3
-	track.corner_radius_bottom_left = 3
+	track.content_margin_left = 1.0
+	track.content_margin_right = 1.0
+	track.corner_radius_top_left = 2
+	track.corner_radius_top_right = 2
+	track.corner_radius_bottom_right = 2
+	track.corner_radius_bottom_left = 2
 	var grabber := StyleBoxFlat.new()
 	grabber.bg_color = Color(0.18, 0.24, 0.33, 0.42)
-	grabber.content_margin_left = 3.0
-	grabber.content_margin_right = 3.0
-	grabber.corner_radius_top_left = 3
-	grabber.corner_radius_top_right = 3
-	grabber.corner_radius_bottom_right = 3
-	grabber.corner_radius_bottom_left = 3
+	grabber.content_margin_left = 1.0
+	grabber.content_margin_right = 1.0
+	grabber.corner_radius_top_left = 2
+	grabber.corner_radius_top_right = 2
+	grabber.corner_radius_bottom_right = 2
+	grabber.corner_radius_bottom_left = 2
 	var grabber_hover := grabber.duplicate() as StyleBoxFlat
 	grabber_hover.bg_color = Color(0.145, 0.518, 1.0, 0.72)
 	bar.add_theme_stylebox_override(&"scroll", track)
@@ -174,7 +174,4 @@ func _install_course_focus_order() -> void:
 
 
 func _course_label(index: int) -> String:
-	var level := CannonGolfCourseCatalog.level_label(index)
-	var rank := "%d / %d" % [index + 1, CannonGolfCourseCatalog.level_count()]
-	return "%s  ·  DIFFICULTY %s" % [level, rank] if _language == "en" \
-			else "%s  ·  난이도 %s" % [level, rank]
+	return CannonGolfCourseCatalog.level_label(index)

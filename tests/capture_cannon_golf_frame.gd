@@ -84,7 +84,7 @@ func _capture() -> void:
 			)
 		elif requested_state == "course_scrolled":
 			course_select.select_course(9)
-			(course_select.get_node("CardsPanel/Margin/Scroll") as ScrollContainer).scroll_vertical = 100000
+			(course_select.get_node("Scroll") as ScrollContainer).scroll_vertical = 100000
 	elif requested_state == "settings":
 		app.show_settings()
 	elif requested_state == "cannon":

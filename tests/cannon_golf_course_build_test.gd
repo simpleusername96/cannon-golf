@@ -14,6 +14,13 @@ func _run() -> void:
 		_assert_true(builder.course != course and builder.course.course_id == course.course_id, "Builder must isolate authored runtime data while retaining identity.")
 		_assert_true(builder.prepared_course != null and builder.prepared_course.is_valid_for(course), "Builder must retain the matching prepared artifact.")
 		_assert_true(builder.launcher != null, "Built course must contain one launcher.")
+		_assert_true(
+			is_equal_approx(
+				builder.launcher.shot_axis_yaw_degrees,
+				builder.prepared_course.legs[0].shot_axis_yaw_degrees
+			),
+			"The original source must face the first prepared flight corridor."
+		)
 		_assert_true(builder.goal != null, "Built course must contain one settlement goal.")
 		_assert_true(builder.leg_count() == course.leg_count(), "Built course must expose every normalized course leg.")
 		_assert_true(builder.goals.size() == course.leg_count(), "Built course must create one goal node per leg.")
@@ -68,6 +75,13 @@ func _run() -> void:
 		if course.leg_count() > 1:
 			_assert_true(not builder.launcher.position.is_equal_approx(first_anchor), "A multi-goal course must relocate its reusable launcher.")
 		_assert_true(builder.select_launcher_source(-1), "Builder must restore the original source for the next build.")
+		_assert_true(
+			is_equal_approx(
+				builder.launcher.shot_axis_yaw_degrees,
+				builder.prepared_course.legs[0].shot_axis_yaw_degrees
+			),
+			"Restoring Start must restore the first prepared flight corridor."
+		)
 	print("Cannon Golf prepared course-build contract passed for fifteen courses.")
 	quit(0)
 
