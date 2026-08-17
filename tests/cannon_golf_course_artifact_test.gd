@@ -5,7 +5,24 @@ func _initialize() -> void:
 	for course in CannonGolfCourseCatalog.all_courses():
 		var path := CannonGolfCourseCatalog.prepared_path_for(course)
 		var prepared := ResourceLoader.load(path) as CannonGolfPreparedCourse
-		_assert_true(prepared != null and prepared.is_valid_for(course), "Prepared course must match authored identity: %s." % course.course_id)
+		_assert_true(prepared != null, "Prepared course must load: %s." % course.course_id)
+		_assert_true(
+			prepared.course_id == course.course_id,
+			"Prepared course ID must match the catalog: %s." % course.course_id
+		)
+		_assert_true(
+			prepared.course_signature == CannonGolfCourseIdentity.signature(course),
+			"Prepared course must match authored identity: %s." % course.course_id
+		)
+		_assert_true(
+			prepared.legs.size() == course.leg_count(),
+			"Prepared course must match the authored leg count: %s." % course.course_id
+		)
+		_assert_true(prepared.is_valid(), "Prepared course payload must be valid: %s." % course.course_id)
+		_assert_true(
+			prepared.is_valid_for(course),
+			"Prepared course must satisfy its runtime contract: %s." % course.course_id
+		)
 		_assert_true(
 			prepared.has_complete_construction_for(course),
 			"Trajectory-built artifacts must retain their construction contract."
