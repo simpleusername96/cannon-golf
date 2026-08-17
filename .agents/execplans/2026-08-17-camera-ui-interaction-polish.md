@@ -201,6 +201,27 @@ Source owners: `src/cannon_golf/cannon_golf_game.gd`, focused camera test/captur
   - Change: capture a real 1280 by 720 Cannon frame after an extreme setup edit, inspect it at native pixels, then run `git diff --check` and the diff-scoped quality audit.
   - Accept: the terrain framing is stable, the changed launcher direction remains legible, and no task-owned quality finding remains.
 
+### Phase 8: Explore locally without leaving Cannon
+
+Goal: let the player inspect the selected cannon's nearby surroundings without an implicit Overview transition.
+
+Preconditions:
+
+- The user's 2026-08-17 clarification supersedes Phase 7's retained D-052 exploration transition.
+- Overview and Cannon remain explicit presets with independent exploration state.
+
+Source owners: `src/cannon_golf/course_camera_rig.gd`, `src/cannon_golf/cannon_golf_game.gd`, focused camera/input tests and capture, canonical camera rules and decisions
+
+- [x] **8.1** Give Cannon bounded local pan, orbit, and zoom.
+  - Change: store Cannon-local exploration independently from Overview, apply drag, wheel, and arrow input to the active preset, and bound Cannon movement so it remains a rear/local terrain view rather than becoming aerial or course-wide.
+  - Accept: each input visibly moves the Cannon camera while `view_mode` remains `cannon`; the Overview state remains unchanged.
+- [x] **8.2** Preserve and reset the correct Cannon context.
+  - Change: snapshot Cannon exploration across Shot Follow, reset it when Cannon is explicitly reselected or the launcher source changes, and make camera reset restore the active preset instead of forcing Overview.
+  - Accept: `Tab` restores the exact explored Cannon pose, while explicit Cannon reset/source relocation returns to the authored local pose.
+- [x] **8.3** Replace the transition regression with local-exploration evidence.
+  - Change: update camera/input contracts and capture a real 1280 by 720 Cannon frame after combined local pan, orbit, and zoom.
+  - Accept: focused and full checks pass, the rendered view remains near the cannon without a top-view jump, and no task-owned quality finding remains.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -222,7 +243,7 @@ Validation rules:
 | --- | --- | --- |
 | A material fact contradicts this contract | Stop the affected branch and revise this contract before continuing | Do not select a new product, architecture, dependency, or UX contract during implementation |
 | Preview-only build changes visible terrain/goal/launcher parity | Restore the missing visual owner while keeping physics bodies omitted | Do not cache fifteen full gameplay worlds or change prepared artifacts |
-| Cannon-to-Overview transition jumps before input is applied | Snap only the preset transition, then apply the existing bounded input | Do not add a second camera controller |
+| Cannon exploration approaches a map-wide or top-down composition | Tighten Cannon-local pan, yaw, pitch, or distance bounds in the existing rig | Do not add a second camera controller or silently enter Overview |
 | Localized Start copy clips | Shorten to `LV n 시작 →` / `START LV n →` and preserve the 44 px target | Do not enlarge it into another dominant circle or panel |
 
 Implementation-local discoveries may be handled inside the locked contract when they cannot change scope, visible behavior, ownership, architecture, safety, or acceptance.
@@ -232,7 +253,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Phase 7 — the camera regression retained the exact Cannon transform for thirty frames after maximum aim, elevation, and power edits; the real 1280 by 720 render preserved the source-relative rear view while the launcher changed direction; all twenty-four focused suite checks, `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
+- Last completed gate: Phase 8 — Cannon retained its view through bounded local pan, orbit, arrow, and zoom input; exact explored state returned after Shot Follow, active reset and source relocation restored the authored local pose, base/explored 1280 by 720 renders remained near the launcher, and all twenty-four focused suite checks, `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
 - Update rule: after each phase passes, record concise evidence, check its tasks, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

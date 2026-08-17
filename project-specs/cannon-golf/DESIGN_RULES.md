@@ -92,10 +92,13 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon perspective is a selectable source-relative coordinate preset, not a
-  navigation lock. Direct pan, orbit, arrow-pan, or zoom input leaves Cannon for
-  Overview and then applies that same input. Overview remains the complete-course
-  exploration owner.
+- Cannon perspective is a selectable source-relative coordinate preset with
+  bounded local exploration. Left-drag and arrow keys pan around the selected
+  source, right-drag orbits within a restrained rear/local range, and the wheel
+  changes local distance without switching to Overview. Keep this state
+  independent from Overview and prevent it from reaching a top-down or
+  complete-course composition. Only the explicit Overview action opens the
+  complete-course camera.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
   exact stored pre-follow state. A confirmed goal also returns there immediately
@@ -107,9 +110,9 @@ coefficients, stage data formats, or code ownership.
   clear selection, alter aim, or invalidate confirmed goals. Returning to
   planning must restore a readable course framing.
 - The high-oblique reset frames the complete course. The cannon reset returns
-  to the selected source's local base direction. Pan, orbit, and bounded zoom
-  still expose the full course, and the course selection preview frames its
-  full depth.
+  to the selected source's local base direction. Overview pan, orbit, and
+  bounded zoom expose the full course; Cannon exploration stays near its source.
+  The course selection preview frames the course's full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language

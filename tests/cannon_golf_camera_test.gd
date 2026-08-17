@@ -247,22 +247,74 @@ func _assert_camera_preset_interaction() -> void:
 			and game.planning_view == &"cannon",
 			"Click jitter below the drag threshold must retain Cannon view.")
 	game._end_planning_drag()
+	var overview_pan := game.planning_pan
+	var overview_zoom := game.planning_zoom
+	var overview_orbit := game._camera_rig.orbit_degrees
 	_assert_true(game.orbit_planning(Vector2(40.0, 12.0)),
-			"Orbit after Cannon must continue as Overview exploration.")
+			"Right drag must orbit within Cannon exploration.")
+	game.pan_planning(Vector2.RIGHT)
+	_assert_true(game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(24.0, -8.0)),
+			"Left drag must pan within Cannon exploration.")
+	_assert_true(game.zoom_planning(1.0), "Wheel input must zoom within Cannon exploration.")
 	game._camera_rig.update(1.0)
 	_assert_true(
-		game.planning_view == &"oblique" \
-				and not game._camera_rig.orbit_degrees.is_zero_approx() \
+		game.planning_view == &"cannon" \
+				and not game._camera_rig.cannon_pan_offset.is_zero_approx() \
+				and not game._camera_rig.cannon_orbit_degrees.is_zero_approx() \
+				and game._camera_rig.cannon_zoom > CannonGolfCourseCameraRig.DEFAULT_ZOOM \
+				and game.planning_pan.is_equal_approx(overview_pan) \
+				and is_equal_approx(game.planning_zoom, overview_zoom) \
+				and game._camera_rig.orbit_degrees.is_equal_approx(overview_orbit) \
 				and not game._camera.global_transform.is_equal_approx(cannon_transform),
-		"Exploration input must leave the Cannon preset and move the Overview camera."
+		"Cannon exploration must move locally without changing view or Overview state."
 	)
-	game.set_planning_view(&"cannon")
-	game.pan_planning(Vector2.RIGHT)
-	_assert_true(game.planning_view == &"oblique" and not game.planning_pan.is_zero_approx(),
-			"Arrow pan after Cannon must enter Overview and apply movement.")
-	game.set_planning_view(&"cannon")
-	_assert_true(game.zoom_planning(1.0) and game.planning_view == &"oblique",
-			"Wheel zoom after Cannon must enter Overview and apply zoom.")
+	var explored_cannon_transform := game._camera.global_transform
+	_assert_true(game.fire(), "Explored Cannon state must permit Fire.")
+	_assert_true(game.return_to_planning_view(), "Tab return must restore explored Cannon.")
+	_assert_true(
+		game.planning_view == &"cannon" \
+				and game._camera.global_transform.is_equal_approx(explored_cannon_transform),
+		"Shot Follow return must restore the exact explored Cannon pose."
+	)
+	_assert_true(game.fire(), "Explored Cannon state must permit a reset from Shot Follow.")
+	game.reset_planning_camera()
+	_assert_true(
+		game._camera_rig.camera_mode == &"planning" \
+				and game.planning_view == &"cannon" \
+				and game._camera_rig.cannon_pan_offset.is_zero_approx() \
+				and is_equal_approx(
+					game._camera_rig.cannon_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM
+				) \
+				and game._camera_rig.cannon_orbit_degrees.is_zero_approx() \
+				and game._camera.global_transform.is_equal_approx(cannon_transform),
+		"Reset from Cannon Follow must restore its authored pose without selecting Overview."
+	)
+	game.orbit_planning(Vector2(-10000.0, 10000.0))
+	game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-10000.0, 10000.0))
+	game.zoom_planning(-100.0)
+	game._camera_rig.update(1.0)
+	var extreme_forward := -game._camera.global_transform.basis.z
+	_assert_true(
+		game.planning_view == &"cannon" \
+				and game._camera_rig.cannon_pan_offset.length() \
+						<= CannonGolfCourseCameraRig.CANNON_MAXIMUM_PAN_DISTANCE + 0.01 \
+				and absf(game._camera_rig.cannon_orbit_degrees.x) \
+						<= CannonGolfCourseCameraRig.CANNON_MAXIMUM_YAW_ORBIT \
+				and absf(game._camera_rig.cannon_orbit_degrees.y) \
+						<= CannonGolfCourseCameraRig.CANNON_MAXIMUM_PITCH_ORBIT \
+				and is_equal_approx(
+					game._camera_rig.cannon_zoom,
+					CannonGolfCourseCameraRig.CANNON_MINIMUM_ZOOM
+				) \
+				and rad_to_deg(extreme_forward.angle_to(Vector3.DOWN)) > 40.0 \
+				and game._camera.global_position.distance_to(
+					game._course_builder.launcher.cannon_perspective_anchor()
+				) < 60.0,
+		"Extreme Cannon input must remain bounded, local, and away from top-down."
+	)
+	overview_button.pressed.emit()
+	_assert_true(game.planning_view == &"oblique",
+			"Only an explicit Overview choice must select the overview preset.")
 	game.queue_free()
 	await process_frame
 

@@ -28,6 +28,10 @@ func _run() -> void:
 	var fire_pan := game.planning_pan
 	var fire_zoom := game.planning_zoom
 	var fire_orbit := game._camera_rig.orbit_degrees
+	var fire_cannon_pan := game._camera_rig.cannon_pan_offset
+	var fire_cannon_zoom := game._camera_rig.cannon_zoom
+	var fire_cannon_orbit := game._camera_rig.cannon_orbit_degrees
+	var fire_cannon_transform := game._camera.global_transform
 	await _push_space()
 	_assert_ball_count(game, 1, "One physical Space press must create exactly one ball.")
 	_assert_true(
@@ -35,14 +39,21 @@ func _run() -> void:
 				and game.planning_view == fire_view
 				and game.planning_pan.is_equal_approx(fire_pan)
 				and is_equal_approx(game.planning_zoom, fire_zoom)
-				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit),
+				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit) \
+				and game._camera_rig.cannon_pan_offset.is_equal_approx(fire_cannon_pan) \
+				and is_equal_approx(game._camera_rig.cannon_zoom, fire_cannon_zoom) \
+				and game._camera_rig.cannon_orbit_degrees.is_equal_approx(fire_cannon_orbit),
 		"Physical Fire must follow the newest ball without changing the stored planning state."
 	)
 	await _push_key(KEY_TAB)
 	_assert_true(
 		game._camera_rig.camera_mode == &"planning" and game.planning_view == fire_view
 				and game.planning_pan.is_equal_approx(fire_pan)
-				and is_equal_approx(game.planning_zoom, fire_zoom),
+				and is_equal_approx(game.planning_zoom, fire_zoom) \
+				and game._camera_rig.cannon_pan_offset.is_equal_approx(fire_cannon_pan) \
+				and is_equal_approx(game._camera_rig.cannon_zoom, fire_cannon_zoom) \
+				and game._camera_rig.cannon_orbit_degrees.is_equal_approx(fire_cannon_orbit) \
+				and game._camera.global_transform.is_equal_approx(fire_cannon_transform),
 		"Tab must restore the exact pre-fire planning state."
 	)
 	await _push_key(KEY_TAB)

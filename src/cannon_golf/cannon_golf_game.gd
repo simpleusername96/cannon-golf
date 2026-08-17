@@ -382,29 +382,29 @@ func return_to_planning_view() -> bool:
 
 
 func pan_planning(screen_direction: Vector2) -> void:
-	_activate_overview_exploration()
+	_activate_planning_camera()
 	_camera_rig.pan(screen_direction)
 
 
 func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
-	_activate_overview_exploration()
+	_activate_planning_camera()
 	return _camera_rig.pan_drag(screen_position, relative)
 
 
 func orbit_planning(relative: Vector2) -> bool:
-	_activate_overview_exploration()
+	_activate_planning_camera()
 	return _camera_rig.orbit(relative)
 
 
 func zoom_planning(wheel_steps: float) -> bool:
-	_activate_overview_exploration()
+	_activate_planning_camera()
 	return _camera_rig.zoom_by_steps(wheel_steps)
 
 
 func reset_planning_camera() -> void:
 	_end_planning_drag()
 	_camera_rig.reset_planning_view()
-	_course_builder.launcher.set_cannon_view_active(false)
+	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
 
@@ -414,18 +414,6 @@ func _activate_planning_camera() -> void:
 		return
 	_camera_rig.return_to_planning()
 	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
-	_hud.set_camera_mode(&"planning")
-
-
-## Overview and Cannon are location presets, not mutually exclusive input modes.
-## Any direct exploration gesture leaves Cannon before applying the same input.
-func _activate_overview_exploration() -> void:
-	_activate_planning_camera()
-	if _camera_rig.view_mode == &"oblique":
-		return
-	_camera_rig.set_view(&"oblique")
-	_course_builder.launcher.set_cannon_view_active(false)
-	_hud.set_view(_camera_rig.view_mode)
 	_hud.set_camera_mode(&"planning")
 
 

@@ -257,15 +257,19 @@ cannon composition.
   zoom-in actions move from reset framing to a `28 m` desired minimum distance;
   six zoom-out actions reach the complete-course fit. A swept camera boom
   shortens before terrain instead of lifting the camera above an obstruction.
-  Arrow keys pan, and `Home` or the compact reset action must
-  restore the authored high-oblique pose. A click without drag must not refocus
-  the camera. Starting any direct course exploration during Shot Follow first
-  returns to planning. Launch controls remain editable in either camera mode.
+  Arrow keys pan, and `Home` or the compact reset action must restore the active
+  preset's authored pose. A click without drag must not refocus the camera.
+  Starting any direct camera exploration during Shot Follow first returns to
+  planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  The high-oblique reset frames the complete presentation bounds. Cannon view
-  is a fixed source-relative perspective pose; map exploration remains owned by
-  overview.
+  Cannon interaction uses the same drag, wheel, compact zoom, and arrow inputs
+  for bounded inspection of the selected source's nearby surroundings without
+  switching view. Its local pan, orbit, and zoom state is independent from
+  Overview and cannot reach a top-down or complete-course composition. Only an
+  explicit Overview selection opens the complete-course camera. The
+  high-oblique reset frames the complete presentation bounds, while the Cannon
+  reset restores its authored local pose.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 

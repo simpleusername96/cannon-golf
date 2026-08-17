@@ -106,15 +106,12 @@ func _capture() -> void:
 	elif requested_state == "hud_icon_focus":
 		game.set_planning_view(&"cannon")
 		(game._hud.get_node("%CannonButton") as Button).grab_focus()
-	elif requested_state == "cannon_to_overview":
+	elif requested_state == "cannon_explored":
 		game.set_planning_view(&"cannon")
-		game._on_setup_changed(51.0, 50.0, 50.0)
-		game._camera_rig.update(1.0)
 		cannon_start_transform = game._camera.global_transform
-		game.pan_planning(Vector2.RIGHT)
-		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(4.0, 2.0))
-		game.orbit_planning(Vector2(4.0, 2.0))
-		game.zoom_planning(1.0)
+		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-120.0, 42.0))
+		game.orbit_planning(Vector2(180.0, -70.0))
+		game.zoom_planning(2.0)
 	elif requested_state == "explored":
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
@@ -224,7 +221,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "cannon", "cannon_click", "cannon_setup_stable", "hud_icon_focus", "cannon_to_overview", "explored", "panned", "zoom_close", "zoom_far",
+		"planning", "cannon", "cannon_click", "cannon_setup_stable", "cannon_explored", "hud_icon_focus", "explored", "panned", "zoom_close", "zoom_far",
 		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
 		"halo_cannon_down",
 		"relay_initial", "relay_overview",
@@ -239,13 +236,17 @@ func _capture() -> void:
 			push_error("Explored capture did not retain an orbit and zoom change.")
 			quit(1)
 			return
-	if game != null and requested_state == "cannon_to_overview":
-		if game.planning_view != &"oblique" \
-				or game.planning_pan.is_zero_approx() \
-				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
-				or game._camera_rig.orbit_degrees.is_zero_approx() \
+	if game != null and requested_state == "cannon_explored":
+		if game.planning_view != &"cannon" \
+				or game._camera_rig.cannon_pan_offset.is_zero_approx() \
+				or is_equal_approx(
+					game._camera_rig.cannon_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM
+				) \
+				or game._camera_rig.cannon_orbit_degrees.is_zero_approx() \
+				or not game.planning_pan.is_zero_approx() \
+				or not game._camera_rig.orbit_degrees.is_zero_approx() \
 				or game._camera.global_transform.is_equal_approx(cannon_start_transform):
-			push_error("Cannon exploration capture did not enter and move the overview camera.")
+			push_error("Cannon exploration capture did not retain and move its local camera.")
 			quit(1)
 			return
 	if game != null and requested_state == "cannon_click" \

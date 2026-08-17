@@ -854,9 +854,25 @@ in `OPEN_QUESTIONS.md`.
   physical launcher and aim display without resubmitting or interpolating the
   camera pose.
 - Selecting a different launcher source may relocate the Cannon preset.
-  Explicit view buttons and deliberate map pan, orbit, wheel zoom, or arrow-pan
-  keep their D-052 behavior; ordinary setup controls and uncommitted clicks do
-  not change the selected view or its camera transform.
+  Ordinary setup controls and uncommitted clicks do not change the selected
+  view or its camera transform. D-056 replaces D-052's exploration transition
+  for deliberate camera input.
+
+### D-056 — Keep local exploration inside Cannon
+
+- Status: accepted on 2026-08-17; supersedes D-047's overview-only exploration
+  clause and D-052's automatic Cannon-to-Overview transition. It preserves
+  D-055's fixed camera behavior for launch-setup edits.
+- Left-drag, right-drag, the mouse wheel, compact zoom actions, and arrow-pan
+  manipulate an independent, bounded Cannon exploration state when Cannon is
+  active. These inputs must not select Overview or reuse its pan, orbit, and
+  zoom values.
+- Cannon exploration remains close to the selected launcher and cannot become
+  top-down or course-wide. Explicitly reselecting Cannon, resetting the active
+  camera, or selecting another launcher source restores the authored local
+  pose. Shot Follow stores and restores the exact explored Cannon pose.
+- Overview is entered only through its explicit HUD action or `1` shortcut and
+  remains the owner of complete-course inspection.
 
 ## Rationale
 
