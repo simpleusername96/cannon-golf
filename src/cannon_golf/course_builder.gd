@@ -21,7 +21,16 @@ func build(
 		selected_course: CannonGolfCourseData,
 		prepared: CannonGolfPreparedCourse = null
 ) -> bool:
-	return _build(selected_course, prepared, false)
+	return _build(selected_course, prepared, false, false)
+
+
+## Course selection reuses the exact prepared visuals without registering
+## gameplay-only terrain collision bodies in the active physics world.
+func build_preview(
+		selected_course: CannonGolfCourseData,
+		prepared: CannonGolfPreparedCourse
+) -> bool:
+	return _build(selected_course, prepared, false, true)
 
 
 ## Offline authoring seam for optional exact-physics certification. Shipping
@@ -31,13 +40,14 @@ func build_certification_candidate(
 		selected_course: CannonGolfCourseData,
 		prepared: CannonGolfPreparedCourse
 ) -> bool:
-	return _build(selected_course, prepared, true)
+	return _build(selected_course, prepared, true, false)
 
 
 func _build(
 		selected_course: CannonGolfCourseData,
 		prepared: CannonGolfPreparedCourse,
-		allow_certification_candidate: bool
+		allow_certification_candidate: bool,
+		preview_only: bool
 ) -> bool:
 	if selected_course == null or not selected_course.is_valid():
 		push_error("Course builder requires valid authored data.")
@@ -59,30 +69,37 @@ func _build(
 	course.is_prepared_runtime_projection = course.is_constraint_recipe()
 	prepared_course = resolved
 	_apply_prepared_course_data()
-	terrain_body = StaticBody3D.new()
-	terrain_body.name = "Terrain"
-	terrain_body.collision_layer = 1
-	terrain_body.collision_mask = 0
-	terrain_body.add_to_group(&"impact_mark_surface")
-	var terrain_physics := PhysicsMaterial.new()
-	terrain_physics.bounce = 0.10
-	terrain_physics.friction = 0.86
-	terrain_body.physics_material_override = terrain_physics
-	add_child(terrain_body)
-	var top_collision := CollisionShape3D.new()
-	top_collision.name = "TerrainTopCollision"
-	top_collision.shape = prepared_course.top_shape
-	terrain_body.add_child(top_collision)
-	var shell_collision := CollisionShape3D.new()
-	shell_collision.name = "TerrainShellCollision"
-	shell_collision.shape = prepared_course.skirt_shape
-	terrain_body.add_child(shell_collision)
+	var terrain_root: Node3D
+	if preview_only:
+		terrain_root = Node3D.new()
+		terrain_root.name = "TerrainPreview"
+		add_child(terrain_root)
+	else:
+		terrain_body = StaticBody3D.new()
+		terrain_body.name = "Terrain"
+		terrain_body.collision_layer = 1
+		terrain_body.collision_mask = 0
+		terrain_body.add_to_group(&"impact_mark_surface")
+		var terrain_physics := PhysicsMaterial.new()
+		terrain_physics.bounce = 0.10
+		terrain_physics.friction = 0.86
+		terrain_body.physics_material_override = terrain_physics
+		add_child(terrain_body)
+		var top_collision := CollisionShape3D.new()
+		top_collision.name = "TerrainTopCollision"
+		top_collision.shape = prepared_course.top_shape
+		terrain_body.add_child(top_collision)
+		var shell_collision := CollisionShape3D.new()
+		shell_collision.name = "TerrainShellCollision"
+		shell_collision.shape = prepared_course.skirt_shape
+		terrain_body.add_child(shell_collision)
+		terrain_root = terrain_body
 	var terrain_mesh := MeshInstance3D.new()
 	terrain_mesh.name = "TerrainMesh"
 	terrain_mesh.mesh = prepared_course.render_mesh
 	terrain_mesh.material_override = _terrain_material_with_goal_regions()
 	terrain_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
-	terrain_body.add_child(terrain_mesh)
+	terrain_root.add_child(terrain_mesh)
 	launcher = CannonGolfLauncher.new()
 	launcher.name = "Launcher"
 	add_child(launcher)

@@ -56,6 +56,9 @@ func _run() -> void:
 		(app.get_node("PreviewWorld") as CannonGolfPreviewWorld)._builder.prepared_course == prepared,
 		"Preview must consume the exact ready prepared artifact."
 	)
+	var preview_world := app.get_node("PreviewWorld") as CannonGolfPreviewWorld
+	_assert(preview_world._builder.terrain_body == null,
+			"Course selection previews must not register gameplay terrain collision bodies.")
 
 	var game := app.start_selected_course(relay_index)
 	await process_frame
@@ -86,6 +89,8 @@ func _run() -> void:
 	await process_frame
 	_assert(app.current_screen == CannonGolfApp.SCREEN_COURSE_SELECT, "course-select navigation must reach course select")
 	_assert(app.active_game == null, "leaving gameplay must release the game instance")
+	_assert(preview_world._camera.current,
+			"Returning to course selection must immediately reactivate the retained preview camera.")
 
 	app.show_main_menu(false)
 	await process_frame

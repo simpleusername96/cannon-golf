@@ -2,7 +2,7 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-16
+last_reviewed: 2026-08-17
 canonical_for: Current visual composition and UI direction for the provisional Cannon Golf project
 scope: Camera, terrain readability, impact marks, settlement goals, devices, HUD, and visual hierarchy
 source: Paint Mountain design system plus user direction recorded on 2026-08-12
@@ -92,8 +92,10 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon perspective is a persistent selectable aim preset but not an
-  exploration camera. Overview remains the complete-course planning owner.
+- Cannon perspective is a selectable source-relative coordinate preset, not a
+  navigation lock. Direct pan, orbit, arrow-pan, or zoom input leaves Cannon for
+  Overview and then applies that same input. Overview remains the complete-course
+  exploration owner.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
   exact stored pre-follow state. A confirmed goal also returns there immediately
@@ -252,7 +254,8 @@ coefficients, stage data formats, or code ownership.
   count once. Opening or changing selection must scroll the selected row into
   view. Do not add a list card, vertical section divider, difficulty label,
   stars, score, or duplicated level metadata. Back remains a surface-free text
-  action and Start uses the same circular amber action language as Fire.
+  action. Start is a compact horizontal amber action that names the selected
+  level and uses a forward cue; it must not reuse Fire's circular action shape.
 - Use one primary action per state. During launch setup, that action is Fire.
 - After the final goal confirms, place the existing stage-clear panel at the
   viewport center and focus its one primary result action.

@@ -160,6 +160,8 @@ text = "해상도"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_type_variation = &"SettingsOptionButton"
+theme_override_constants/arrow_margin = 14
 text = "1280x720"
 
 [node name="QualityLabel" type="Label" parent="Panel/Margin/Content/Columns/Display"]
@@ -172,6 +174,8 @@ text = "품질"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_type_variation = &"SettingsOptionButton"
+theme_override_constants/arrow_margin = 14
 text = "중간"
 
 [node name="LanguageLabel" type="Label" parent="Panel/Margin/Content/Columns/Display"]
@@ -184,6 +188,8 @@ text = "언어"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
+theme_type_variation = &"SettingsOptionButton"
+theme_override_constants/arrow_margin = 14
 text = "한국어"
 
 [node name="Footer" type="HBoxContainer" parent="Panel/Margin/Content"]

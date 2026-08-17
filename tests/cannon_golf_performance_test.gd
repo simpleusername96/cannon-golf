@@ -45,6 +45,16 @@ func _run() -> void:
 		CannonGolfCourseTerrainFactory.generation_build_count() == generation_count,
 		"The app selection request must never synchronously generate terrain."
 	)
+	var prepared_course := load(CannonGolfCourseCatalog.prepared_path_for(
+		CannonGolfCourseCatalog.course_at(9)
+	)) as CannonGolfPreparedCourse
+	var preview_builder := CannonGolfCourseBuilder.new()
+	root.add_child(preview_builder)
+	_assert(preview_builder.build_preview(CannonGolfCourseCatalog.course_at(9), prepared_course),
+			"The selected course must support preview-only construction.")
+	_assert(preview_builder.terrain_body == null \
+			and preview_builder.find_children("*", "CollisionShape3D", true, false).is_empty(),
+			"Preview construction must not create gameplay terrain collision shapes.")
 	_assert(
 		(app.get_node("ScreenLayer/CourseSelect/Start") as Button).disabled,
 		"Start must remain disabled until the latest artifact becomes ready."
@@ -53,6 +63,7 @@ func _run() -> void:
 		await process_frame
 	app.queue_free()
 	course_select.queue_free()
+	preview_builder.queue_free()
 	for _frame in range(3):
 		await process_frame
 	if not _failed:

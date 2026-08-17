@@ -809,6 +809,22 @@ in `OPEN_QUESTIONS.md`.
   English text fit. Selected and focus states must remain distinguishable without
   relying on hue alone.
 
+### D-052 — Treat view controls as presets and separate Start from Fire
+
+- Status: accepted on 2026-08-17; supersedes D-051's shared circular Start/Fire
+  clause and the Cannon exploration-input rejection introduced while matching
+  the prior HUD snapshot. It preserves Fire/camera independence and Overview's
+  complete-course ownership.
+- Overview and Cannon buttons move the camera to their authored coordinates.
+  Cannon does not trap navigation: pan, orbit, arrow-pan, or zoom returns to
+  Overview and applies the requested movement. Explicit buttons continue to
+  switch directly in both directions.
+- Fire remains the circular amber setup action. Course Start is a compact
+  horizontal amber action that names the selected level and includes a forward
+  cue, so entry and launch cannot be mistaken for the same operation.
+- Keep the compact cannon-source selector in the top band. Settings option text
+  and arrows use balanced internal padding without increasing control height.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

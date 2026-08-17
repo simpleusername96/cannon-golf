@@ -61,6 +61,14 @@ func _run() -> void:
 	_assert(settings.get_node("Panel/Margin/Content/Columns/Display/Resolution") is OptionButton, "settings must expose resolution")
 	_assert(settings.get_node("Panel/Margin/Content/Columns/Display/Quality") is OptionButton, "settings must expose quality")
 	_assert(settings.get_node("Panel/Margin/Content/Columns/Display/Language") is OptionButton, "settings must expose language")
+	for option_name in ["Resolution", "Quality", "Language"]:
+		var option := settings.get_node("Panel/Margin/Content/Columns/Display/%s" % option_name) as OptionButton
+		var normal := option.get_theme_stylebox(&"normal")
+		_assert(option.custom_minimum_size.y == 44.0,
+				"settings option padding must not increase control height: %s" % option_name)
+		_assert(normal.content_margin_left >= 14.0 and normal.content_margin_right >= 14.0 \
+				and option.get_theme_constant(&"arrow_margin") >= 14,
+				"settings option values and arrows need balanced inner padding: %s" % option_name)
 	for node in _all_descendants(settings):
 		if node is Label or node is Button:
 			var copy := String(node.text)

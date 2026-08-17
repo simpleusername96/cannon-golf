@@ -376,30 +376,22 @@ func return_to_planning_view() -> bool:
 
 
 func pan_planning(screen_direction: Vector2) -> void:
-	_activate_planning_camera()
-	if _camera_rig.view_mode != &"oblique":
-		return
+	_activate_overview_exploration()
 	_camera_rig.pan(screen_direction)
 
 
 func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
-	_activate_planning_camera()
-	if _camera_rig.view_mode != &"oblique":
-		return false
+	_activate_overview_exploration()
 	return _camera_rig.pan_drag(screen_position, relative)
 
 
 func orbit_planning(relative: Vector2) -> bool:
-	_activate_planning_camera()
-	if _camera_rig.view_mode != &"oblique":
-		return false
+	_activate_overview_exploration()
 	return _camera_rig.orbit(relative)
 
 
 func zoom_planning(wheel_steps: float) -> bool:
-	_activate_planning_camera()
-	if _camera_rig.view_mode != &"oblique":
-		return false
+	_activate_overview_exploration()
 	return _camera_rig.zoom_by_steps(wheel_steps)
 
 
@@ -419,10 +411,20 @@ func _activate_planning_camera() -> void:
 	_hud.set_camera_mode(&"planning")
 
 
-func _begin_planning_drag(button: MouseButton) -> void:
+## Overview and Cannon are location presets, not mutually exclusive input modes.
+## Any direct exploration gesture leaves Cannon before applying the same input.
+func _activate_overview_exploration() -> void:
 	_activate_planning_camera()
-	if _camera_rig.view_mode != &"oblique":
+	if _camera_rig.view_mode == &"oblique":
 		return
+	_camera_rig.set_view(&"oblique")
+	_course_builder.launcher.set_cannon_view_active(false)
+	_hud.set_view(_camera_rig.view_mode)
+	_hud.set_camera_mode(&"planning")
+
+
+func _begin_planning_drag(button: MouseButton) -> void:
+	_activate_overview_exploration()
 	_planning_drag_active = true
 	_planning_drag_button = button
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG)

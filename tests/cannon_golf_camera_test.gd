@@ -177,9 +177,9 @@ func _run() -> void:
 		rig.queue_free()
 		await process_frame
 	await _assert_all_preview_courses_fit()
-	await _assert_cannon_input_stability()
+	await _assert_camera_preset_interaction()
 	if not _failed:
-		print("Cannon Golf overview, preview framing, cannon stability, and follow camera contract passed.")
+		print("Cannon Golf overview, preview framing, preset interaction, and follow camera contract passed.")
 	quit(1 if _failed else 0)
 
 
@@ -210,7 +210,7 @@ func _assert_all_preview_courses_fit() -> void:
 	await process_frame
 
 
-func _assert_cannon_input_stability() -> void:
+func _assert_camera_preset_interaction() -> void:
 	var game := GAME_SCENE.instantiate() as CannonGolfGame
 	game.initial_course_index = 0
 	game.initial_prepared_course = load(
@@ -218,26 +218,34 @@ func _assert_cannon_input_stability() -> void:
 	) as CannonGolfPreparedCourse
 	root.add_child(game)
 	await process_frame
-	game.set_planning_view(&"cannon")
+	var cannon_button := game._hud.get_node("%CannonButton") as Button
+	var overview_button := game._hud.get_node("%ObliqueButton") as Button
+	cannon_button.pressed.emit()
+	_assert_true(game.planning_view == &"cannon" and cannon_button.button_pressed,
+			"The Cannon button must select the Cannon preset.")
+	overview_button.pressed.emit()
+	_assert_true(game.planning_view == &"oblique" and overview_button.button_pressed,
+			"The Overview button must leave Cannon and select Overview.")
+	cannon_button.pressed.emit()
 	game._on_setup_changed(51.0, 50.0, 50.0)
 	game._camera_rig.update(1.0)
-	var stable_transform := game._camera.global_transform
-	game.pan_planning(Vector2.RIGHT)
-	_assert_true(not game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(4.0, 2.0)),
-			"Cannon view must reject overview pan drag without changing view.")
-	_assert_true(not game.orbit_planning(Vector2(4.0, 2.0)),
-			"Cannon view must reject overview orbit without changing view.")
-	_assert_true(not game.zoom_planning(1.0),
-			"Cannon view must reject overview wheel zoom without changing view.")
+	var cannon_transform := game._camera.global_transform
+	_assert_true(game.orbit_planning(Vector2(40.0, 12.0)),
+			"Orbit after Cannon must continue as Overview exploration.")
 	game._camera_rig.update(1.0)
 	_assert_true(
-		game.planning_view == &"cannon" \
-				and game.planning_pan.is_zero_approx() \
-				and is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
-				and game._camera_rig.orbit_degrees.is_zero_approx() \
-				and game._camera.global_transform.is_equal_approx(stable_transform),
-		"Aim movement and overview-only input must preserve the selected cannon camera."
+		game.planning_view == &"oblique" \
+				and not game._camera_rig.orbit_degrees.is_zero_approx() \
+				and not game._camera.global_transform.is_equal_approx(cannon_transform),
+		"Exploration input must leave the Cannon preset and move the Overview camera."
 	)
+	game.set_planning_view(&"cannon")
+	game.pan_planning(Vector2.RIGHT)
+	_assert_true(game.planning_view == &"oblique" and not game.planning_pan.is_zero_approx(),
+			"Arrow pan after Cannon must enter Overview and apply movement.")
+	game.set_planning_view(&"cannon")
+	_assert_true(game.zoom_planning(1.0) and game.planning_view == &"oblique",
+			"Wheel zoom after Cannon must enter Overview and apply zoom.")
 	game.queue_free()
 	await process_frame
 

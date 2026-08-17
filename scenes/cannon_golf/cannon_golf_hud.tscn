@@ -63,10 +63,13 @@ vertical_alignment = 1
 
 [node name="LauncherSource" type="Control" parent="Root"]
 layout_mode = 0
-offset_left = 36.0
-offset_top = 74.0
-offset_right = 368.0
-offset_bottom = 124.0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -166.0
+offset_top = 20.0
+offset_right = 166.0
+offset_bottom = 70.0
+grow_horizontal = 2
 mouse_filter = 2
 
 [node name="Controls" type="HBoxContainer" parent="Root/LauncherSource"]

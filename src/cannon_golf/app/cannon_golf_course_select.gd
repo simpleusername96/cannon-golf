@@ -30,7 +30,7 @@ func _ready() -> void:
 	_build_course_buttons()
 	_back.pressed.connect(func() -> void: back_requested.emit())
 	_start.pressed.connect(_on_start_pressed)
-	_refresh_course_copy()
+	_refresh_all_copy()
 
 
 func open() -> void:
@@ -53,8 +53,12 @@ func selected_course_index() -> int:
 func select_course(index: int, emit_signal: bool = true) -> bool:
 	if index < 0 or index >= _courses.size():
 		return false
+	var previous_index := _selected_course_index
 	_selected_course_index = index
-	_refresh_course_copy()
+	_refresh_start_copy()
+	if previous_index != index:
+		_refresh_course_row(previous_index)
+	_refresh_course_row(index)
 	_course_buttons[index].grab_focus.call_deferred()
 	_ensure_selected_visible.call_deferred()
 	if emit_signal:
@@ -71,19 +75,25 @@ func apply_language(language: String) -> void:
 	var english := language == "en"
 	$Heading.text = "LEVEL SELECT" if english else "레벨 선택"
 	_back.text = "←  BACK" if english else "←  뒤로"
-	_refresh_course_copy()
+	_refresh_all_copy()
 
 
 func set_course_preparation_state(state: int) -> void:
 	_preparation_state = state
-	_refresh_course_copy()
+	_refresh_start_copy()
 
 
 func course_preparation_state() -> int:
 	return _preparation_state
 
 
-func _refresh_course_copy() -> void:
+func _refresh_all_copy() -> void:
+	_refresh_start_copy()
+	for index in range(_course_buttons.size()):
+		_refresh_course_row(index)
+
+
+func _refresh_start_copy() -> void:
 	if _courses.is_empty():
 		_start.disabled = true
 		return
@@ -93,14 +103,21 @@ func _refresh_course_copy() -> void:
 	elif _preparation_state == CoursePreparationState.FAILED:
 		_start.text = "PREPARATION FAILED" if _language == "en" else "준비 실패"
 	else:
-		_start.text = "START" if _language == "en" else "시작"
-	for index in range(_course_buttons.size()):
-		var button := _course_buttons[index]
-		button.text = _course_label(index, _selected_course_index == index)
-		button.add_theme_font_size_override(&"font_size", 20 if _selected_course_index == index else 18)
-		button.set("accessibility_name", button.text)
-		button.button_pressed = _selected_course_index == index
-	_ensure_selected_visible.call_deferred()
+		var level := CannonGolfCourseCatalog.level_label(_selected_course_index)
+		_start.text = "START %s  →" % level if _language == "en" \
+				else "%s 시작  →" % level
+	_start.set("accessibility_name", _start.text)
+
+
+func _refresh_course_row(index: int) -> void:
+	if index < 0 or index >= _course_buttons.size():
+		return
+	var button := _course_buttons[index]
+	var selected := _selected_course_index == index
+	button.text = _course_label(index, selected)
+	button.add_theme_font_size_override(&"font_size", 20 if selected else 18)
+	button.set("accessibility_name", button.text)
+	button.set_pressed_no_signal(selected)
 
 
 func course_buttons() -> Array[Button]:

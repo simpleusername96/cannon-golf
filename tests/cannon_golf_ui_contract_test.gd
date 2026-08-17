@@ -26,6 +26,9 @@ func _run() -> void:
 	for path in ["Root/BottomRail", "Root/TopActions", "Root/GoalProgress", "Root/LauncherSource"]:
 		_assert(not (hud.get_node(path) is PanelContainer), "Persistent normal-play chrome must not use a panel surface: %s." % path)
 	_assert((hud.get_node("Root/LauncherSource") as Control).visible, "Every level must show the cannon-position selector.")
+	var launcher_source_rect := (hud.get_node("Root/LauncherSource") as Control).get_global_rect()
+	_assert(launcher_source_rect.end.y <= 72.0 and absf(launcher_source_rect.get_center().x - 640.0) <= 1.0,
+			"The cannon-position selector must remain centered in the top band.")
 	_assert((hud.get_node("%LauncherSourcePrevious") as Button).disabled \
 			and (hud.get_node("%LauncherSourceNext") as Button).disabled,
 		"A level with only Start must show two disabled source arrows."
@@ -226,6 +229,11 @@ func _run() -> void:
 	_assert(is_equal_approx((main_menu.get_node("%Play") as Button).size.x, 288.0), "Main-menu actions must retain their compact width.")
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
+	var course_start := course_select.get_node("%Start") as Button
+	_assert(course_start.theme_type_variation == &"CourseStartButton" \
+			and course_start.custom_minimum_size.y >= 44.0 \
+			and not is_equal_approx(course_start.custom_minimum_size.x, course_start.custom_minimum_size.y),
+			"Course Start must use a directional action shape distinct from circular Fire.")
 	_assert(
 		course_select.course_buttons().size() == 15,
 		"Course select must create fifteen reusable catalog rows."

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=59 format=3]
+[gd_resource type="Theme" load_steps=67 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/pretendard/PretendardVariable.woff2" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/panel_neutral_depth.png" id="2_neutral_depth"]
@@ -349,6 +349,114 @@ corner_radius_top_right = 64
 corner_radius_bottom_right = 64
 corner_radius_bottom_left = 64
 
+[sub_resource type="StyleBoxFlat" id="CourseStartNormal"]
+bg_color = Color(0.89, 0.604, 0.055, 1)
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="CourseStartHover"]
+bg_color = Color(0.95, 0.686, 0.18, 1)
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="CourseStartPressed"]
+bg_color = Color(0.82, 0.522, 0.035, 1)
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="CourseStartDisabled"]
+bg_color = Color(0.89, 0.604, 0.055, 0.12)
+content_margin_left = 22.0
+content_margin_top = 10.0
+content_margin_right = 22.0
+content_margin_bottom = 10.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.89, 0.604, 0.055, 0.42)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_right = 14
+corner_radius_bottom_left = 14
+
+[sub_resource type="StyleBoxFlat" id="SettingsOptionNormal"]
+bg_color = Color(1, 0.992157, 0.988235, 0.74)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.788235, 0.803922, 0.823529, 0.82)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SettingsOptionHover"]
+bg_color = Color(0.921569, 0.952941, 1, 1)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.439216, 0.666667, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SettingsOptionPressed"]
+bg_color = Color(0.823529, 0.886275, 1, 1)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="SettingsOptionDisabled"]
+bg_color = Color(0.831373, 0.839216, 0.85098, 0.46)
+content_margin_left = 14.0
+content_margin_top = 8.0
+content_margin_right = 14.0
+content_margin_bottom = 8.0
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.788235, 0.803922, 0.823529, 0.52)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="StyleBoxFlat" id="HudRailTrack"]
 bg_color = Color(0.09, 0.145, 0.22, 0.28)
 content_margin_top = 2.0
@@ -545,6 +653,19 @@ HudFireButton/colors/font_focus_color = Color(0.09, 0.145, 0.22, 1)
 HudFireButton/styles/hover = SubResource("AmberCircle")
 HudFireButton/styles/pressed = SubResource("AmberCircle")
 HudFireButton/styles/focus = SubResource("TopIconControl")
+CourseStartButton/base_type = &"Button"
+CourseStartButton/colors/font_color = Color(0.09, 0.145, 0.22, 1)
+CourseStartButton/colors/font_hover_color = Color(0.09, 0.145, 0.22, 1)
+CourseStartButton/colors/font_pressed_color = Color(0.09, 0.145, 0.22, 1)
+CourseStartButton/colors/font_focus_color = Color(0.09, 0.145, 0.22, 1)
+CourseStartButton/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.9)
+CourseStartButton/fonts/font = SubResource("FontWeight600")
+CourseStartButton/font_sizes/font_size = 19
+CourseStartButton/styles/normal = SubResource("CourseStartNormal")
+CourseStartButton/styles/hover = SubResource("CourseStartHover")
+CourseStartButton/styles/pressed = SubResource("CourseStartPressed")
+CourseStartButton/styles/disabled = SubResource("CourseStartDisabled")
+CourseStartButton/styles/focus = SubResource("Focus")
 HudRailSlider/base_type = &"HSlider"
 HudRailSlider/styles/slider = SubResource("HudRailTrack")
 HudRailSlider/styles/grabber_area = SubResource("HudRailFill")
@@ -691,6 +812,14 @@ SettingsValue/base_type = &"Label"
 SettingsValue/colors/font_color = Color(0.180392, 0.243137, 0.329412, 1)
 SettingsValue/fonts/font = SubResource("FontWeight600")
 SettingsValue/font_sizes/font_size = 16
+SettingsOptionButton/base_type = &"OptionButton"
+SettingsOptionButton/fonts/font = SubResource("FontWeight500")
+SettingsOptionButton/font_sizes/font_size = 16
+SettingsOptionButton/styles/normal = SubResource("SettingsOptionNormal")
+SettingsOptionButton/styles/hover = SubResource("SettingsOptionHover")
+SettingsOptionButton/styles/pressed = SubResource("SettingsOptionPressed")
+SettingsOptionButton/styles/disabled = SubResource("SettingsOptionDisabled")
+SettingsOptionButton/styles/focus = SubResource("Focus")
 ResultTitle/base_type = &"Label"
 ResultTitle/colors/font_color = Color(0.090196, 0.145098, 0.219608, 1)
 ResultTitle/fonts/font = SubResource("FontWeight700")

@@ -41,7 +41,7 @@ func show_course(index: int, prepared: CannonGolfPreparedCourse = null) -> bool:
 		return true
 	var replacement := CannonGolfCourseBuilder.new()
 	replacement.name = "PreviewCourseBuilder"
-	if not replacement.build(course, prepared):
+	if not replacement.build_preview(course, prepared):
 		replacement.free()
 		return false
 	add_child(replacement)
@@ -70,6 +70,8 @@ func set_preview_visible(should_show: bool) -> void:
 	visible = should_show
 	if not should_show:
 		_camera.current = false
+	elif _camera != null and _builder != null and _builder.prepared_course != null:
+		_camera.current = true
 
 
 func _build_environment() -> void:
