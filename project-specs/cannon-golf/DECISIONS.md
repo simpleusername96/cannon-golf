@@ -860,7 +860,7 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-056 — Keep local exploration inside Cannon
 
-- Status: accepted on 2026-08-17; supersedes D-047's overview-only exploration
+- Status: superseded on 2026-08-18 by D-057. It previously superseded D-047's overview-only exploration
   clause and D-052's automatic Cannon-to-Overview transition. It preserves
   D-055's fixed camera behavior for launch-setup edits.
 - Left-drag, right-drag, the mouse wheel, compact zoom actions, and arrow-pan
@@ -873,6 +873,25 @@ in `OPEN_QUESTIONS.md`.
   pose. Shot Follow stores and restores the exact explored Cannon pose.
 - Overview is entered only through its explicit HUD action or `1` shortcut and
   remains the owner of complete-course inspection.
+
+### D-057 — Replace Cannon local limits with a subject-centered orbit viewer
+
+- Status: accepted on 2026-08-18; supersedes D-056's restrained local-range
+  model while preserving D-055's setup/camera independence and explicit
+  Overview ownership.
+- Cannon uses the selected cannon's authored anchor as a stable initial camera
+  interest instead of orbiting a point along the launch ray. Left-drag orbits,
+  right-drag pans the interest within prepared course bounds, the wheel or
+  compact actions change distance, and arrow keys pan.
+- Horizontal orbit wraps continuously through `360°`; vertical orbit and dolly
+  stop before inversion or subject crossing. Direct Cannon manipulation updates
+  without trailing interpolation and retains terrain collision admission.
+- Aiming, elevation, and power changes do not move this camera. Cannon input
+  never selects Overview or copies its state. Explicit Cannon/reset/source
+  selection restores the authored rear-upper pose, and Shot Follow restores the
+  exact explored orbit-viewer state.
+- Evidence and rejected alternatives are recorded in
+  `.agents/research/cannon-golf/CANNON_CAMERA_CONTROLS.md`.
 
 ## Rationale
 

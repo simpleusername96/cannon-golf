@@ -20,6 +20,27 @@ func _run() -> void:
 	var fire_button := game._hud.get_node("%FireButton") as Button
 	_assert_true(fire_button.has_focus(), "Fire must own initial keyboard focus.")
 	game.set_planning_view(&"cannon")
+	var cannon_focus_before_left_drag := game._camera_rig.planning_focus()
+	var cannon_orbit_before_left_drag := game._camera_rig.cannon_orbit_degrees
+	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
+	_assert_true(
+		not game._camera_rig.cannon_orbit_degrees.is_equal_approx(
+			cannon_orbit_before_left_drag
+		) and game._camera_rig.planning_focus().is_equal_approx(cannon_focus_before_left_drag),
+		"Cannon left drag must orbit around its stable interest."
+	)
+	var cannon_orbit_before_right_drag := game._camera_rig.cannon_orbit_degrees
+	await _push_drag(
+		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
+	)
+	_assert_true(
+		game._camera_rig.cannon_orbit_degrees.is_equal_approx(cannon_orbit_before_right_drag) \
+				and not game._camera_rig.planning_focus().is_equal_approx(
+					cannon_focus_before_left_drag
+				),
+		"Cannon right drag must pan without changing its orbit."
+	)
+	game.reset_planning_camera()
 	game.pan_planning(Vector2(1.0, -1.0))
 	game.orbit_planning(Vector2(72.0, -24.0))
 	game.zoom_planning(2.0)

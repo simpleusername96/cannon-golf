@@ -21,15 +21,13 @@ const CANNON_FIELD_OF_VIEW := 70.0
 const CANNON_BACK_DISTANCE := 16.0
 const CANNON_SIDE_DISTANCE := 5.0
 const CANNON_HEIGHT := 8.0
-const CANNON_LOOK_AHEAD := 12.0
 const CANNON_MINIMUM_ZOOM := -7.0
 const CANNON_MAXIMUM_ZOOM := 8.0
-const CANNON_MAXIMUM_PAN_DISTANCE := 80.0
-const CANNON_MAXIMUM_PAN_EVENT_DISTANCE := 18.0
-const CANNON_PAN_RESPONSE := 0.90
-const CANNON_ORBIT_DEGREES_PER_PIXEL := Vector2(0.18, 0.14)
-const CANNON_MAXIMUM_YAW_ORBIT := 160.0
-const CANNON_MAXIMUM_PITCH_ORBIT := 55.0
+const CANNON_MAXIMUM_PAN_EVENT_DISTANCE := 24.0
+const CANNON_PAN_RESPONSE := 0.75
+const CANNON_ORBIT_DEGREES_PER_PIXEL := Vector2(0.22, 0.18)
+const CANNON_MINIMUM_PITCH_ORBIT := -15.0
+const CANNON_MAXIMUM_PITCH_ORBIT := 34.0
 const CANNON_ARROW_PAN_DISTANCE := 2.5
 
 var view_mode: StringName = &"oblique"
@@ -170,10 +168,15 @@ func pan(screen_direction: Vector2) -> void:
 	if _course == null:
 		return
 	if view_mode == &"cannon":
-		var right := _cannon_heading.cross(Vector3.UP).normalized()
+		var right := _camera.global_transform.basis.x
+		right.y = 0.0
+		right = right.normalized()
+		var forward := -_camera.global_transform.basis.z
+		forward.y = 0.0
+		forward = forward.normalized()
 		var scale := CANNON_ARROW_PAN_DISTANCE * pow(0.9, cannon_zoom)
 		_apply_cannon_pan(
-			right * screen_direction.x * scale + _cannon_heading * screen_direction.y * scale
+			right * screen_direction.x * scale + forward * screen_direction.y * scale
 		)
 		return
 	var span := maxf(_course.content_bounds.size.x, _course.content_bounds.size.z)
@@ -222,14 +225,14 @@ func orbit(relative: Vector2) -> bool:
 	if relative.is_zero_approx():
 		return false
 	if view_mode == &"cannon":
-		cannon_orbit_degrees.x = clampf(
+		cannon_orbit_degrees.x = wrapf(
 			cannon_orbit_degrees.x - relative.x * CANNON_ORBIT_DEGREES_PER_PIXEL.x,
-			-CANNON_MAXIMUM_YAW_ORBIT,
-			CANNON_MAXIMUM_YAW_ORBIT
+			-180.0,
+			180.0
 		)
 		cannon_orbit_degrees.y = clampf(
 			cannon_orbit_degrees.y + relative.y * CANNON_ORBIT_DEGREES_PER_PIXEL.y,
-			-CANNON_MAXIMUM_PITCH_ORBIT,
+			CANNON_MINIMUM_PITCH_ORBIT,
 			CANNON_MAXIMUM_PITCH_ORBIT
 		)
 		_pose_dirty = true
@@ -316,7 +319,7 @@ func follow_target() -> Node3D:
 
 func planning_focus() -> Vector3:
 	if view_mode == &"cannon":
-		return _cannon_anchor + _cannon_direction * CANNON_LOOK_AHEAD + cannon_pan_offset
+		return _terrain_safe_focus(_cannon_anchor + cannon_pan_offset)
 	var focus := _base_focus + pan_offset
 	var height := _terrain_height(focus)
 	if not is_finite(height):
@@ -391,10 +394,10 @@ func _apply_planning(delta: float) -> void:
 func _resolve_pose(size: Vector2) -> void:
 	if view_mode == &"cannon":
 		var camera_right := _cannon_heading.cross(Vector3.UP).normalized()
-		var base_focus := _cannon_anchor + _cannon_direction * CANNON_LOOK_AHEAD
+		var base_focus := planning_focus()
 		var base_position := _cannon_anchor - _cannon_heading * CANNON_BACK_DISTANCE \
 				+ camera_right * CANNON_SIDE_DISTANCE + Vector3.UP * CANNON_HEIGHT
-		var offset := base_position - base_focus
+		var offset := base_position - _cannon_anchor
 		offset = offset.rotated(Vector3.UP, deg_to_rad(cannon_orbit_degrees.x))
 		var orbit_right := Vector3.UP.cross(offset).normalized()
 		if not orbit_right.is_zero_approx():
@@ -402,7 +405,7 @@ func _resolve_pose(size: Vector2) -> void:
 				orbit_right, deg_to_rad(-cannon_orbit_degrees.y)
 			)
 		offset *= pow(0.9, cannon_zoom)
-		_planning_focus = base_focus + cannon_pan_offset
+		_planning_focus = base_focus
 		_planning_position = _planning_focus + offset
 	else:
 		_planning_focus = planning_focus()
@@ -465,9 +468,11 @@ func _apply_cannon_pan(delta: Vector3) -> void:
 	if not delta.is_finite() or delta.is_zero_approx():
 		return
 	delta.y = 0.0
-	cannon_pan_offset = (cannon_pan_offset + delta).limit_length(
-		CANNON_MAXIMUM_PAN_DISTANCE
-	)
+	cannon_pan_offset += delta
+	var focus := _cannon_anchor + cannon_pan_offset
+	focus.x = clampf(focus.x, _exploration_bounds.position.x, _exploration_bounds.end.x)
+	focus.z = clampf(focus.z, _exploration_bounds.position.z, _exploration_bounds.end.z)
+	cannon_pan_offset = Vector3(focus.x - _cannon_anchor.x, 0.0, focus.z - _cannon_anchor.z)
 	_pose_dirty = true
 
 

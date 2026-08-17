@@ -214,10 +214,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		if _planning_drag_button == MOUSE_BUTTON_LEFT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			pan_planning_drag(mouse_motion.position, drag_relative)
+			if planning_view == &"cannon":
+				orbit_planning(drag_relative)
+			else:
+				pan_planning_drag(mouse_motion.position, drag_relative)
 		elif _planning_drag_button == MOUSE_BUTTON_RIGHT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_RIGHT:
-			orbit_planning(drag_relative)
+			if planning_view == &"cannon":
+				pan_planning_drag(mouse_motion.position, drag_relative)
+			else:
+				orbit_planning(drag_relative)
 		else:
 			_end_planning_drag()
 		get_viewport().set_input_as_handled()
@@ -384,21 +390,36 @@ func return_to_planning_view() -> bool:
 func pan_planning(screen_direction: Vector2) -> void:
 	_activate_planning_camera()
 	_camera_rig.pan(screen_direction)
+	_snap_direct_cannon_input()
 
 
 func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
 	_activate_planning_camera()
-	return _camera_rig.pan_drag(screen_position, relative)
+	var changed := _camera_rig.pan_drag(screen_position, relative)
+	if changed:
+		_snap_direct_cannon_input()
+	return changed
 
 
 func orbit_planning(relative: Vector2) -> bool:
 	_activate_planning_camera()
-	return _camera_rig.orbit(relative)
+	var changed := _camera_rig.orbit(relative)
+	if changed:
+		_snap_direct_cannon_input()
+	return changed
 
 
 func zoom_planning(wheel_steps: float) -> bool:
 	_activate_planning_camera()
-	return _camera_rig.zoom_by_steps(wheel_steps)
+	var changed := _camera_rig.zoom_by_steps(wheel_steps)
+	if changed:
+		_snap_direct_cannon_input()
+	return changed
+
+
+func _snap_direct_cannon_input() -> void:
+	if _camera_rig.view_mode == &"cannon" and _camera_rig.camera_mode == &"planning":
+		_camera_rig.snap_to_planning()
 
 
 func reset_planning_camera() -> void:

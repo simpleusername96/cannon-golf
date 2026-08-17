@@ -248,11 +248,6 @@ func apply_language(language: String) -> void:
 	_set_icon_copy(_oblique_button, "Overview (1)" if english else "전체 보기 (1)")
 	_set_icon_copy(_cannon_button, "Cannon view (2)" if english else "대포 시점 (2)")
 	_set_icon_copy(_zoom_in_button, "Zoom in (Wheel up)" if english else "확대 (휠 위)")
-	_set_icon_copy(
-		_camera_reset_button,
-		"Reset view (Home) · Left-drag move · Right-drag orbit" if english \
-				else "시점 원위치 (Home) · 왼쪽 드래그 이동 · 오른쪽 드래그 회전"
-	)
 	_set_icon_copy(_zoom_out_button, "Zoom out (Wheel down)" if english else "축소 (휠 아래)")
 	_set_icon_copy(_shortcut_button, "Show controls" if english else "조작법 보기")
 	_set_icon_copy(_shortcut_close_button, "Close controls" if english else "조작법 닫기")
@@ -266,7 +261,8 @@ func apply_language(language: String) -> void:
 	%ShortcutReset.text = "Restart level" if english else "레벨 다시 시작"
 	%ShortcutView.text = "Overview / cannon view" if english else "전체 / 대포 시점"
 	%DragKey.text = "L / R Drag" if english else "좌 / 우 드래그"
-	%ShortcutDrag.text = "Move / orbit view" if english else "화면 이동 / 회전"
+	%ShortcutDrag.text = "Overview: move / orbit · Cannon: orbit / move" if english \
+			else "전체: 이동 / 회전 · 대포: 회전 / 이동"
 	%WheelKey.text = "Wheel" if english else "휠"
 	%ShortcutWheel.text = "Zoom" if english else "확대 / 축소"
 	%PanKey.text = "Arrows" if english else "방향키"
@@ -452,6 +448,12 @@ func _refresh_camera_buttons() -> void:
 	_aim_reticle.visible = not following and _planning_view == &"cannon"
 	_follow_button.button_pressed = following
 	var english := _language == "en"
+	var reset_copy := "Reset view (Home) · Cannon: left orbit / right move" if english \
+			else "시점 원위치 (Home) · 대포: 왼쪽 회전 / 오른쪽 이동"
+	if _planning_view == &"oblique":
+		reset_copy = "Reset view (Home) · Overview: left move / right orbit" if english \
+				else "시점 원위치 (Home) · 전체: 왼쪽 이동 / 오른쪽 회전"
+	_set_icon_copy(_camera_reset_button, reset_copy)
 	_set_icon_copy(
 		_follow_button,
 		("Return to planning (Tab)" if english else "조준 시점으로 돌아가기 (Tab)")

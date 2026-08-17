@@ -92,13 +92,15 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon perspective is a selectable source-relative coordinate preset with
-  bounded local exploration. Left-drag and arrow keys pan around the selected
-  source, right-drag orbits within a restrained rear/local range, and the wheel
-  changes local distance without switching to Overview. Keep this state
-  independent from Overview and prevent it from reaching a top-down or
-  complete-course composition. Only the explicit Overview action opens the
-  complete-course camera.
+- Cannon perspective is a selectable, subject-centered orbit viewer. Its stable
+  initial interest is the selected cannon's authored anchor, not a point along
+  the changing launch ray. Left-drag orbits continuously around that interest,
+  right-drag and arrow keys pan it across the prepared course, and the wheel
+  changes camera-to-interest distance. Keep vertical orbit short of inversion,
+  keep camera placement terrain safe, and apply direct manipulation without
+  trailing interpolation. Aim changes move the barrel and cues, not the camera.
+  This state remains independent from Overview; only the explicit Overview
+  action opens the top/complete-course camera.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
   exact stored pre-follow state. A confirmed goal also returns there immediately
@@ -110,9 +112,10 @@ coefficients, stage data formats, or code ownership.
   clear selection, alter aim, or invalidate confirmed goals. Returning to
   planning must restore a readable course framing.
 - The high-oblique reset frames the complete course. The cannon reset returns
-  to the selected source's local base direction. Overview pan, orbit, and
-  bounded zoom expose the full course; Cannon exploration stays near its source.
-  The course selection preview frames the course's full depth.
+  to the selected source's authored rear-upper orbit pose. Overview pan, orbit,
+  and bounded zoom expose the full course; Cannon pan remains within prepared
+  course bounds while preserving its perspective orbit model. The course
+  selection preview frames the course's full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language

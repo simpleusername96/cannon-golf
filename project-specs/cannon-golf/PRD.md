@@ -263,13 +263,17 @@ cannon composition.
   planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  Cannon interaction uses the same drag, wheel, compact zoom, and arrow inputs
-  for bounded inspection of the selected source's nearby surroundings without
-  switching view. Its local pan, orbit, and zoom state is independent from
-  Overview and cannot reach a top-down or complete-course composition. Only an
-  explicit Overview selection opens the complete-course camera. The
-  high-oblique reset frames the complete presentation bounds, while the Cannon
-  reset restores its authored local pose.
+  Cannon interaction uses a subject-centered 3D-viewer model. The selected
+  cannon's authored anchor is the stable initial interest: left-drag orbits,
+  right-drag pans that interest across the prepared course, the wheel or compact
+  zoom actions change camera-to-interest distance, and arrow keys pan. Horizontal
+  orbit is continuous, vertical orbit stops before inversion, and direct input
+  updates the camera without trailing interpolation. This state is independent
+  from cannon aim and from Overview. It must not switch view, copy Overview's
+  values, or converge on Overview's authored top/complete-course composition.
+  Only an explicit Overview selection opens that camera. The high-oblique reset
+  frames the complete presentation bounds, while Cannon reselection, reset, or
+  source selection restores its authored rear-upper pose.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
