@@ -58,7 +58,7 @@ func _ready() -> void:
 	_show_main_menu()
 	RuntimeDeliveryTelemetry.emit_marker(&"app_root_ready", {
 		"selected_stage_id": String(
-			(get_node("/root/GameState") as GameState).selected_stage_id
+			get_node("/root/GameState").selected_stage_id
 		),
 	})
 
@@ -328,7 +328,7 @@ func _on_artifact_failed(stage_id: StringName) -> void:
 
 
 func _request_menu_preview() -> void:
-	var game_state := get_node_or_null("/root/GameState") as GameState
+	var game_state := get_node_or_null("/root/GameState")
 	var preview_stage := StageCatalog.get_stage(game_state.selected_stage_id) \
 			if game_state != null else null
 	if preview_stage == null:

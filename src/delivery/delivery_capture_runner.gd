@@ -46,7 +46,7 @@ func _ready() -> void:
 	_app = get_parent() as AppRoot
 	# Child _ready() runs before AppRoot._ready(). Initialize deterministic capture
 	# state here so AppRoot never starts preparing a persisted user selection.
-	var game_state := get_node("/root/GameState") as GameState
+	var game_state := get_node("/root/GameState")
 	game_state.persistence_enabled = false
 	var initial_data: Dictionary = get_node("/root/SaveSystem").default_data()
 	initial_data.selected_stage_id = &"stage_01" \
@@ -230,7 +230,7 @@ func _start_stage(stage_id: StringName, begin_aiming: bool) -> Node3D:
 	return gameplay
 
 
-func _initialize_capture_game_state(game_state: GameState, data: Dictionary) -> void:
+func _initialize_capture_game_state(game_state: Node, data: Dictionary) -> void:
 	var settings := Dictionary(data.get("settings", {})).duplicate(true)
 	settings["language"] = String(_capture_language)
 	settings["language_user_selected"] = true
@@ -296,7 +296,7 @@ func _capture_stage_transition() -> void:
 			or stage_select._start_button.disabled:
 		_fail_capture("selected stage %s never became Start-ready" % _capture_stage)
 		return
-	var game_state := get_node("/root/GameState") as GameState
+	var game_state := get_node("/root/GameState")
 	if game_state.selected_stage_id != &"stage_01":
 		_fail_capture("Stage Select committed the target before Start")
 		return
