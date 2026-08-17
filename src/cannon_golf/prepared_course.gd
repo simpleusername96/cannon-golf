@@ -211,7 +211,7 @@ func compute_payload_sha256() -> String:
 			str(construction_version), construction_sha256,
 		]))
 	for value in heights:
-		feed.append(String.num(value, 5))
+		feed.append(_f32_bits(value))
 	for value in footprint:
 		feed.append(str(value))
 	for leg in legs:
@@ -219,9 +219,9 @@ func compute_payload_sha256() -> String:
 			return ""
 		var leg_feed := PackedStringArray([
 			str(leg.route_index), str(leg.rim_elevation_band), String(leg.feature_anchor),
-			_v3(leg.goal_position), String.num(leg.goal_radius, 5), String.num(leg.goal_rim_y, 5),
-			String.num(leg.goal_lip_y, 5), _v3(leg.launcher_position),
-			String.num(leg.shot_axis_yaw_degrees, 5), _aabb(leg.frame_bounds),
+			_v3(leg.goal_position), _f64_bits(leg.goal_radius), _f64_bits(leg.goal_rim_y),
+			_f64_bits(leg.goal_lip_y), _v3(leg.launcher_position),
+			_f64_bits(leg.shot_axis_yaw_degrees), _aabb(leg.frame_bounds),
 			_metric_feed(leg.corridor_admission), _v3(leg.intended_setup),
 		])
 		if leg.has_any_certificate_data():
@@ -229,7 +229,7 @@ func compute_payload_sha256() -> String:
 				_v3(leg.certified_setup), str(leg.center_success_count),
 				_metric_feed(leg.neighbor_successes), _metric_feed(leg.axis_pass_evidence),
 				str(leg.default_attempt_count), str(leg.default_success_count),
-				String.num(leg.settlement_time_seconds, 5),
+				_f64_bits(leg.settlement_time_seconds),
 				_metric_feed(leg.robustness_margins),
 			]))
 		feed.append_array(leg_feed)
@@ -240,8 +240,8 @@ func compute_payload_sha256() -> String:
 			return ""
 		feed.append_array(PackedStringArray([
 			placement.model_path, _v3(placement.position),
-			String.num(placement.yaw_degrees, 5),
-			String.num(placement.uniform_scale, 5), "1" if placement.is_tree else "0",
+			_f64_bits(placement.yaw_degrees),
+			_f64_bits(placement.uniform_scale), "1" if placement.is_tree else "0",
 		]))
 	return "|".join(feed).sha256_text()
 
@@ -291,7 +291,7 @@ func _metric_value_feed(value: Variant) -> String:
 		TYPE_INT:
 			return str(value)
 		TYPE_FLOAT:
-			return String.num(float(value), 8)
+			return _f64_bits(float(value))
 		TYPE_VECTOR2:
 			return _v2(value)
 		TYPE_VECTOR2I:
@@ -316,7 +316,7 @@ func _metric_value_feed(value: Variant) -> String:
 
 
 func _v2(value: Vector2) -> String:
-	return "%s,%s" % [String.num(value.x, 8), String.num(value.y, 8)]
+	return "%s,%s" % [_f64_bits(value.x), _f64_bits(value.y)]
 
 
 func _v2i(value: Vector2i) -> String:
@@ -325,7 +325,7 @@ func _v2i(value: Vector2i) -> String:
 
 func _v3(value: Vector3) -> String:
 	return "%s,%s,%s" % [
-		String.num(value.x, 8), String.num(value.y, 8), String.num(value.z, 8),
+		_f64_bits(value.x), _f64_bits(value.y), _f64_bits(value.z),
 	]
 
 
@@ -335,3 +335,18 @@ func _rect2(value: Rect2) -> String:
 
 func _aabb(value: AABB) -> String:
 	return "%s;%s" % [_v3(value.position), _v3(value.size)]
+
+
+func _f32_bits(value: float) -> String:
+	# Decimal midpoint rounding differs across platforms; hashes use exact IEEE payloads.
+	var bytes := PackedByteArray()
+	bytes.resize(4)
+	bytes.encode_float(0, value)
+	return bytes.hex_encode()
+
+
+func _f64_bits(value: float) -> String:
+	var bytes := PackedByteArray()
+	bytes.resize(8)
+	bytes.encode_double(0, value)
+	return bytes.hex_encode()
