@@ -113,7 +113,8 @@ func _run() -> void:
 	var fire_button := hud.get_node("%FireButton") as Button
 	var action_dock := hud.get_node("Root/BottomRail/ShotPanel") as Control
 	_assert(
-		fire_button.size.x >= 88.0 and is_equal_approx(fire_button.size.x, fire_button.size.y) \
+		fire_button.size.x >= 120.0 and fire_button.size.y >= 44.0 \
+				and fire_button.size.x > fire_button.size.y \
 				and action_dock.get_global_rect().encloses(fire_button.get_global_rect()),
 		"Selected cannon view must not squeeze or clip Fire; fire %s, dock %s." % [
 			fire_button.get_global_rect(), action_dock.get_global_rect(),
@@ -139,8 +140,12 @@ func _run() -> void:
 	_assert(top_icon_hover.bg_color.a == 0.0, "Top icon hover must not add a surrounding fill.")
 	_assert(top_icon_pressed.bg_color.a == 0.0 and top_icon_pressed.border_width_bottom == 2, "Selected top icons need only a restrained baseline.")
 	_assert(fire_button.theme_type_variation == &"HudFireButton", "Fire interaction styling must stay scoped to the gameplay HUD.")
+	var fire_normal := fire_button.get_theme_stylebox(&"normal") as StyleBoxFlat
 	var fire_hover := fire_button.get_theme_stylebox(&"hover") as StyleBoxFlat
-	_assert(fire_hover.bg_color.a == 0.0 and fire_hover.border_width_bottom == 2, "Fire hover must not add a yellow fill or thicker ring.")
+	_assert(fire_normal.bg_color.a == 1.0 and fire_hover.bg_color.a == 1.0,
+			"Fire must retain its filled primary-action surface in normal and hover states.")
+	_assert(fire_normal.corner_radius_top_left <= 16,
+			"Fire must use a compact rounded rectangle instead of a circular action shape.")
 	hud.set_camera_mode(&"follow")
 	_assert((hud.get_node("%FollowButton") as Button).button_pressed, "Follow mode needs a selected state beyond color.")
 	_assert(
@@ -230,10 +235,10 @@ func _run() -> void:
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	var course_start := course_select.get_node("%Start") as Button
-	_assert(course_start.theme_type_variation == &"CourseStartButton" \
-			and course_start.custom_minimum_size.y >= 44.0 \
-			and not is_equal_approx(course_start.custom_minimum_size.x, course_start.custom_minimum_size.y),
-			"Course Start must use a directional action shape distinct from circular Fire.")
+	_assert(course_start.theme_type_variation == &"AmberCircleButton" \
+			and course_start.custom_minimum_size.x >= 44.0 \
+			and is_equal_approx(course_start.custom_minimum_size.x, course_start.custom_minimum_size.y),
+			"Course Start must retain its established circular amber action.")
 	_assert(
 		course_select.course_buttons().size() == 15,
 		"Course select must create fifteen reusable catalog rows."

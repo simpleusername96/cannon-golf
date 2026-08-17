@@ -636,15 +636,15 @@ accessibility_name = "파워 증가 (D)"
 text = "+"
 
 [node name="FireCenter" type="CenterContainer" parent="Root/BottomRail/ShotPanel"]
-custom_minimum_size = Vector2(92, 92)
+custom_minimum_size = Vector2(132, 92)
 layout_mode = 2
 
 [node name="FireButton" type="Button" parent="Root/BottomRail/ShotPanel/FireCenter"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(88, 88)
+custom_minimum_size = Vector2(128, 60)
 layout_mode = 2
 theme_type_variation = &"HudFireButton"
-text = "발사"
+text = "●  발사"
 
 [node name="ResultOverlay" type="Control" parent="Root"]
 unique_name_in_owner = true

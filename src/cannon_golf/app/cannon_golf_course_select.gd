@@ -103,9 +103,7 @@ func _refresh_start_copy() -> void:
 	elif _preparation_state == CoursePreparationState.FAILED:
 		_start.text = "PREPARATION FAILED" if _language == "en" else "준비 실패"
 	else:
-		var level := CannonGolfCourseCatalog.level_label(_selected_course_index)
-		_start.text = "START %s  →" % level if _language == "en" \
-				else "%s 시작  →" % level
+		_start.text = "START" if _language == "en" else "시작"
 	_start.set("accessibility_name", _start.text)
 
 

@@ -38,7 +38,7 @@ Constraints and invariants:
 - Explicit preset buttons remain available and Fire remains independent from camera state.
 - Exploration input from Cannon returns to Overview and then applies the requested pan/orbit/zoom; it does not move gameplay objects or alter aim/setup.
 - The launcher-source selector remains a source choice, not a target choice, and occupies the top band.
-- Fire remains the compact circular setup action. Course Start becomes a distinct horizontal directional action that names the selected level.
+- Course Start retains its circular amber action. Fire alone becomes a distinct compact horizontal filled action with a projectile cue.
 - Course preview continues to use the immutable prepared render mesh and real goal/launcher visuals; preview-only construction may omit gameplay collision bodies.
 - Existing unrelated untracked files remain untouched.
 
@@ -54,7 +54,7 @@ Destructive or irreversible actions:
 | Source selector location | `cannon_golf_hud.tscn` places it in the upper-left second row | Fresh `baseline/gameplay-lv12.png` | Move it to a clear top-center slot without changing source semantics | 1.3 |
 | Selection flicker | `set_course_preparation_state()` refreshes every row and selection refresh rewrites all 15 controls | `cannon_golf_course_select.gd`; focused tests | Update only old/new selected rows; preparation changes update only Start | 2.1 |
 | Preview stutter/blank continuity | `show_course()` synchronously creates a full gameplay builder; `set_preview_visible(true)` does not reactivate its camera | Preview/app/builder source trace | Reassert preview camera on show and add a preview-only builder path without physics collision shapes | 2.2 |
-| Start and Fire look alike | Both use the same circular amber family by current rule | Fresh course/gameplay renders and theme/scene source | Keep circular Fire; make Start a compact filled directional button with selected-level copy | 3.1 |
+| Start and Fire look alike | Both use the same circular amber family by current rule | Fresh course/gameplay renders and theme/scene source | Keep circular Start; make Fire alone a compact filled horizontal button with a projectile cue | 3.1, 5.1 |
 | Settings options feel edge-tight | Resolution, Quality, and Language use global Button style boxes with no content margins | Fresh `baseline/settings.png`, theme/scene source | Add a settings-only option variation with balanced inner padding; do not enlarge controls | 3.2 |
 | Canonical rules conflict with new direction | D-051 and active design rules require Start to reuse Fire language and Cannon to reject exploration | Specifications and completed prior plan | Record the user's superseding direction in design rules and a new decision | 3.3 |
 | Validation | Godot `4.7.1.stable.official.a13da4feb`, bounded wrapper, capture harness, and focused/full tests are present | Verified local executable and three fresh baseline renders | Use targeted tests during implementation, one rendered comparison gate, then one full suite | 1.2, 2.2, 3.2, 4.1 |
@@ -139,6 +139,23 @@ Source owners: `tests/capture_cannon_golf_frame.gd`, `.agents/evidence/cannon-go
   - Change: run the complete Cannon Golf suite once, `git diff --check`, and the diff-scoped codebase quality audit; make only small task-owned corrections.
   - Accept: all checks exit zero, no Godot error or task-owned quality finding remains, and this plan becomes `done`.
 
+### Phase 5: Correct primary-action ownership to Fire only
+
+Goal: preserve Course Start's established circular action and make only gameplay Fire use the new distinct action shape.
+
+Preconditions:
+
+- The user's 2026-08-17 scope correction supersedes only the button-shape direction in Phase 3.1; all other completed work remains unchanged.
+
+Source owners: `resources/ui/paint_mountain_theme.tres`, `scenes/cannon_golf/cannon_golf_hud.tscn`, `scenes/cannon_golf/app/cannon_golf_course_select.tscn`, localization owners, focused UI tests, canonical design rules/decisions
+
+- [x] **5.1** Restore Start and redesign only Fire.
+  - Change: restore Course Start's circular amber styling and concise localized copy; move the existing compact filled horizontal action styling to gameplay Fire and add a restrained projectile mark.
+  - Accept: Start is a 112 px circular `AmberCircleButton`; Fire is a horizontal `HudFireButton` at least 44 px tall, remains the only normal-play primary action, fits Korean/English copy, and stays accessible and camera-independent.
+- [x] **5.2** Render and validate the corrected pair.
+  - Change: run the two focused contracts, capture course-select and gameplay at 1280 by 720, inspect native pixels, run `git diff --check`, and perform the diff-scoped quality audit.
+  - Accept: both renders have no clipping or overlap, only Fire uses the new filled horizontal action, focused checks exit zero, and no task-owned quality finding remains.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -170,7 +187,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Phase 4 — five real 1280 by 720 states passed native-pixel inspection; all 24 Cannon Golf checks passed in 111.1 seconds with no Godot error, log growth, or owned-process leak; `git diff --check`, document lifecycle audit, and the diff-scoped quality audit passed after removing the obsolete capture-state alias.
+- Last completed gate: Phase 5 — the focused UI and course-selection contracts passed; real 1280 by 720 course-ready and gameplay renders passed native-pixel inspection with circular Start restored and only Fire using the compact filled horizontal action; `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
 - Update rule: after each phase passes, record concise evidence, check its tasks, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

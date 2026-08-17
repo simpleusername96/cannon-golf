@@ -61,17 +61,17 @@ alignment = 0
 
 [node name="Start" type="Button" parent="."]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(216, 60)
+custom_minimum_size = Vector2(112, 112)
 layout_mode = 0
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -264.0
-offset_top = -100.0
+offset_left = -160.0
+offset_top = -152.0
 offset_right = -48.0
 offset_bottom = -40.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_type_variation = &"CourseStartButton"
-text = "LV 1 시작  →"
+theme_type_variation = &"AmberCircleButton"
+text = "시작"

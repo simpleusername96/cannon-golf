@@ -349,7 +349,7 @@ corner_radius_top_right = 64
 corner_radius_bottom_right = 64
 corner_radius_bottom_left = 64
 
-[sub_resource type="StyleBoxFlat" id="CourseStartNormal"]
+[sub_resource type="StyleBoxFlat" id="HudFireNormal"]
 bg_color = Color(0.89, 0.604, 0.055, 1)
 content_margin_left = 22.0
 content_margin_top = 10.0
@@ -360,7 +360,7 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[sub_resource type="StyleBoxFlat" id="CourseStartHover"]
+[sub_resource type="StyleBoxFlat" id="HudFireHover"]
 bg_color = Color(0.95, 0.686, 0.18, 1)
 content_margin_left = 22.0
 content_margin_top = 10.0
@@ -371,7 +371,7 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[sub_resource type="StyleBoxFlat" id="CourseStartPressed"]
+[sub_resource type="StyleBoxFlat" id="HudFirePressed"]
 bg_color = Color(0.82, 0.522, 0.035, 1)
 content_margin_left = 22.0
 content_margin_top = 10.0
@@ -382,7 +382,7 @@ corner_radius_top_right = 14
 corner_radius_bottom_right = 14
 corner_radius_bottom_left = 14
 
-[sub_resource type="StyleBoxFlat" id="CourseStartDisabled"]
+[sub_resource type="StyleBoxFlat" id="HudFireDisabled"]
 bg_color = Color(0.89, 0.604, 0.055, 0.12)
 content_margin_left = 22.0
 content_margin_top = 10.0
@@ -648,24 +648,19 @@ AmberCircleButton/styles/hover = SubResource("AmberCircleHover")
 AmberCircleButton/styles/pressed = SubResource("AmberCircleHover")
 AmberCircleButton/styles/disabled = SubResource("AmberCircleDisabled")
 AmberCircleButton/styles/focus = SubResource("AmberCircleHover")
-HudFireButton/base_type = &"AmberCircleButton"
+HudFireButton/base_type = &"Button"
+HudFireButton/colors/font_color = Color(0.09, 0.145, 0.22, 1)
+HudFireButton/colors/font_hover_color = Color(0.09, 0.145, 0.22, 1)
+HudFireButton/colors/font_pressed_color = Color(0.09, 0.145, 0.22, 1)
 HudFireButton/colors/font_focus_color = Color(0.09, 0.145, 0.22, 1)
-HudFireButton/styles/hover = SubResource("AmberCircle")
-HudFireButton/styles/pressed = SubResource("AmberCircle")
-HudFireButton/styles/focus = SubResource("TopIconControl")
-CourseStartButton/base_type = &"Button"
-CourseStartButton/colors/font_color = Color(0.09, 0.145, 0.22, 1)
-CourseStartButton/colors/font_hover_color = Color(0.09, 0.145, 0.22, 1)
-CourseStartButton/colors/font_pressed_color = Color(0.09, 0.145, 0.22, 1)
-CourseStartButton/colors/font_focus_color = Color(0.09, 0.145, 0.22, 1)
-CourseStartButton/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.9)
-CourseStartButton/fonts/font = SubResource("FontWeight600")
-CourseStartButton/font_sizes/font_size = 19
-CourseStartButton/styles/normal = SubResource("CourseStartNormal")
-CourseStartButton/styles/hover = SubResource("CourseStartHover")
-CourseStartButton/styles/pressed = SubResource("CourseStartPressed")
-CourseStartButton/styles/disabled = SubResource("CourseStartDisabled")
-CourseStartButton/styles/focus = SubResource("Focus")
+HudFireButton/colors/font_disabled_color = Color(0.407843, 0.45098, 0.517647, 0.9)
+HudFireButton/fonts/font = SubResource("FontWeight600")
+HudFireButton/font_sizes/font_size = 19
+HudFireButton/styles/normal = SubResource("HudFireNormal")
+HudFireButton/styles/hover = SubResource("HudFireHover")
+HudFireButton/styles/pressed = SubResource("HudFirePressed")
+HudFireButton/styles/disabled = SubResource("HudFireDisabled")
+HudFireButton/styles/focus = SubResource("Focus")
 HudRailSlider/base_type = &"HSlider"
 HudRailSlider/styles/slider = SubResource("HudRailTrack")
 HudRailSlider/styles/grabber_area = SubResource("HudRailFill")

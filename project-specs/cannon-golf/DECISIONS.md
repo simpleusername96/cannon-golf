@@ -825,6 +825,18 @@ in `OPEN_QUESTIONS.md`.
 - Keep the compact cannon-source selector in the top band. Settings option text
   and arrows use balanced internal padding without increasing control height.
 
+### D-053 — Change Fire only when separating the primary actions
+
+- Status: accepted on 2026-08-17; supersedes only D-052's Start/Fire shape
+  clause and D-051's circular Fire clause. Camera, course selection, settings,
+  and other D-052 behavior remain unchanged.
+- Course Start retains its concise circular amber action. Gameplay Fire alone
+  becomes a compact filled horizontal amber action with a restrained projectile
+  cue, so launch reads immediately without changing the level-entry control.
+- Fire remains the only normal-play primary action, stays at the bottom rail's
+  far-right edge, remains camera-independent, and preserves keyboard access,
+  truthful disabled state, and Korean/English text fit.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

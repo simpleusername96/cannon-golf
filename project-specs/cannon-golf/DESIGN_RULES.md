@@ -244,9 +244,10 @@ coefficients, stage data formats, or code ownership.
   upper-right edge; it stays collapsed by default and manages keyboard focus.
   Put full course reset, settings, course selection, and main-menu navigation in
   the pause overlay.
-- Fire is the sole primary action during setup. Present it as a circular amber
-  outline action at the far-right end of the bottom rail, not a saturated blue
-  rectangle. Amber also marks current selection; reserve cyan for trajectory and
+- Fire is the sole primary action during setup. Present it as a compact filled
+  amber horizontal action with a restrained projectile cue at the far-right end
+  of the bottom rail, not a saturated blue rectangle or the circular Start
+  shape. Amber also marks current selection; reserve cyan for trajectory and
   incomplete-goal semantics already present in the world.
 - Course selection keeps one direct, transparent scrolling list beside the
   unchanged real course preview. Unselected rows have no filled surface. The
@@ -254,8 +255,8 @@ coefficients, stage data formats, or code ownership.
   count once. Opening or changing selection must scroll the selected row into
   view. Do not add a list card, vertical section divider, difficulty label,
   stars, score, or duplicated level metadata. Back remains a surface-free text
-  action. Start is a compact horizontal amber action that names the selected
-  level and uses a forward cue; it must not reuse Fire's circular action shape.
+  action. Start retains its concise circular amber action; do not apply Fire's
+  filled horizontal treatment to it.
 - Use one primary action per state. During launch setup, that action is Fire.
 - After the final goal confirms, place the existing stage-clear panel at the
   viewport center and focus its one primary result action.

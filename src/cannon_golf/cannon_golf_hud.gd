@@ -243,7 +243,7 @@ func apply_language(language: String) -> void:
 	_set_icon_copy(_elevation_increase, "Increase elevation (W)" if english else "상하 조준 증가 (W)")
 	_set_icon_copy(_power_decrease, "Decrease power (A)" if english else "파워 감소 (A)")
 	_set_icon_copy(_power_increase, "Increase power (D)" if english else "파워 증가 (D)")
-	_fire_button.text = "FIRE" if english else "발사"
+	_fire_button.text = "●  FIRE" if english else "●  발사"
 	_set_icon_copy(_fire_button, "Fire (Space)" if english else "발사 (Space)")
 	_set_icon_copy(_oblique_button, "Overview (1)" if english else "전체 보기 (1)")
 	_set_icon_copy(_cannon_button, "Cannon view (2)" if english else "대포 시점 (2)")

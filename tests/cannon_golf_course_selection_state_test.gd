@@ -55,10 +55,10 @@ func _run() -> void:
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.READY)
 	_assert(not (course_select.get_node("%Start") as Button).disabled, "Ready must enable Start.")
-	_assert((course_select.get_node("%Start") as Button).text == "LV 12 시작  →",
-			"Ready Start must name the selected level and direction.")
-	_assert((course_select.get_node("%Start") as Button).theme_type_variation == &"CourseStartButton",
-			"Course Start must remain visually distinct from circular Fire.")
+	_assert((course_select.get_node("%Start") as Button).text == "시작",
+			"Ready Start must retain its concise action copy.")
+	_assert((course_select.get_node("%Start") as Button).theme_type_variation == &"AmberCircleButton",
+			"Course Start must retain its circular amber action.")
 	(course_select.get_node("%Start") as Button).emit_signal("pressed")
 	_assert(starts == [11], "Only a ready selection may emit its start request.")
 	quit(1 if _failed else 0)
