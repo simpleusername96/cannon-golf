@@ -12,7 +12,7 @@ func _initialize() -> void:
 func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	var catalog := CannonGolfCourseCatalog.all_courses()
-	for index in [0, 3, 9]:
+	for index in [0, 3, 4, 9]:
 		var builder := CannonGolfCourseBuilder.new()
 		root.add_child(builder)
 		_assert_true(builder.build(catalog[index]), "Course must build for camera coverage.")
@@ -76,13 +76,25 @@ func _run() -> void:
 		rig.snap_to_planning()
 		var camera_forward := -camera.global_transform.basis.z
 		var expected_cannon_focus := rig.planning_focus()
+		var cannon_screen_position := camera.unproject_position(expected_cannon_focus)
+		var cannon_screen_ratio := cannon_screen_position \
+				/ camera.get_viewport().get_visible_rect().size
 		_assert_true(
-			camera.global_position.distance_to(builder.launcher.cannon_perspective_anchor()) > 10.0
+			rig.resolved_planning_distance() >= 80.0 \
+					and rig.resolved_planning_distance() <= 110.0 \
 					and camera.global_position.y > builder.launcher.global_position.y \
+					and cannon_screen_ratio.x >= 0.38 and cannon_screen_ratio.x <= 0.62 \
+					and cannon_screen_ratio.y >= 0.38 and cannon_screen_ratio.y <= 0.62 \
+					and rad_to_deg(camera_forward.angle_to(Vector3.DOWN)) >= 45.0 \
 					and rad_to_deg(camera_forward.angle_to(
 						(expected_cannon_focus - camera.global_position).normalized()
 					)) < 0.1,
-			"Cannon perspective must orbit the physical launcher from behind and above."
+			"Cannon preset must be a centered medium-distance rear-upper terrain view: course=%d distance=%.2f screen=%s down=%.2f" % [
+				index,
+				rig.resolved_planning_distance(),
+				cannon_screen_ratio,
+				rad_to_deg(camera_forward.angle_to(Vector3.DOWN)),
+			]
 		)
 		for vertical_sign in [-1.0, 1.0]:
 			var previous_up := Vector3.ZERO

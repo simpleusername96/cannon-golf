@@ -67,9 +67,12 @@ coefficients, stage data formats, or code ownership.
 - Do not treat the inherited frontal Aim View as the default composition.
 - Use a top or high-oblique planning view to explain lateral alignment, goal
   distribution, branch choice, and device placement.
-- Use a fixed rear-upper perspective at the selected cannon source. Keep the
-  physical cannon, nearby terrain, and selected direction in one frame by
-  looking toward a near point on the real launch ray. Draw one large, thin,
+- Use a fixed medium-distance rear-upper coordinate at the selected cannon
+  source. Keep the physical cannon near screen center at roughly `5-10%` of
+  viewport height while nearby and forward terrain supply most of the frame.
+  Keep the authored camera-to-interest distance within `80-110 m` and the view
+  direction at least `45°` away from straight down. Do not use a cannon-led
+  close-up. Draw one large, thin,
   deep-navy world-space
   curve from a raised point above the launcher through only the first capped portion
   of the current ballistic motion. Connect a thick amber arrowhead to the final
@@ -93,8 +96,8 @@ coefficients, stage data formats, or code ownership.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
 - Cannon perspective is a selectable camera preset, not a restricted navigation
-  mode. Its stable
-  initial interest is the selected cannon's authored anchor, not a point along
+  mode. Its stable initial interest is the selected cannon's authored anchor,
+  not a point along
   the changing launch ray. Left-drag orbits continuously around that interest,
   right-drag and arrow keys pan it across the complete prepared course, and the
   wheel changes camera-to-interest distance from close inspection through a
@@ -115,10 +118,11 @@ coefficients, stage data formats, or code ownership.
   clear selection, alter aim, or invalidate confirmed goals. Returning to
   planning must restore a readable course framing.
 - The high-oblique reset frames the complete course. The cannon reset returns
-  to the selected source's authored rear-upper orbit pose. Overview pan, orbit,
-  and bounded zoom expose the full course; Cannon has the same course-bound pan
-  and whole-course zoom reach while preserving its perspective orbit model. The
-  course selection preview frames the course's full depth.
+  to the selected source's authored medium-distance rear-upper orbit pose.
+  Overview pan, orbit, and bounded zoom expose the full course; Cannon has the
+  same course-bound pan and whole-course zoom reach while preserving its
+  perspective orbit model. The course selection preview frames the course's full
+  depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language

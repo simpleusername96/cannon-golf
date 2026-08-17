@@ -233,9 +233,12 @@ cannon composition.
 
 - Requirement: planning supports one terrain-reading high-oblique overview and
   one fixed rear-upper cannon perspective at the currently selected source.
-  Cannon perspective keeps the physical cannon, nearby terrain, and selected
-  launch direction in one frame by looking toward a near point on the real
-  launch ray. Its physical barrel and center reticle accompany a uniformly
+  Cannon perspective is a medium-distance terrain-reading coordinate, not a
+  close-up. It keeps the physical cannon near the center of the frame at roughly
+  `5-10%` of viewport height while surrounding and forward terrain occupy most
+  of the image. The authored camera-to-interest distance stays within `80-110 m`
+  and the view remains at least `45°` away from straight down. Its physical
+  barrel and center reticle accompany a uniformly
   reduced version of the overview partial aim curve. It does not frame or imply
   a next goal. Once selected, its camera transform remains fixed while the
   player changes horizontal aim, elevation, or power; the barrel, reticle, and
@@ -276,7 +279,8 @@ cannon composition.
   stored transforms of other presets. It must not switch view automatically.
   Only an explicit Overview selection opens its authored camera. The
   high-oblique reset frames the complete presentation bounds, while Cannon
-  reselection, reset, or source selection restores its authored rear-upper pose.
+  reselection, reset, or source selection restores its authored medium-distance
+  rear-upper pose.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 
@@ -438,7 +442,8 @@ cannon composition.
 - Applies to: FR-8, FR-10.
 - Conditions for done: planning provides one top/oblique view and one rear-upper
   cannon perspective in which the physical cannon, compact partial guide,
-  center reticle, and local terrain remain legible and settled balls, retained
+  center reticle, and surrounding terrain remain legible without a cannon-led
+  close-up; settled balls, retained
   marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
   exploring the map, and returning from Shot Follow preserves the complete

@@ -909,6 +909,22 @@ in `OPEN_QUESTIONS.md`.
 - Selecting another preset moves to that preset's authored or stored transform.
   Exploration never selects another preset as a side effect.
 
+### D-059 — Author Cannon as a medium-distance terrain-reading coordinate
+
+- Status: accepted on 2026-08-18; refines the authored Cannon framing retained
+  by D-058 without changing its common planning-camera controls or entitlement.
+- Selecting or resetting Cannon places the camera `80-110 m` from the selected
+  cannon interest in a rear-upper perspective at least `45°` away from straight
+  down. The cannon remains near screen center at roughly `5-10%` of viewport
+  height while surrounding and forward terrain occupy most of the frame.
+- This is a coordinate preset, not a close-inspection shot, automatic target
+  frame, or separate navigation mode. Cannon reselection and launcher-source
+  selection restore the same authored composition; aim/setup edits do not move
+  it.
+- The user-provided LV5 1920 by 1080 snapshot on 2026-08-18 is the visual scale
+  reference. The retained baseline showed the previous roughly `18.7 m` preset
+  making the launcher occupy about `28%` of viewport height and is rejected.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
