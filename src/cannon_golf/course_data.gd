@@ -222,8 +222,12 @@ func landform_signature() -> String:
 		if feature == null:
 			return ""
 		values.append("%s:%d:%s:%s:%s:%s:%s" % [
-			feature.feature_id, feature.kind, feature.route_t, feature.route_offset,
-			feature.radius, feature.amplitude, feature.flatness,
+			feature.feature_id, feature.kind, String.num(feature.route_t, 6),
+			"%s,%s" % [
+				String.num(feature.route_offset.x, 6),
+				String.num(feature.route_offset.y, 6),
+			], String.num(feature.radius, 6),
+			String.num(feature.amplitude, 6), String.num(feature.flatness, 6),
 		])
 	return ";".join(values)
 

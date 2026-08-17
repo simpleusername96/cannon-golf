@@ -20,12 +20,12 @@ static func signature(course: CannonGolfCourseData) -> String:
 		str(profile.basin_count), str(profile.pass_count),
 		_f(profile.undulation_amplitude), _f(profile.route_width),
 		str(contract.generation_version), str(contract.profile_version),
-		str(contract.layout_version), str(contract.cell_count), str(contract.local_bounds),
-		str(contract.maximum_top_triangle_count), str(contract.route_station_z),
+		str(contract.layout_version), _v2i(contract.cell_count), _rect2(contract.local_bounds),
+		str(contract.maximum_top_triangle_count), _variant_feed(contract.route_station_z),
 	])
 	if course.is_constraint_recipe():
 		feed.append_array(PackedStringArray([
-			str(course.terrain_seed_window), _dictionary_feed(course.difficulty_targets),
+			_v2i(course.terrain_seed_window), _dictionary_feed(course.difficulty_targets),
 			_f(course.cannon_route_t),
 		]))
 	else:
@@ -38,9 +38,9 @@ static func signature(course: CannonGolfCourseData) -> String:
 			return ""
 		feed.append_array(PackedStringArray([
 			str(route.role), _f(route.endpoint_x), _f(route.width),
-			str(route.grade_signs), _v2(route.drop_range), _v2(route.rise_range),
-			_v2(route.lateral_bend_range), str(route.mechanism_kinds),
-			str(route.mechanism_pad_ts), str(route.mechanism_pad_radii),
+			_variant_feed(route.grade_signs), _v2(route.drop_range), _v2(route.rise_range),
+			_v2(route.lateral_bend_range), _variant_feed(route.mechanism_kinds),
+			_variant_feed(route.mechanism_pad_ts), _variant_feed(route.mechanism_pad_radii),
 		]))
 	if course.has_method(&"landform_signature"):
 		feed.append(String(course.call(&"landform_signature")))
@@ -62,7 +62,7 @@ static func signature(course: CannonGolfCourseData) -> String:
 				_f(leg.goal_radius), _f(leg.goal_recess_depth), _f(leg.goal_lip_height),
 				_v3(leg.default_setup()), _v3(leg.direct_solution()),
 				str(leg.get(&"route_index") if _has_property(leg, &"route_index") else 0),
-				str(leg.get(&"goal_placement_offset") if _has_property(leg, &"goal_placement_offset") else Vector2.ZERO),
+				_v2(leg.get(&"goal_placement_offset") if _has_property(leg, &"goal_placement_offset") else Vector2.ZERO),
 				str(leg.get(&"rim_elevation_band") if _has_property(leg, &"rim_elevation_band") else 1),
 				String(leg.get(&"feature_anchor") if _has_property(leg, &"feature_anchor") else &""),
 			]))
@@ -88,6 +88,14 @@ static func _v3(value: Vector3) -> String:
 	return "%s,%s,%s" % [_f(value.x), _f(value.y), _f(value.z)]
 
 
+static func _v2i(value: Vector2i) -> String:
+	return "%d,%d" % [value.x, value.y]
+
+
+static func _rect2(value: Rect2) -> String:
+	return "%s;%s" % [_v2(value.position), _v2(value.size)]
+
+
 static func _color(value: Color) -> String:
 	return "%s,%s,%s,%s" % [_f(value.r), _f(value.g), _f(value.b), _f(value.a)]
 
@@ -97,5 +105,36 @@ static func _dictionary_feed(values: Dictionary) -> String:
 	keys.sort_custom(func(left: Variant, right: Variant) -> bool: return str(left) < str(right))
 	var feed := PackedStringArray()
 	for key in keys:
-		feed.append("%s=%s" % [str(key), str(values[key])])
+		feed.append("%s=%s" % [str(key), _variant_feed(values[key])])
 	return ",".join(feed)
+
+
+static func _variant_feed(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL:
+			return "null"
+		TYPE_BOOL:
+			return "1" if value else "0"
+		TYPE_INT:
+			return str(value)
+		TYPE_FLOAT:
+			return _f(float(value))
+		TYPE_VECTOR2:
+			return _v2(value)
+		TYPE_VECTOR2I:
+			return _v2i(value)
+		TYPE_VECTOR3:
+			return _v3(value)
+		TYPE_RECT2:
+			return _rect2(value)
+		TYPE_DICTIONARY:
+			return "{%s}" % _dictionary_feed(value)
+		TYPE_ARRAY, TYPE_PACKED_BYTE_ARRAY, TYPE_PACKED_INT32_ARRAY, \
+		TYPE_PACKED_INT64_ARRAY, TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY, \
+		TYPE_PACKED_STRING_ARRAY, TYPE_PACKED_VECTOR2_ARRAY, TYPE_PACKED_VECTOR3_ARRAY:
+			var items := PackedStringArray()
+			for item in value:
+				items.append(_variant_feed(item))
+			return "[%s]" % ",".join(items)
+		_:
+			return String(value)
