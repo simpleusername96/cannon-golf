@@ -71,18 +71,30 @@ function Restore-LogLengths([string]$Path, [hashtable]$Lengths) {
 
 function Stop-OwnedTree([Diagnostics.Process]$Process) {
     if ($null -eq $Process -or $Process.HasExited) { return }
-    & "$env:SystemRoot\System32\taskkill.exe" /PID $Process.Id /T /F | Out-Null
+    if ($IsWindows) {
+        & "$env:SystemRoot\System32\taskkill.exe" /PID $Process.Id /T /F | Out-Null
+    }
+    else {
+        $Process.Kill($true)
+    }
     $Process.WaitForExit(5000) | Out-Null
 }
 
 try {
-    $drive = [IO.DriveInfo]::new('C')
-    $freeBefore = [int64]$drive.AvailableFreeSpace
+    $validationVolumeRoot = [IO.Path]::GetPathRoot($runDirectory)
+    $validationVolume = [IO.DriveInfo]::new($validationVolumeRoot)
+    $freeBefore = [int64]$validationVolume.AvailableFreeSpace
     if ($freeBefore -lt 10GB) {
-        [Console]::Error.WriteLine("C: free space is below the 10 GiB safety floor: $freeBefore bytes.")
+        [Console]::Error.WriteLine("Validation volume free space is below the 10 GiB safety floor: $freeBefore bytes.")
         exit 21
     }
-    $logDirectory = Join-Path $env:APPDATA 'Godot\app_userdata\Cannon Golf Prototype\logs'
+    $localDataRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)
+    $logDirectory = if ($IsWindows) {
+        Join-Path $localDataRoot 'Godot\app_userdata\Cannon Golf Prototype\logs'
+    }
+    else {
+        Join-Path $localDataRoot 'godot/app_userdata/Cannon Golf Prototype/logs'
+    }
     $logBefore = Get-DirectoryBytes $logDirectory
 	$logLengthsBefore = Get-FileLengths $logDirectory
     $startInfo = [Diagnostics.ProcessStartInfo]::new()
@@ -147,11 +159,11 @@ try {
 		}
 	}
 	Restore-LogLengths $logDirectory $logLengthsBefore
-    $freeAfter = [int64]([IO.DriveInfo]::new('C').AvailableFreeSpace)
+    $freeAfter = [int64]([IO.DriveInfo]::new($validationVolumeRoot).AvailableFreeSpace)
     $logAfter = Get-DirectoryBytes $logDirectory
     $logGrowth = $logAfter - $logBefore
     $ownedProcessCount = if ($process.HasExited) { 0 } else { 1 }
-    Write-Host "validation evidence: exit=$exitCode c_free_before=$freeBefore c_free_after=$freeAfter log_before=$logBefore log_after=$logAfter log_growth=$logGrowth owned_processes=$ownedProcessCount"
+    Write-Host "validation evidence: exit=$exitCode volume_free_before=$freeBefore volume_free_after=$freeAfter log_before=$logBefore log_after=$logAfter log_growth=$logGrowth owned_processes=$ownedProcessCount"
     if ($logGrowth -gt 1MB) { $failure = "Godot user log growth exceeded 1 MiB: $logGrowth bytes." }
     if ($ownedProcessCount -ne 0) { $failure = 'Owned Godot process remained after cleanup.' }
     if ($null -eq $failure -and $exitCode -eq 0) {
