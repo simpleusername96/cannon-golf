@@ -2,9 +2,9 @@
 type: spec
 status: active
 created: 2026-08-12
-last_reviewed: 2026-08-16
+last_reviewed: 2026-08-17
 canonical_for: Current product requirements for the provisional Cannon Golf project
-scope: Game concept and observable player experience; three-course prototype implemented and later device progression specified
+scope: Game concept and observable player experience; fifteen-course prepared foundation implemented and later device progression specified
 source: User direction recorded on 2026-08-12
 related:
   - DESIGN_RULES.md
@@ -21,7 +21,7 @@ related:
 Define the current product direction for a new Windows desktop 3D physics
 puzzle. The copied Paint Mountain runtime is reusable technical material only.
 This specification replaces surface coverage as the product goal. The isolated
-`cannon_golf` runtime now implements a ten-course prepared catalog with
+`cannon_golf` runtime now implements a fifteen-course prepared catalog with
 player-chosen multi-goal routes. Later device requirements remain specified but
 unimplemented. The current foundation phase must first make the basic terrain
 catalog meaningfully varied and make overview, cannon, and shot-follow camera
@@ -212,12 +212,13 @@ cannon composition.
 
 ### FR-6: Difficulty progression
 
-- Requirement: the initial course targets eleven stages: two simple one-goal
-  stages solved directly with angle and power, two direct stages that require
-  several successful goal settlements, two stages whose certified solution uses
-  one bounce pad, and five stages that progressively increase the required or
-  available bounce-pad count. Exact terrain and pad counts within the last five
-  stages remain balancing decisions.
+- Requirement: the current prepared foundation contains fifteen courses. The
+  first ten introduce one through six goals. The next five retain four through
+  six goals, use broader course extents, and reduce goal-basin tolerance in the
+  final four relative to earlier late courses. Every prepared launcher-to-goal
+  leg is at least `100 m`. The later
+  bounce-pad teaching sequence remains deferred until the terrain and camera
+  foundation is accepted.
 - Reason: the player should learn one launch, then repeated settlement, then one
   pad, then multi-pad route construction.
 
@@ -243,6 +244,10 @@ cannon composition.
   Confirming any goal ends Shot Follow immediately and restores that exact
   stored planning state; it must not retarget or hold the camera at the goal
   plate.
+  Selecting the original start or a completed goal as the cannon source must
+  not switch to overview, reset overview exploration, or end an unrelated live
+  Shot Follow. Cannon view alone follows the selected source because it is
+  source-relative.
   Overview interaction uses left-drag pan, right-drag orbit, the mouse wheel or
   compact actions for distance, and arrow keys for pan. Ten logarithmic
   zoom-in actions move from reset framing to a `28 m` desired minimum distance;

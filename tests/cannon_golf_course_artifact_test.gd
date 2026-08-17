@@ -40,7 +40,7 @@ func _initialize() -> void:
 				absf(prepared.height_at_local(
 					leg.goal_position.x, leg.goal_position.z
 				) - leg.goal_position.y) <= 0.16,
-				"Prepared sampled surface must reproduce each terrain-basin floor."
+				"Prepared sampled surface must reproduce each terrain-basin floor: %s." % course.course_id
 			)
 		var stale_course := course.duplicate(true) as CannonGolfCourseData
 		stale_course.terrain_seed_window.x += 1
@@ -53,7 +53,7 @@ func _initialize() -> void:
 		certificate_mutation.resolved_plan_sha256 = "tampered"
 		certificate_mutation.legs[0].default_attempt_count = 1
 		_assert_true(not certificate_mutation.is_valid(), "Partial certificate metadata must fail closed.")
-	print("Cannon Golf prepared artifact identity and payload contract passed for ten courses.")
+	print("Cannon Golf prepared artifact identity and payload contract passed for fifteen courses.")
 	quit(0)
 
 

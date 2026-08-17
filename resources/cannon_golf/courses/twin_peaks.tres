@@ -21,7 +21,7 @@ radius=25.0
 amplitude=8.0
 [sub_resource type="Resource" id="A"]
 script=ExtResource("2")
-route_interval=Vector2(0.78,0.86)
+route_interval=Vector2(0.72,0.80)
 lateral_offset_range=Vector2(-7.0,7.0)
 relative_rim_band=0
 bowl_radius_range=Vector2(8.0,10.0)
@@ -30,7 +30,7 @@ bowl_lip_height_range=Vector2(1.5,2.5)
 semantic_role=&"twin_peaks_checkpoint_1"
 [sub_resource type="Resource" id="B"]
 script=ExtResource("2")
-route_interval=Vector2(0.60,0.68)
+route_interval=Vector2(0.52,0.60)
 lateral_offset_range=Vector2(-7.0,7.0)
 relative_rim_band=1
 bowl_radius_range=Vector2(8.0,10.0)
@@ -39,7 +39,7 @@ bowl_lip_height_range=Vector2(1.5,2.5)
 semantic_role=&"twin_peaks_checkpoint_2"
 [sub_resource type="Resource" id="C"]
 script=ExtResource("2")
-route_interval=Vector2(0.42,0.50)
+route_interval=Vector2(0.32,0.40)
 lateral_offset_range=Vector2(-7.0,7.0)
 relative_rim_band=0
 bowl_radius_range=Vector2(8.0,10.0)
@@ -48,7 +48,7 @@ bowl_lip_height_range=Vector2(1.5,2.5)
 semantic_role=&"twin_peaks_checkpoint_3"
 [sub_resource type="Resource" id="D"]
 script=ExtResource("2")
-route_interval=Vector2(0.24,0.32)
+route_interval=Vector2(0.12,0.20)
 lateral_offset_range=Vector2(-7.0,7.0)
 relative_rim_band=2
 bowl_radius_range=Vector2(8.0,10.0)

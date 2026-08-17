@@ -2,6 +2,7 @@ extends SceneTree
 
 const GENERATOR := preload("res://src/cannon_golf/trajectory_course_generator.gd")
 const ROUTE_MOTIFS := preload("res://src/cannon_golf/course_route_motifs.gd")
+const MINIMUM_LAUNCHER_TO_GOAL_SPACING := 100.0
 
 var _failed := false
 
@@ -28,6 +29,13 @@ func _initialize() -> void:
 		if plan.size() != course.leg_count():
 			continue
 		_assert_route_uses_authored_depths(plan, course, local_bounds)
+		for leg_data in plan:
+			_assert_true(
+				float(leg_data.distance) >= MINIMUM_LAUNCHER_TO_GOAL_SPACING,
+				"%s must keep every launcher-to-goal leg at least %.0f m apart." % [
+					course.course_id, MINIMUM_LAUNCHER_TO_GOAL_SPACING,
+				]
+			)
 		_assert_true(
 			not _uses_legacy_mirrored_route(plan, local_bounds.get_center().x),
 			"%s must not retain the catalog-wide mirrored zigzag." % course.course_id
@@ -74,7 +82,7 @@ func _initialize() -> void:
 			course.course_id,
 			"prepared macro shape"
 		)
-	print("Cannon Golf route and macro terrain variety contracts passed for ten courses.")
+	print("Cannon Golf route and macro terrain variety contracts passed for fifteen courses.")
 	quit(1 if _failed else 0)
 
 

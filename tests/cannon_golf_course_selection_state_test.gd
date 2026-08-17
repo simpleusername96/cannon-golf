@@ -17,7 +17,7 @@ func _run() -> void:
 	var starts: Array[int] = []
 	course_select.start_requested.connect(func(index: int) -> void: starts.append(index))
 	var cards := course_select.course_buttons()
-	_assert(cards.size() == 10, "Course selection must expose ten catalog cards.")
+	_assert(cards.size() == 15, "Course selection must expose fifteen catalog cards.")
 	_assert(course_select.select_course(1), "A non-default course must be selectable.")
 	await process_frame
 	_assert(_pressed_count(cards) == 1, "Exactly one course card must remain pressed.")

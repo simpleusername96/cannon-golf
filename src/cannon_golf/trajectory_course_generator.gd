@@ -5,7 +5,7 @@ extends RefCounted
 ## connected heightfield below those flights. It performs no candidate beam or
 ## live-physics search.
 
-const ALGORITHM_VERSION := 12
+const ALGORITHM_VERSION := 13
 const TERRAIN_SHADER := preload("res://src/cannon_golf/cannon_golf_terrain.gdshader")
 const FEATURE_GRAPH_BUILDER := preload("res://src/cannon_golf/terrain_feature_graph_builder.gd")
 const TERRAIN_EXTENT_SCALE := 1.35
@@ -43,7 +43,10 @@ const SETUP_ELEVATIONS := [25.0, 28.0, 31.0, 34.0, 37.0, 40.0, 43.0, 46.0, 49.0,
 const SETUP_POWERS := [50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0, 95.0]
 const DEEP_RELAY_MINIMUM_RELIEF := 80.0
 const DEEP_RELAY_MINIMUM_RIM_RISE := 25.0
-const COURSE_MINIMUM_RELIEF := [72.0, 82.0, 96.0, 116.0, 132.0, 150.0, 170.0, 194.0, 220.0, 250.0]
+const COURSE_MINIMUM_RELIEF := [
+	72.0, 82.0, 96.0, 116.0, 132.0, 150.0, 170.0, 194.0, 220.0, 250.0,
+	250.0, 255.0, 260.0, 265.0, 270.0,
+]
 const MAXIMUM_RELIEF_MARGIN := 45.0
 const RELIEF_TARGET_MARGIN := 12.0
 const STEEP_SAMPLE_SLOPE_DEGREES := 45.0
@@ -152,11 +155,19 @@ static func _plan_legs(
 	if not CannonGolfCourseRouteMotifs.has_station_count(course_index, course.leg_count()):
 		return result
 	var lateral := minf(
-		65.0 + float(course_index % 3) * 5.0,
+		78.0 + float(course_index % 3) * 6.0,
 		local_bounds.size.x * 0.36
 	)
 	if course.course_id == &"deep_relay":
 		lateral = minf(lateral, local_bounds.size.x * 0.285)
+	elif course.course_id == &"twin_peaks":
+		# Twin Peaks is already close to the terrain/camera admission envelope.
+		# Widen its relay longitudinally and narrow the cross-span enough to admit it.
+		lateral = minf(60.0, local_bounds.size.x * 0.36)
+	elif course_index >= 10:
+		# Expansion routes gain most of their distance from wider longitudinal
+		# station gaps. Keep the cross-span inside the admitted mountain envelope.
+		lateral = minf(70.0, local_bounds.size.x * 0.36)
 	var start_z := local_bounds.end.y - minf(18.0, local_bounds.size.y * 0.12)
 	var launcher := Vector3(
 		local_bounds.get_center().x + lateral \

@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="CannonGolfCourseData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/cannon_golf/course_data.gd" id="1"]
+[ext_resource type="Script" path="res://src/cannon_golf/course_leg_data.gd" id="2"]
+[ext_resource type="Resource" path="res://resources/cannon_golf/courses/deep_relay_profile.tres" id="3"]
+
+[sub_resource type="Resource" id="A"]
+script = ExtResource("2")
+route_interval = Vector2(0.80, 0.88)
+relative_rim_band = 2
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"granite_switchbacks_checkpoint_1"
+
+[sub_resource type="Resource" id="B"]
+script = ExtResource("2")
+route_interval = Vector2(0.58, 0.66)
+relative_rim_band = 0
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"granite_switchbacks_checkpoint_2"
+
+[sub_resource type="Resource" id="C"]
+script = ExtResource("2")
+route_interval = Vector2(0.36, 0.44)
+relative_rim_band = 2
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"granite_switchbacks_checkpoint_3"
+
+[sub_resource type="Resource" id="D"]
+script = ExtResource("2")
+route_interval = Vector2(0.14, 0.22)
+relative_rim_band = 1
+bowl_radius_range = Vector2(8.0, 10.0)
+bowl_recess_depth_range = Vector2(3.5, 4.5)
+bowl_lip_height_range = Vector2(1.5, 2.5)
+semantic_role = &"granite_switchbacks_checkpoint_4"
+
+[resource]
+script = ExtResource("1")
+course_id = &"granite_switchbacks"
+display_name = "화강암 스위치백"
+short_brief = "넓게 벌어진 네 개의 능선을 번갈아 공략하세요."
+generation_profile = ExtResource("3")
+authoring_mode = 1
+terrain_seed_window = Vector2i(1764827020, 1764827024)
+terrain_horizontal_scale = 2.30
+terrain_vertical_scale = 1.40
+terrain_origin = Vector3(0, -4, 0)
+legs = Array[ExtResource("2")]([SubResource("A"), SubResource("B"), SubResource("C"), SubResource("D")])

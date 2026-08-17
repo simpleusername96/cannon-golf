@@ -68,7 +68,7 @@ func _run() -> void:
 		if course.leg_count() > 1:
 			_assert_true(not builder.launcher.position.is_equal_approx(first_anchor), "A multi-goal course must relocate its reusable launcher.")
 		_assert_true(builder.select_launcher_source(-1), "Builder must restore the original source for the next build.")
-	print("Cannon Golf prepared course-build contract passed for ten courses.")
+	print("Cannon Golf prepared course-build contract passed for fifteen courses.")
 	quit(0)
 
 

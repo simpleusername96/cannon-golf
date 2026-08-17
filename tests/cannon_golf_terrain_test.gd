@@ -9,7 +9,8 @@ func _initialize() -> void:
 	_assert_explicit_sample_rejection()
 	var payloads: Dictionary = {}
 	var expected_horizontal_scales := [
-		1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25
+		1.50, 1.50, 1.58, 1.65, 1.73, 1.80, 1.92, 2.03, 2.13, 2.25,
+		2.30, 2.35, 2.40, 2.45, 2.50,
 	]
 	var courses := CannonGolfCourseCatalog.all_courses()
 	for course_index in range(courses.size()):
@@ -25,7 +26,7 @@ func _initialize() -> void:
 		_assert_true(not payloads.has(prepared.payload_sha256), "Prepared terrain payloads must be distinct.")
 		payloads[prepared.payload_sha256] = true
 		_assert_prepared_terrain(prepared, course)
-	print("Cannon Golf prepared terrain contracts passed for ten courses.")
+	print("Cannon Golf prepared terrain contracts passed for fifteen courses.")
 	quit(1 if _failed else 0)
 
 

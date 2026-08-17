@@ -61,7 +61,7 @@ func _initialize() -> void:
 			"%s goals must sit on admitted summits or ridges." % course.course_id
 		)
 		previous_target = target
-	print("Cannon Golf constrained terrain contracts passed for ten courses.")
+	print("Cannon Golf constrained terrain contracts passed for fifteen courses.")
 	quit(1 if _failed else 0)
 
 

@@ -55,6 +55,19 @@ func _assert_confirmation_restores_planning_pose() -> void:
 				and game.can_fire(),
 		"Intermediate confirmation must not move the cannon or block the next launch."
 	)
+	var expected_pan := game.planning_pan
+	var expected_zoom := game.planning_zoom
+	var expected_orbit := game._camera_rig.orbit_degrees
+	_assert(game.select_launcher_source(0), "The completed goal must be selectable as a source.")
+	game._camera_rig.update(1.0)
+	_assert(
+		game.planning_view == &"oblique" \
+				and game.planning_pan.is_equal_approx(expected_pan) \
+				and is_equal_approx(game.planning_zoom, expected_zoom) \
+				and game._camera_rig.orbit_degrees.is_equal_approx(expected_orbit) \
+				and game._camera.global_transform.is_equal_approx(expected_transform),
+		"Selecting a completed goal source must not reset or switch the overview camera."
+	)
 	game.queue_free()
 	await process_frame
 

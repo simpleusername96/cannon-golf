@@ -11,10 +11,20 @@ const COURSE_SEVEN := preload("res://resources/cannon_golf/courses/u_valley.tres
 const COURSE_EIGHT := preload("res://resources/cannon_golf/courses/twin_peaks.tres")
 const COURSE_NINE := preload("res://resources/cannon_golf/courses/basin_garden.tres")
 const COURSE_TEN := preload("res://resources/cannon_golf/courses/alpine_complex.tres")
+const COURSE_ELEVEN := preload("res://resources/cannon_golf/courses/granite_switchbacks.tres")
+const COURSE_TWELVE := preload("res://resources/cannon_golf/courses/skyline_crossing.tres")
+const COURSE_THIRTEEN := preload("res://resources/cannon_golf/courses/crown_relay.tres")
+const COURSE_FOURTEEN := preload("res://resources/cannon_golf/courses/storm_saddles.tres")
+const COURSE_FIFTEEN := preload("res://resources/cannon_golf/courses/final_ascent.tres")
 
 
 static func all_courses() -> Array[CannonGolfCourseData]:
-	return [COURSE_ONE, COURSE_TWO, COURSE_THREE, COURSE_FOUR, COURSE_FIVE, COURSE_SIX, COURSE_SEVEN, COURSE_EIGHT, COURSE_NINE, COURSE_TEN]
+	return [
+		COURSE_ONE, COURSE_TWO, COURSE_THREE, COURSE_FOUR, COURSE_FIVE,
+		COURSE_SIX, COURSE_SEVEN, COURSE_EIGHT, COURSE_NINE, COURSE_TEN,
+		COURSE_ELEVEN, COURSE_TWELVE, COURSE_THIRTEEN, COURSE_FOURTEEN,
+		COURSE_FIFTEEN,
+	]
 
 
 static func course_at(index: int) -> CannonGolfCourseData:

@@ -751,6 +751,26 @@ in `OPEN_QUESTIONS.md`.
   inherited flat-render default remain unchanged. Do not restore random
   per-triangle color variation merely to make the grid legible.
 
+### D-049 — Expand to fifteen wider courses without source-selection camera resets
+
+- Status: accepted on 2026-08-17; expands D-033's first-ten catalog scope,
+  resolves Q-23 for the current prepared foundation, and refines D-036 and
+  D-047 source-selection camera behavior. It does not start the deferred device
+  progression in D-014 through D-016 and D-042.
+- The prepared runtime catalog contains fifteen courses. Courses eleven through
+  fifteen are a higher-difficulty expansion with broader horizontal extents,
+  four through six goals, stronger late-course relief, and smaller goal basins
+  in the final four courses.
+- Every generated launcher-to-goal leg, including a leg launched from a prior
+  completed goal, must keep at least `100 m` of center-to-center spacing. Widen
+  the route within ballistic, terrain-slope, camera, and overview admission
+  constraints rather than bypassing those contracts.
+- Selecting Start or a completed goal relocates only the reusable cannon and
+  resets that source's launch setup to `50 / 50 / 50`. It must preserve the
+  current overview pan, zoom, and orbit and must not switch to overview or end
+  an unrelated Shot Follow. A current cannon view updates to the relocated
+  cannon because that view is source-relative.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

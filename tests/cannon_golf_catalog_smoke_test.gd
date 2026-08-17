@@ -23,7 +23,7 @@ func _run() -> void:
 		app.queue_free()
 		await process_frame
 	var courses := CannonGolfCourseCatalog.all_courses()
-	_assert_true(courses.size() == 10, "The runtime catalog must contain ten courses.")
+	_assert_true(courses.size() == 15, "The runtime catalog must contain fifteen courses.")
 	for course in courses:
 		var prepared := ResourceLoader.load(
 			CannonGolfCourseCatalog.prepared_path_for(course), "", ResourceLoader.CACHE_MODE_IGNORE
@@ -44,7 +44,7 @@ func _run() -> void:
 		builder.queue_free()
 		await process_frame
 	if _failures.is_empty():
-		print("Cannon Golf startup/catalog smoke passed for 10 courses.")
+		print("Cannon Golf startup/catalog smoke passed for 15 courses.")
 		quit(0)
 		return
 	for failure in _failures:

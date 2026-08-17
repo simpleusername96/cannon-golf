@@ -16,12 +16,19 @@ const STATION_MULTIPLIERS := [
 	[0.62, -0.90, 0.50, -0.62, -0.06],
 	[-0.74, 0.34, -0.92, 0.68, -0.82, 0.90],
 	[0.68, -0.95, 0.86, -0.78, 0.94, -0.66, 0.74],
+	[-0.96, 0.88, -0.82, 0.94, -0.90],
+	[0.94, -0.92, 0.86, -0.96, 0.90, -0.84],
+	[-0.98, 0.92, -0.88, 0.96, -0.94, 0.86, -0.90],
+	[0.90, -0.98, 0.94, -0.86, 0.98, -0.92, 0.88],
+	[-0.94, 0.98, -0.90, 0.96, -0.86, 0.92, -0.98],
 ]
 
 const MACRO_PROFILE_NAMES := [
 	&"ridge_spur", &"rising_bend", &"summit_saddle", &"deep_relay",
 	&"linked_basins", &"terraced_peak", &"u_valley", &"twin_peaks",
 	&"basin_garden", &"summit_chain",
+	&"granite_switchbacks", &"skyline_crossing", &"crown_relay",
+	&"storm_saddles", &"final_ascent",
 ]
 
 

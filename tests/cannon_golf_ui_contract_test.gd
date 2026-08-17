@@ -208,7 +208,7 @@ func _run() -> void:
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	_assert(
-		course_select.course_buttons().size() == 10,
+		course_select.course_buttons().size() == 15,
 		"Course select must create ten reusable catalog cards."
 	)
 	_assert(course_select.get_node_or_null("CardsPanel/Margin/Scroll") is ScrollContainer, "Course cards need a scroll owner.")

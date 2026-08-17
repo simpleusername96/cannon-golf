@@ -3,13 +3,13 @@ extends SceneTree
 
 func _initialize() -> void:
 	var courses := CannonGolfCourseCatalog.all_courses()
-	var expected_ids: Array[StringName] = [&"first_ridge", &"rising_bend", &"summit_saddle", &"deep_relay", &"linked_bowls", &"terraced_peak", &"u_valley", &"twin_peaks", &"basin_garden", &"alpine_complex"]
-	var expected_counts := [1, 1, 2, 2, 3, 3, 4, 4, 5, 6]
-	var expected_bands := [[0], [2], [2, 0], [0, 2], [2, 0, 1], [0, 2, 0], [2, 0, 2, 1], [0, 1, 0, 2], [2, 0, 1, 2, 0], [0, 2, 1, 2, 0, 2]]
-	var expected_seed_centers := [1347223552, 1347223552, 1764827014, 1764827013, 1764827015, 1764827016, 1764827017, 1764827018, 1764827019, 1764827020]
-	var expected_role_families := [&"first_ridge", &"rising_bend", &"summit_saddle", &"deep_relay", &"linked_bowls", &"terraced_peak", &"u_valley", &"twin_peaks", &"basin_garden", &"alpine_complex"]
-	var expected_radius_ranges := [Vector2(12, 14), Vector2(12, 14), Vector2(10, 12), Vector2(10, 12), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10)]
-	_assert_true(courses.size() == 10, "Catalog must expose exactly ten courses.")
+	var expected_ids: Array[StringName] = [&"first_ridge", &"rising_bend", &"summit_saddle", &"deep_relay", &"linked_bowls", &"terraced_peak", &"u_valley", &"twin_peaks", &"basin_garden", &"alpine_complex", &"granite_switchbacks", &"skyline_crossing", &"crown_relay", &"storm_saddles", &"final_ascent"]
+	var expected_counts := [1, 1, 2, 2, 3, 3, 4, 4, 5, 6, 4, 5, 6, 6, 6]
+	var expected_bands := [[0], [2], [2, 0], [0, 2], [2, 0, 1], [0, 2, 0], [2, 0, 2, 1], [0, 1, 0, 2], [2, 0, 1, 2, 0], [0, 2, 1, 2, 0, 2], [2, 0, 2, 1], [2, 1, 0, 2, 1], [2, 0, 2, 1, 0, 2], [0, 2, 1, 2, 1, 2], [2, 1, 2, 0, 2, 2]]
+	var expected_seed_centers := [1347223552, 1347223552, 1764827014, 1764827013, 1764827015, 1764827016, 1764827017, 1764827018, 1764827019, 1764827020, 1764827022, 1764827023, 1764827024, 1764827025, 1764827026]
+	var expected_role_families := expected_ids
+	var expected_radius_ranges := [Vector2(12, 14), Vector2(12, 14), Vector2(10, 12), Vector2(10, 12), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(8, 10), Vector2(6.5, 8.5), Vector2(6, 8), Vector2(6.5, 8.5), Vector2(7, 9)]
+	_assert_true(courses.size() == 15, "Catalog must expose exactly fifteen courses.")
 	for index in range(courses.size()):
 		var course := courses[index]
 		_assert_true(course != null and course.is_valid(), "Every catalog course must be valid.")
@@ -28,15 +28,22 @@ func _initialize() -> void:
 			_assert_true(leg != null and leg.is_valid_recipe() and leg.default_setup() == Vector3(50, 50, 50), "Every leg must have a valid recipe and neutral default setup.")
 			_assert_true(leg.relative_rim_band == expected_bands[index][leg_index], "Recipe rim bands must match the approved sequence.")
 			_assert_true(leg.route_interval.y <= previous_route_min - 0.02, "Recipe route intervals must preserve the ordered checkpoint gap.")
-			var expected_lateral_range := Vector2(-7.5, 7.5) if course.course_id == &"deep_relay" else Vector2(-7, 7)
+			var expected_lateral_range := Vector2(-7.5, 7.5) if course.course_id == &"deep_relay" else (Vector2(-8, 8) if index >= 10 else Vector2(-7, 7))
 			_assert_true(leg.lateral_offset_range == expected_lateral_range, "Recipe lateral offset ranges must match the approved profile.")
 			_assert_true(leg.bowl_radius_range == expected_radius_ranges[index] and leg.bowl_recess_depth_range == Vector2(3.5, 4.5) and leg.bowl_lip_height_range == Vector2(1.5, 2.5), "Recipe bowl dimensions must match the difficulty band and retain a raised wall above one ball diameter.")
 			_assert_true(leg.goal_placement_offset == Vector2.ZERO and leg.direct_solution() == Vector3(50, 50, 50), "Recipes must not retain legacy placement or solution values.")
 			_assert_true(leg.semantic_role.begins_with(expected_role_families[index]) and not roles.has(leg.semantic_role), "Recipe semantic roles must be unique and use the approved family.")
 			roles[leg.semantic_role] = true
 			previous_route_min = leg.route_interval.x
+		if index >= 10:
+			_assert_true(
+				course.terrain_horizontal_scale >= 2.30 \
+						and course.leg_count() >= 4 \
+						and (index == 10 or course.leg_at(0).bowl_radius_range.y <= 9.0),
+				"The five expansion courses must retain their harder distance and goal-count band, with narrower basins in the final four."
+			)
 	_assert_true(CannonGolfCourseCatalog.index_of(&"missing") == -1, "Unknown course IDs must not resolve.")
-	print("Cannon Golf ten-course catalog contract passed.")
+	print("Cannon Golf fifteen-course catalog contract passed.")
 	quit(0)
 
 

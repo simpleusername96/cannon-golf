@@ -40,7 +40,6 @@ affected code path is designed.
 | Q-18 | What exact damping, airflow, and gravity values and inventory limits remain understandable without prediction? | Changes physics tuning, readability, and solution tolerance | Keep damping strong but non-sticky, airflow modest and bounded, and gravity local and sharply downward; exact values remain tuning decisions |
 | Q-19 | Which terrain topology is allowed: heightfield-only winding ground, disconnected islands, caves, bridges, overhangs, or some bounded subset? | Changes mesh representation, camera occlusion, placement normals, generator capability, and solver search space | Start with one connected heightfield-like course that bends laterally and changes elevation; do not accept overhangs or caves without a separate decision |
 | Q-21 | Which authoring actions recur enough to justify a Godot editor plugin: route sketching, terrain regeneration, goal placement, stock editing, placement-volume preview, witness recording, or batch validation? | Determines whether a custom editor pays for itself and prevents premature tool scope | Author several stages with Resources and ordinary editor controls first, then build only the repeated high-cost actions into a plugin |
-| Q-23 | Does the new request for approximately ten courses replace the accepted eleven-stage target, or should ten be the first authored batch within that target? | Changes catalog size, the number of multi-pad stages, and whether D-014 must be superseded | Treat ten as the first authored batch and keep the eleventh-stage target unchanged until the owner explicitly chooses one count |
 
 ## Resolved Questions
 
@@ -59,6 +58,7 @@ affected code path is designed.
 | Q-10 | Relay history originally preserved confirmed balls. D-044 supersedes that detail: a completed basin remains an optional launcher source after the resolved ball is removed; intermediate confirmation preserves unrelated live balls and does not clear the course. | `DECISIONS.md` D-030, D-031, and D-044 |
 | Q-20 | Direct-shot certification repeats the center twice and checks all six axial one-unit control neighbors. Center must pass twice; at least four neighbors pass with one on each axis. Placement tolerances remain open with their device rules. | `DECISIONS.md` D-032 |
 | Q-22 | Authors provide bounded course intent; an offline constraint resolver chooses exact goals and terrain adjustments, and real Godot physics certifies the immutable prepared artifact. Runtime does not generate. | `DECISIONS.md` D-032 |
+| Q-23 | The current terrain-and-camera foundation is a fifteen-course prepared catalog: the original ten plus five harder courses. This resolves the current catalog count without starting the deferred device progression. | `DECISIONS.md` D-049 |
 
 ## Recommendations
 

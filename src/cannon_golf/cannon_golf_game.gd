@@ -699,21 +699,19 @@ func _select_launcher_source(goal_index: int) -> bool:
 	if launch_state == LaunchState.CLEARED or goal_index < -1 \
 			or (goal_index >= 0 and not completed_goal_indices.has(goal_index)):
 		return false
-	var stored_view := _camera_rig.view_mode
 	if not _course_builder.select_launcher_source(goal_index):
 		return false
 	selected_launcher_goal_index = goal_index
-	_set_camera_context_for_launcher()
+	# Source selection changes the cannon, not the player's map inspection.
+	# Keep overview pan/zoom/orbit and an active follow shot untouched; cannon
+	# view follows the relocated cannon through its source-relative pose only.
 	_sync_cannon_camera_pose()
-	_camera_rig.set_view(stored_view)
-	_course_builder.launcher.set_cannon_view_active(stored_view == &"cannon")
+	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 	_hud.set_setup(
 		_course_builder.launcher.horizontal_aim,
 		_course_builder.launcher.elevation_degrees,
 		_course_builder.launcher.power_percent
 	)
-	_hud.set_view(_camera_rig.view_mode)
-	_hud.set_camera_mode(&"planning")
 	_sync_launcher_sources()
 	return true
 
