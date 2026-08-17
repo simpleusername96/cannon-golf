@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 scope: repository publication, reproducible Web export, and automatic itch.io delivery
 ---
 
@@ -102,7 +102,7 @@ files, commits, artifacts, or chat.
   - Add a concise Korean deployment runbook with the target, secret name,
     triggers, and recovery procedure; do not copy a credential value.
 
-- [ ] **3. Publish the repository and credential.**
+- [x] **3. Publish the repository and credential.**
   - Commit the already-passing tracked UI changes separately from deployment
     infrastructure so history retains their ownership.
   - Commit the release-boundary, workflow, runbook, and this execution record.
@@ -110,13 +110,14 @@ files, commits, artifacts, or chat.
     add `origin`, create or reuse an itch API key without displaying it, save it
     as the repository secret `BUTLER_API_KEY`, and push `main`.
 
-- [ ] **4. Prove the live delivery loop.**
+- [x] **4. Prove the live delivery loop.**
   - Wait for the push-triggered Actions run. It must finish successfully and its
     summary must name `itchioprofile1351321/cannon-golf:html5`, the full commit,
     version, payload bytes, and `index.pck` SHA-256.
-  - In itch.io, mark the `html5` channel as playable in browser, use click-to-
-    launch fullscreen, enable the fullscreen button, and save without changing
-    the existing Public/In development/No payments settings.
+  - In itch.io, mark the `html5` channel as playable in browser and use click-to-
+    launch fullscreen without changing the existing Public/In development/No
+    payments settings. itch.io hides the separate fullscreen-button option in
+    this mode because launch itself opens the fullscreen player.
   - Load the public page, launch the embedded build, confirm the Godot canvas
     reaches the main menu without an itch loading error, and retain the live page
     as the final browser tab.
@@ -157,14 +158,20 @@ files, commits, artifacts, or chat.
 - Task 2 passed: workflow YAML parses, all third-party actions use full commit
   pins, the credential is scoped to the three authorized steps, and the
   responsibility/failure-path audit found no competing runtime owner.
-- Task 3 is partially complete: the private repository now exists at
-  `https://github.com/simpleusername96/cannon-golf`, `origin` points to it, and
-  the UI and deployment work are stored in separate local commits. The remote
-  remains unpushed so the first workflow run cannot fail from a missing secret.
-- Current stop condition: itch.io requires a fresh password confirmation before
-  its API Keys page can be opened. The signed-in Chrome tab is retained at that
-  prompt. After the user confirms it, create or reuse the key, store it as the
-  GitHub `BUTLER_API_KEY` secret, and push `main`.
+- Task 3 passed: private repository `simpleusername96/cannon-golf` exists,
+  `origin/main` contains the scoped history, and the reusable itch API key is
+  stored only as the GitHub Actions secret `BUTLER_API_KEY`.
+- Task 4 passed in Actions run `31989584204` for runtime commit `eab25ac`.
+  Import/startup, the complete Cannon Golf suite, Web export, static release
+  verification, Butler validation, and publication all succeeded. The published
+  channel is `itchioprofile1351321/cannon-golf:html5`, version
+  `alpha.9+eab25ac`, extracted size 56,945,095 bytes, and `index.pck` SHA-256
+  `295605536CC87D8CC97A9179435CD088A2A3997558FC7F9FE0FA1BB614F188B8`.
+- The itch upload is browser-playable and click-to-launch fullscreen while the
+  project remains Public, In development, and No payments. The public page
+  loaded the Godot canvas and reached the Cannon Golf main menu. This completed
+  plan record is path-ignored by the deployment workflow, so committing it does
+  not produce a redundant game upload after the proven runtime commit.
 
 ## Completion and Stop Conditions
 
