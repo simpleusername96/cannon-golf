@@ -296,8 +296,10 @@ cannon composition.
 - Requirement: the player must be able to retry a shot or stage without a long
   transition or consumable limit. A miss never creates a timer, life, ball-stock,
   or shot-count game over. Aim controls and Fire remain available immediately
-  after a launch regardless of how many unconfirmed balls are still active.
-  Each ball resolves settlement and failure independently. An intermediate confirmation
+  after every launch. At most four unconfirmed balls remain in active simulation;
+  accepting a fifth launch retires only the oldest unresolved ball while keeping
+  its existing first-impact mark. Each retained ball resolves settlement and
+  failure independently. An intermediate confirmation
   completes whichever incomplete goal contains that ball; the course clears
   only when no incomplete goals remain.
   Identical launch/device state must produce materially similar first impacts.
@@ -456,9 +458,11 @@ cannon composition.
 
 - Applies to: FR-11.
 - Conditions for done: repeated misses never exhaust time, lives, balls, or
-  shots. The player can keep adjusting and firing while any number of earlier
-  balls remain unresolved; active-ball count never disables Fire. Each ball
-  resolves without corrupting or removing the others. A first confirmation clears only a one-goal course;
+  shots. The player can keep adjusting and firing while earlier balls remain
+  unresolved; active-ball count never disables Fire. The first four balls remain
+  live together. A fifth accepted launch retires only the oldest unresolved ball,
+  keeps its impact mark, and makes the new ball the follow target. Each retained
+  ball resolves without corrupting the others. A first confirmation clears only a one-goal course;
   a multi-goal course clears only after every goal confirms. Quick retry during
   flight replaces only the newest active ball with identical launch origin and
   velocity while retaining all prior impact marks and planning context; at a

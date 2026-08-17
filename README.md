@@ -11,10 +11,11 @@ inside the goal. Retry is unlimited. High-oblique and side planning views
 preserve the complete launch setup, exploration state, and impact history.
 Firing leaves the current camera exactly where the player put it; the follow
 icon explicitly enters ball follow when wanted. The controls remain available
-and the player can launch a second ball immediately. At most two
-unconfirmed balls can be active at once. In planning, left-drag orbits around a
-fixed course focus, the wheel zooms, and clicks without dragging do not jump the
-camera pivot.
+and the player can keep launching immediately. At most four unconfirmed balls
+remain in active simulation; a fifth launch replaces only the oldest unresolved
+ball and keeps its impact mark. In planning, left-drag orbits around a fixed
+course focus, the wheel zooms, and clicks without dragging do not jump the camera
+pivot.
 
 Both courses call Paint Mountain's retained route-graph mountain synthesizer,
 then use its topology and geometry builders for the rendered and colliding

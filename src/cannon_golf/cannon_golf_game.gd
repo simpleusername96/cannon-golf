@@ -16,6 +16,9 @@ enum LaunchState {
 const LOW_SPEED_FAILURE_SECONDS := 2.0
 const NEARLY_STILL_LINEAR_SPEED := 0.34 * CannonGolfBallistics.MOTION_TIME_SCALE
 const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
+## Fire stays unrestricted, but the single-threaded Web build must not retain an
+## unbounded number of expensive rigid bodies against the course collision mesh.
+const MAXIMUM_SIMULATED_BALLS := 4
 
 @export var initial_course_index := 0
 var initial_prepared_course: CannonGolfPreparedCourse
@@ -249,6 +252,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func fire() -> bool:
 	if launch_state == LaunchState.CLEARED:
 		return false
+	if _active_balls.size() >= MAXIMUM_SIMULATED_BALLS:
+		_remove_live_ball(_active_balls.front())
 	var ball := CannonGolfBall.new()
 	ball.name = "ActiveGolfBall%04d" % _next_ball_id
 	_next_ball_id += 1

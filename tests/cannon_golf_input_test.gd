@@ -63,7 +63,16 @@ func _run() -> void:
 	await _push_space()
 	_assert_ball_count(game, 3, "Every physical Space press must add another live ball.")
 	await _push_space()
-	_assert_ball_count(game, 4, "Rapid Fire must not impose a simultaneous-ball limit.")
+	_assert_ball_count(game, 4, "The first four rapid launches must remain live together.")
+	var oldest_ball := game.active_balls().front() as CannonGolfBall
+	var oldest_ball_id := oldest_ball.get_instance_id()
+	await _push_space()
+	_assert_ball_count(game, 4, "A fifth launch must keep the Web-safe simulation budget.")
+	_assert_true(
+		not is_instance_valid(oldest_ball)
+				and game.current_ball.get_instance_id() != oldest_ball_id,
+		"A fifth launch must retire only the oldest live ball and follow the new one."
+	)
 
 	var launcher := game._course_builder.launcher
 	var hud := game._hud

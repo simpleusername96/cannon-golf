@@ -771,6 +771,20 @@ in `OPEN_QUESTIONS.md`.
   an unrelated Shot Follow. A current cannon view updates to the relocated
   cannon because that view is source-relative.
 
+### D-050 — Bound active ball simulation without limiting Fire
+
+- Status: accepted on 2026-08-17; refines D-041's simultaneous-ball rule after
+  the deployed single-threaded Web build showed severe slowdown from accumulated
+  rigid bodies.
+- Fire remains available after every accepted launch and never consumes a ball,
+  life, timer, or shot allowance. The runtime retains at most four unconfirmed
+  balls in active physics simulation. Accepting a fifth launch removes only the
+  oldest unresolved ball before creating and following the new ball.
+- Removing an old simulated ball does not remove its retained first-contact mark,
+  confirmed goals, selected cannon source, launch setup, or planning-camera
+  state. Every retained live ball continues to own independent settlement and
+  resolution state.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system
