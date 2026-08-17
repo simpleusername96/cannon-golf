@@ -169,6 +169,8 @@ jobs:
 
       - name: Run Cannon Golf test suite
         shell: pwsh
+        env:
+          CANNON_GOLF_IDENTITY_TRACE: "1"
         run: ./scripts/test-cannon-golf.ps1 -GodotPath $env:GODOT_BIN
 
       - name: Export and verify Web release
