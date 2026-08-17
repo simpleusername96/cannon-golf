@@ -15,16 +15,15 @@ const FOLLOW_DISTANCE := 18.0
 const FOLLOW_HEIGHT := 8.0
 const ORBIT_DEGREES_PER_PIXEL := Vector2(0.075, 0.06)
 const PAN_RESPONSE := 0.30
-const MAXIMUM_PAN_EVENT_SPAN_RATIO := 0.02
+const MAXIMUM_PAN_EVENT_SPAN_RATIO := 0.25
 const ARROW_PAN_SPAN_RATIO := 0.01
 const CANNON_FIELD_OF_VIEW := 70.0
 const CANNON_BACK_DISTANCE := 16.0
 const CANNON_SIDE_DISTANCE := 5.0
 const CANNON_HEIGHT := 8.0
-const CANNON_MINIMUM_ZOOM := -7.0
-const CANNON_MAXIMUM_ZOOM := 8.0
-const CANNON_MAXIMUM_PAN_EVENT_DISTANCE := 24.0
-const CANNON_PAN_RESPONSE := 0.75
+const CANNON_MINIMUM_ZOOM := -12.0
+const CANNON_MAXIMUM_ZOOM := 3.0
+const CANNON_ZOOM_FACTOR := 0.72
 const CANNON_ORBIT_DEGREES_PER_PIXEL := Vector2(0.22, 0.18)
 const CANNON_MINIMUM_PITCH_ORBIT := -15.0
 const CANNON_MAXIMUM_PITCH_ORBIT := 34.0
@@ -174,7 +173,7 @@ func pan(screen_direction: Vector2) -> void:
 		var forward := -_camera.global_transform.basis.z
 		forward.y = 0.0
 		forward = forward.normalized()
-		var scale := CANNON_ARROW_PAN_DISTANCE * pow(0.9, cannon_zoom)
+		var scale := CANNON_ARROW_PAN_DISTANCE * pow(CANNON_ZOOM_FACTOR, cannon_zoom)
 		_apply_cannon_pan(
 			right * screen_direction.x * scale + forward * screen_direction.y * scale
 		)
@@ -203,12 +202,11 @@ func pan_drag(_screen_position: Vector2, relative: Vector2) -> bool:
 	var forward := -_camera.global_transform.basis.z
 	forward.y = 0.0
 	forward = forward.normalized()
-	var response := CANNON_PAN_RESPONSE if view_mode == &"cannon" else PAN_RESPONSE
+	var response := PAN_RESPONSE
 	var delta := (-right * relative.x + forward * relative.y) * units_per_pixel * response
-	var maximum_event_distance := CANNON_MAXIMUM_PAN_EVENT_DISTANCE \
-			if view_mode == &"cannon" \
-			else maxf(_course.content_bounds.size.x, _course.content_bounds.size.z) \
-					* MAXIMUM_PAN_EVENT_SPAN_RATIO
+	var maximum_event_distance := maxf(
+		_course.content_bounds.size.x, _course.content_bounds.size.z
+	) * MAXIMUM_PAN_EVENT_SPAN_RATIO
 	delta = delta.limit_length(maximum_event_distance)
 	if not delta.is_finite() or delta.is_zero_approx():
 		return false
@@ -404,7 +402,7 @@ func _resolve_pose(size: Vector2) -> void:
 			offset = offset.rotated(
 				orbit_right, deg_to_rad(-cannon_orbit_degrees.y)
 			)
-		offset *= pow(0.9, cannon_zoom)
+		offset *= pow(CANNON_ZOOM_FACTOR, cannon_zoom)
 		_planning_focus = base_focus
 		_planning_position = _planning_focus + offset
 	else:

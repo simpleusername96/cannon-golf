@@ -252,8 +252,8 @@ cannon composition.
   not switch to overview, reset overview exploration, or end an unrelated live
   Shot Follow. Cannon view alone follows the selected source because it is
   source-relative.
-  Overview interaction uses left-drag pan, right-drag orbit, the mouse wheel or
-  compact actions for distance, and arrow keys for pan. Ten logarithmic
+  Every planning-camera preset uses left-drag orbit, right-drag pan, the mouse
+  wheel or compact actions for distance, and arrow keys for pan. Ten logarithmic
   zoom-in actions move from reset framing to a `28 m` desired minimum distance;
   six zoom-out actions reach the complete-course fit. A swept camera boom
   shortens before terrain instead of lifting the camera above an obstruction.
@@ -263,17 +263,20 @@ cannon composition.
   planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  Cannon interaction uses a subject-centered 3D-viewer model. The selected
+  Cannon is one planning-camera preset, not a restricted camera mode. Its
+  authored pose uses a subject-centered 3D-viewer model: the selected
   cannon's authored anchor is the stable initial interest: left-drag orbits,
   right-drag pans that interest across the prepared course, the wheel or compact
   zoom actions change camera-to-interest distance, and arrow keys pan. Horizontal
   orbit is continuous, vertical orbit stops before inversion, and direct input
-  updates the camera without trailing interpolation. This state is independent
-  from cannon aim and from Overview. It must not switch view, copy Overview's
-  values, or converge on Overview's authored top/complete-course composition.
-  Only an explicit Overview selection opens that camera. The high-oblique reset
-  frames the complete presentation bounds, while Cannon reselection, reset, or
-  source selection restores its authored rear-upper pose.
+  updates the camera without trailing interpolation. It has the same complete
+  course exploration entitlement as any other planning preset: pan may reach
+  the complete prepared bounds and dolly may move from close inspection to a
+  whole-course distance. This state is independent from cannon aim and from the
+  stored transforms of other presets. It must not switch view automatically.
+  Only an explicit Overview selection opens its authored camera. The
+  high-oblique reset frames the complete presentation bounds, while Cannon
+  reselection, reset, or source selection restores its authored rear-upper pose.
 - Reason: height, depth, goal position, and pad orientation are difficult to
   judge from the inherited frontal composition.
 

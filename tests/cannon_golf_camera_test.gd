@@ -60,7 +60,7 @@ func _run() -> void:
 		rig.snap_to_planning()
 		var pre_pan_distance := rig.resolved_planning_distance()
 		var old_focus := rig.planning_focus()
-		_assert_true(rig.pan_drag(Vector2.ZERO, Vector2(80.0, -30.0)), "Left drag must pan.")
+		_assert_true(rig.pan_drag(Vector2.ZERO, Vector2(80.0, -30.0)), "Pan must move the view.")
 		rig.snap_to_planning()
 		_assert_true(not rig.planning_focus().is_equal_approx(old_focus), "Pan must move the overview pivot.")
 		_assert_true(
@@ -68,7 +68,7 @@ func _run() -> void:
 			"Pan must translate the overview without changing its framing distance."
 		)
 		_assert_camera_boom_clear(rig, camera, builder, "Panned overview")
-		_assert_true(rig.orbit(Vector2(80.0, -30.0)), "Right drag must orbit.")
+		_assert_true(rig.orbit(Vector2(80.0, -30.0)), "Orbit must rotate the view.")
 		rig.snap_to_planning()
 		_assert_camera_boom_clear(rig, camera, builder, "Orbited overview")
 
@@ -299,6 +299,10 @@ func _assert_camera_preset_interaction() -> void:
 	game.zoom_planning(-100.0)
 	var extreme_forward := -game._camera.global_transform.basis.z
 	var extreme_focus := game._camera_rig.planning_focus()
+	var course_span := maxf(
+		game.active_course().content_bounds.size.x,
+		game.active_course().content_bounds.size.z
+	)
 	_assert_true(
 		game.planning_view == &"cannon" \
 				and absf(game._camera_rig.cannon_orbit_degrees.x) > 160.0 \
@@ -316,13 +320,13 @@ func _assert_camera_preset_interaction() -> void:
 					Vector3(extreme_focus.x, 0.0, extreme_focus.z)
 				) \
 				and rad_to_deg(extreme_forward.angle_to(Vector3.DOWN)) > 25.0 \
-				and game._camera.global_position.distance_to(extreme_focus) < 45.0,
+				and game._camera_rig.resolved_planning_distance() >= course_span,
 		"Extreme Cannon input must wrap yaw, clamp pitch/dolly, and keep its interest in-course: orbit=%s zoom=%.2f focus=%s in_bounds=%s distance=%.2f down=%.2f" % [
 			game._camera_rig.cannon_orbit_degrees,
 			game._camera_rig.cannon_zoom,
 			extreme_focus,
 			game.active_course().content_bounds.has_point(Vector3(extreme_focus.x, 0.0, extreme_focus.z)),
-			game._camera.global_position.distance_to(extreme_focus),
+			game._camera_rig.resolved_planning_distance(),
 			rad_to_deg(extreme_forward.angle_to(Vector3.DOWN)),
 		]
 	)

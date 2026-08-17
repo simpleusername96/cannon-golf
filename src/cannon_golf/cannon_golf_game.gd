@@ -214,16 +214,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		if _planning_drag_button == MOUSE_BUTTON_LEFT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			if planning_view == &"cannon":
-				orbit_planning(drag_relative)
-			else:
-				pan_planning_drag(mouse_motion.position, drag_relative)
+			orbit_planning(drag_relative)
 		elif _planning_drag_button == MOUSE_BUTTON_RIGHT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_RIGHT:
-			if planning_view == &"cannon":
-				pan_planning_drag(mouse_motion.position, drag_relative)
-			else:
-				orbit_planning(drag_relative)
+			pan_planning_drag(mouse_motion.position, drag_relative)
 		else:
 			_end_planning_drag()
 		get_viewport().set_input_as_handled()

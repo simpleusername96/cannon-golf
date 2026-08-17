@@ -200,24 +200,24 @@ func _run() -> void:
 	_assert_true(game.toggle_shot_camera(), "A live ball must remain available for drag-from-follow coverage.")
 	var focus_before_drag := game._camera_rig.planning_focus()
 	var orbit_before_drag := game._camera_rig.orbit_degrees
-	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
-	_assert_true(
-		game._camera_rig.camera_mode == &"planning" \
-				and not game._camera_rig.planning_focus().is_equal_approx(focus_before_drag),
-		"Left drag during follow must return to planning and move across the terrain."
-	)
-	_assert_true(
-		game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_drag),
-		"Left drag must not rotate the terrain."
-	)
-	var focus_after_drag := game._camera_rig.planning_focus()
 	await _push_drag(
 		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
 	)
 	_assert_true(
+		game._camera_rig.camera_mode == &"planning" \
+				and not game._camera_rig.planning_focus().is_equal_approx(focus_before_drag),
+		"Right drag during follow must return to planning and move across the terrain."
+	)
+	_assert_true(
+		game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_drag),
+		"Right drag must not rotate the terrain."
+	)
+	var focus_after_drag := game._camera_rig.planning_focus()
+	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
+	_assert_true(
 		not game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_drag) \
 				and game._camera_rig.planning_focus().is_equal_approx(focus_after_drag),
-		"Right drag must orbit around the player-selected planning focus."
+		"Left drag must orbit around the player-selected planning focus."
 	)
 	var orbit_after_drag := game._camera_rig.orbit_degrees
 	await _push_click(Vector2(640.0, 300.0))
@@ -272,7 +272,9 @@ func _run() -> void:
 	await process_frame
 	var relay_focus_before_drag := game._camera_rig.planning_focus()
 	for _drag_index in range(4):
-		await _push_drag(Vector2(640.0, 360.0), Vector2(120.0, 0.0))
+		await _push_drag(
+			Vector2(640.0, 360.0), Vector2(120.0, 0.0), MOUSE_BUTTON_RIGHT
+		)
 	var relay_focus_after_drag := game._camera_rig.planning_focus()
 	var relay_drag_distance := relay_focus_after_drag.distance_to(relay_focus_before_drag)
 	var relay_span := maxf(
@@ -281,11 +283,11 @@ func _run() -> void:
 	)
 	_assert_true(
 		relay_drag_distance > 1.0 \
-				and relay_drag_distance <= relay_span * 0.083 \
+				and relay_drag_distance <= relay_span \
 				and game.active_course().content_bounds.has_point(relay_focus_after_drag),
-		"Course left drag %.3f must stay within %.3f and inside exploration bounds (%s)." % [
+		"Course right drag %.3f must stay within %.3f and inside exploration bounds (%s)." % [
 			relay_drag_distance,
-			relay_span * 0.083,
+			relay_span,
 			game.active_course().content_bounds.has_point(relay_focus_after_drag),
 		]
 	)

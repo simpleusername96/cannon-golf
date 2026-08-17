@@ -524,8 +524,8 @@ layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"HudIconButton"
 text = "초기"
-tooltip_text = "시점 원위치 (Home) · 전체: 왼쪽 이동 / 오른쪽 회전"
-accessibility_name = "시점 원위치 (Home) · 전체: 왼쪽 이동 / 오른쪽 회전"
+tooltip_text = "시점 원위치 (Home) · 왼쪽 회전 / 오른쪽 이동"
+accessibility_name = "시점 원위치 (Home) · 왼쪽 회전 / 오른쪽 이동"
 
 [node name="ZoomOutButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true

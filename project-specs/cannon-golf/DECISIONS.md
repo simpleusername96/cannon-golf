@@ -423,7 +423,8 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-034 — Use terrain-safe oblique and cannon planning views
 
-- Status: accepted on 2026-08-14; supersedes every prior side/profile runtime
+- Status: partially superseded on 2026-08-18 by D-058's common mouse mapping
+  and course-scale Cannon travel. It superseded every prior side/profile runtime
   requirement in D-006, D-018, and D-025 plus D-028's `22%` planning-zoom step.
 - The selectable planning presets are the whole-course high-oblique view and a
   per-leg behind-cannon view derived from the active launcher and shot axis.
@@ -876,7 +877,7 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-057 — Replace Cannon local limits with a subject-centered orbit viewer
 
-- Status: accepted on 2026-08-18; supersedes D-056's restrained local-range
+- Status: superseded on 2026-08-18 by D-058. It superseded D-056's restrained local-range
   model while preserving D-055's setup/camera independence and explicit
   Overview ownership.
 - Cannon uses the selected cannon's authored anchor as a stable initial camera
@@ -892,6 +893,21 @@ in `OPEN_QUESTIONS.md`.
   exact explored orbit-viewer state.
 - Evidence and rejected alternatives are recorded in
   `.agents/research/cannon-golf/CANNON_CAMERA_CONTROLS.md`.
+
+### D-058 — Treat Cannon as an unrestricted planning-camera preset
+
+- Status: accepted on 2026-08-18; supersedes D-057's remaining Cannon-specific
+  distance treatment and D-034's old mouse mapping and uniform `10%` zoom
+  response while preserving the stable subject-centered authored pose.
+- Overview, Cannon, and future planning viewpoints are coordinate presets, not
+  navigation modes with different exploration entitlements. Every preset uses
+  left-drag orbit, right-drag pan, wheel/compact dolly, and arrow pan.
+- Cannon may pan across the complete prepared course bounds and dolly from close
+  inspection to a whole-course distance. Its authored anchor, field of view,
+  reset transform, aim presentation, and stored return transform may remain
+  preset-specific; arbitrary shorter travel limits may not.
+- Selecting another preset moves to that preset's authored or stored transform.
+  Exploration never selects another preset as a side effect.
 
 ## Rationale
 

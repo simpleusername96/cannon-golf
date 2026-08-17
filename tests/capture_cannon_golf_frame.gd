@@ -112,6 +112,9 @@ func _capture() -> void:
 		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-120.0, 42.0))
 		game.orbit_planning(Vector2(180.0, -70.0))
 		game.zoom_planning(2.0)
+	elif requested_state == "cannon_far":
+		game.set_planning_view(&"cannon")
+		game.zoom_planning(-100.0)
 	elif requested_state == "explored":
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
@@ -221,7 +224,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "cannon", "cannon_click", "cannon_setup_stable", "cannon_explored", "hud_icon_focus", "explored", "panned", "zoom_close", "zoom_far",
+		"planning", "cannon", "cannon_click", "cannon_setup_stable", "cannon_explored", "cannon_far", "hud_icon_focus", "explored", "panned", "zoom_close", "zoom_far",
 		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
 		"halo_cannon_down",
 		"relay_initial", "relay_overview",
@@ -247,6 +250,16 @@ func _capture() -> void:
 				or not game._camera_rig.orbit_degrees.is_zero_approx() \
 				or game._camera.global_transform.is_equal_approx(cannon_start_transform):
 			push_error("Cannon exploration capture did not retain and move its local camera.")
+			quit(1)
+			return
+	if game != null and requested_state == "cannon_far":
+		var course_span := maxf(
+			game.active_course().content_bounds.size.x,
+			game.active_course().content_bounds.size.z
+		)
+		if game.planning_view != &"cannon" \
+				or game._camera_rig.resolved_planning_distance() < course_span:
+			push_error("Far Cannon capture did not reach whole-course distance.")
 			quit(1)
 			return
 	if game != null and requested_state == "cannon_click" \

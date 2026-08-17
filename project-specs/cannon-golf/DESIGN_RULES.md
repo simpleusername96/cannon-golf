@@ -80,10 +80,10 @@ coefficients, stage data formats, or code ownership.
   and small center reticle. Exact vertical cannon aim must keep a finite, stable
   camera basis without reducing the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
-- In overview, left-drag pans, right-drag orbits around the bounded course
-  focus, the wheel changes distance, and arrow keys pan. A click without drag
-  must not refocus or jump the pivot. Direct overview interaction during Shot
-  Follow restores the stored overview before applying the input.
+- In every planning preset, left-drag orbits and right-drag pans around the
+  bounded course focus, the wheel changes distance, and arrow keys pan. A click
+  without drag must not refocus or jump the pivot. Direct overview interaction
+  during Shot Follow restores the stored overview before applying the input.
 - Keep zoom bounded but materially useful in both directions. A compact reset
   action restores the authored high-oblique view, zero pan, and default distance.
   One wheel notch or compact zoom action must visibly change planning distance;
@@ -92,15 +92,18 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon perspective is a selectable, subject-centered orbit viewer. Its stable
+- Cannon perspective is a selectable camera preset, not a restricted navigation
+  mode. Its stable
   initial interest is the selected cannon's authored anchor, not a point along
   the changing launch ray. Left-drag orbits continuously around that interest,
-  right-drag and arrow keys pan it across the prepared course, and the wheel
-  changes camera-to-interest distance. Keep vertical orbit short of inversion,
+  right-drag and arrow keys pan it across the complete prepared course, and the
+  wheel changes camera-to-interest distance from close inspection through a
+  whole-course scale. Keep vertical orbit short of inversion,
   keep camera placement terrain safe, and apply direct manipulation without
   trailing interpolation. Aim changes move the barrel and cues, not the camera.
-  This state remains independent from Overview; only the explicit Overview
-  action opens the top/complete-course camera.
+  Each preset retains its own transform for restoration, but all presets receive
+  the same exploration controls and course-scale reach. Only the explicit
+  Overview action opens its authored top/complete-course pose.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
   exact stored pre-follow state. A confirmed goal also returns there immediately
@@ -113,9 +116,9 @@ coefficients, stage data formats, or code ownership.
   planning must restore a readable course framing.
 - The high-oblique reset frames the complete course. The cannon reset returns
   to the selected source's authored rear-upper orbit pose. Overview pan, orbit,
-  and bounded zoom expose the full course; Cannon pan remains within prepared
-  course bounds while preserving its perspective orbit model. The course
-  selection preview frames the course's full depth.
+  and bounded zoom expose the full course; Cannon has the same course-bound pan
+  and whole-course zoom reach while preserving its perspective orbit model. The
+  course selection preview frames the course's full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language
