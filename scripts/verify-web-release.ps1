@@ -2,14 +2,14 @@
 param(
     [Parameter(Mandatory = $true)]
     [string]$ReleaseDirectory,
-    [long]$BaselineGzipBytes = 23110569
+    [long]$BaselineGzipBytes = 26303668
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# This is the accepted gzip total of the first runtime-only Cannon Golf Web
-# artifact. Keep it explicit so future content growth remains visible in CI.
+# This is the accepted gzip total after the prepared catalog expanded to fifteen
+# courses. Keep it explicit so future content growth remains visible in CI.
 # Keep the value explicit: a CI run must never silently establish its own budget.
 [long]$MaxInitialPayloadGzipBytes = 30MB
 [int]$MaxItchFileCount = 1000
