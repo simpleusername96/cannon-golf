@@ -250,18 +250,21 @@ func _assert_camera_preset_interaction() -> void:
 	var overview_pan := game.planning_pan
 	var overview_zoom := game.planning_zoom
 	var overview_orbit := game._camera_rig.orbit_degrees
+	var authored_cannon_distance := game._camera_rig.resolved_planning_distance()
 	_assert_true(game.orbit_planning(Vector2(40.0, 12.0)),
 			"Right drag must orbit within Cannon exploration.")
 	game.pan_planning(Vector2.RIGHT)
-	_assert_true(game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(24.0, -8.0)),
+	_assert_true(game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-80.0, -24.0)),
 			"Left drag must pan within Cannon exploration.")
 	_assert_true(game.zoom_planning(1.0), "Wheel input must zoom within Cannon exploration.")
 	game._camera_rig.update(1.0)
 	_assert_true(
 		game.planning_view == &"cannon" \
-				and not game._camera_rig.cannon_pan_offset.is_zero_approx() \
-				and not game._camera_rig.cannon_orbit_degrees.is_zero_approx() \
+				and game._camera_rig.cannon_pan_offset.length() > 2.0 \
+				and game._camera_rig.cannon_orbit_degrees.length() > 5.0 \
 				and game._camera_rig.cannon_zoom > CannonGolfCourseCameraRig.DEFAULT_ZOOM \
+				and game._camera_rig.resolved_planning_distance() \
+						< authored_cannon_distance * 0.92 \
 				and game.planning_pan.is_equal_approx(overview_pan) \
 				and is_equal_approx(game.planning_zoom, overview_zoom) \
 				and game._camera_rig.orbit_degrees.is_equal_approx(overview_orbit) \
@@ -290,14 +293,17 @@ func _assert_camera_preset_interaction() -> void:
 		"Reset from Cannon Follow must restore its authored pose without selecting Overview."
 	)
 	game.orbit_planning(Vector2(-10000.0, 10000.0))
-	game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-10000.0, 10000.0))
+	for _extreme_pan_step in range(8):
+		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-10000.0, 10000.0))
 	game.zoom_planning(-100.0)
 	game._camera_rig.update(1.0)
 	var extreme_forward := -game._camera.global_transform.basis.z
 	_assert_true(
 		game.planning_view == &"cannon" \
-				and game._camera_rig.cannon_pan_offset.length() \
-						<= CannonGolfCourseCameraRig.CANNON_MAXIMUM_PAN_DISTANCE + 0.01 \
+				and absf(
+					game._camera_rig.cannon_pan_offset.length() \
+							- CannonGolfCourseCameraRig.CANNON_MAXIMUM_PAN_DISTANCE
+				) <= 0.01 \
 				and absf(game._camera_rig.cannon_orbit_degrees.x) \
 						<= CannonGolfCourseCameraRig.CANNON_MAXIMUM_YAW_ORBIT \
 				and absf(game._camera_rig.cannon_orbit_degrees.y) \
@@ -306,11 +312,14 @@ func _assert_camera_preset_interaction() -> void:
 					game._camera_rig.cannon_zoom,
 					CannonGolfCourseCameraRig.CANNON_MINIMUM_ZOOM
 				) \
-				and rad_to_deg(extreme_forward.angle_to(Vector3.DOWN)) > 40.0 \
+				and rad_to_deg(extreme_forward.angle_to(Vector3.DOWN)) > 25.0 \
 				and game._camera.global_position.distance_to(
 					game._course_builder.launcher.cannon_perspective_anchor()
-				) < 60.0,
+				) < 160.0,
 		"Extreme Cannon input must remain bounded, local, and away from top-down."
+	)
+	_assert_camera_boom_clear(
+		game._camera_rig, game._camera, game._course_builder, "Extreme Cannon exploration"
 	)
 	overview_button.pressed.emit()
 	_assert_true(game.planning_view == &"oblique",

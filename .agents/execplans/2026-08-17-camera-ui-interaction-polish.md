@@ -222,6 +222,29 @@ Source owners: `src/cannon_golf/course_camera_rig.gd`, `src/cannon_golf/cannon_g
   - Change: update camera/input contracts and capture a real 1280 by 720 Cannon frame after combined local pan, orbit, and zoom.
   - Accept: focused and full checks pass, the rendered view remains near the cannon without a top-view jump, and no task-owned quality finding remains.
 
+### Phase 9: Make Cannon exploration materially useful
+
+Goal: remove the overly restrictive feel of Cannon exploration while keeping it distinct from an automatic top-view transition.
+
+Preconditions:
+
+- Phase 8 correctly owns independent Cannon exploration, but its 14 m pan,
+  ±55° yaw, ±18° pitch, and Overview-strength drag response are too restrictive.
+- Explicit Overview selection remains the only way to enter the authored
+  complete-course preset.
+
+Source owners: `src/cannon_golf/course_camera_rig.gd`, focused camera/input contracts, existing Cannon exploration capture state
+
+- [x] **9.1** Expand Cannon travel and response.
+  - Change: increase local pan distance, pan/arrow sensitivity, yaw and pitch range, and near/far zoom while retaining finite bounds and terrain collision handling.
+  - Accept: one deliberate drag or wheel action produces a material camera change, broad surrounding inspection is possible, and `view_mode` remains `cannon`.
+- [x] **9.2** Guard the wider range against top-view regression.
+  - Change: exercise maximum pan, orbit, and zoom and retain an explicit non-top-down angle and finite local-distance contract.
+  - Accept: extreme input reaches the expanded bounds without selecting Overview, entering a top-down composition, or clipping into terrain.
+- [x] **9.3** Render and validate the expanded exploration state.
+  - Change: capture the existing combined Cannon exploration state at 1280 by 720, inspect it against the authored Cannon frame, and run the focused camera/input checks plus final repository gate.
+  - Accept: the rendered movement is materially larger than Phase 8 while retaining cannon/local-terrain context; all checks pass.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -253,7 +276,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Phase 8 — Cannon retained its view through bounded local pan, orbit, arrow, and zoom input; exact explored state returned after Shot Follow, active reset and source relocation restored the authored local pose, base/explored 1280 by 720 renders remained near the launcher, and all twenty-four focused suite checks, `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
+- Last completed gate: Phase 9 — Cannon pan expanded from 14 m to 80 m with three-times drag response, yaw/pitch and zoom ranges expanded materially, extreme input stayed finite and non-top-down with terrain-boom clearance, the 1280 by 720 explored render retained local cannon context, and all twenty-four focused suite checks, `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
 - Update rule: after each phase passes, record concise evidence, check its tasks, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

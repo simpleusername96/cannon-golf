@@ -22,12 +22,15 @@ const CANNON_BACK_DISTANCE := 16.0
 const CANNON_SIDE_DISTANCE := 5.0
 const CANNON_HEIGHT := 8.0
 const CANNON_LOOK_AHEAD := 12.0
-const CANNON_MINIMUM_ZOOM := -3.0
-const CANNON_MAXIMUM_ZOOM := 5.0
-const CANNON_MAXIMUM_PAN_DISTANCE := 14.0
-const CANNON_MAXIMUM_YAW_ORBIT := 55.0
-const CANNON_MAXIMUM_PITCH_ORBIT := 18.0
-const CANNON_ARROW_PAN_DISTANCE := 0.8
+const CANNON_MINIMUM_ZOOM := -7.0
+const CANNON_MAXIMUM_ZOOM := 8.0
+const CANNON_MAXIMUM_PAN_DISTANCE := 80.0
+const CANNON_MAXIMUM_PAN_EVENT_DISTANCE := 18.0
+const CANNON_PAN_RESPONSE := 0.90
+const CANNON_ORBIT_DEGREES_PER_PIXEL := Vector2(0.18, 0.14)
+const CANNON_MAXIMUM_YAW_ORBIT := 160.0
+const CANNON_MAXIMUM_PITCH_ORBIT := 55.0
+const CANNON_ARROW_PAN_DISTANCE := 2.5
 
 var view_mode: StringName = &"oblique"
 var camera_mode: StringName = MODE_PLANNING
@@ -197,8 +200,13 @@ func pan_drag(_screen_position: Vector2, relative: Vector2) -> bool:
 	var forward := -_camera.global_transform.basis.z
 	forward.y = 0.0
 	forward = forward.normalized()
-	var delta := (-right * relative.x + forward * relative.y) * units_per_pixel * PAN_RESPONSE
-	delta = delta.limit_length(maxf(_course.content_bounds.size.x, _course.content_bounds.size.z) * MAXIMUM_PAN_EVENT_SPAN_RATIO)
+	var response := CANNON_PAN_RESPONSE if view_mode == &"cannon" else PAN_RESPONSE
+	var delta := (-right * relative.x + forward * relative.y) * units_per_pixel * response
+	var maximum_event_distance := CANNON_MAXIMUM_PAN_EVENT_DISTANCE \
+			if view_mode == &"cannon" \
+			else maxf(_course.content_bounds.size.x, _course.content_bounds.size.z) \
+					* MAXIMUM_PAN_EVENT_SPAN_RATIO
+	delta = delta.limit_length(maximum_event_distance)
 	if not delta.is_finite() or delta.is_zero_approx():
 		return false
 	if view_mode == &"cannon":
@@ -215,12 +223,12 @@ func orbit(relative: Vector2) -> bool:
 		return false
 	if view_mode == &"cannon":
 		cannon_orbit_degrees.x = clampf(
-			cannon_orbit_degrees.x - relative.x * ORBIT_DEGREES_PER_PIXEL.x,
+			cannon_orbit_degrees.x - relative.x * CANNON_ORBIT_DEGREES_PER_PIXEL.x,
 			-CANNON_MAXIMUM_YAW_ORBIT,
 			CANNON_MAXIMUM_YAW_ORBIT
 		)
 		cannon_orbit_degrees.y = clampf(
-			cannon_orbit_degrees.y + relative.y * ORBIT_DEGREES_PER_PIXEL.y,
+			cannon_orbit_degrees.y + relative.y * CANNON_ORBIT_DEGREES_PER_PIXEL.y,
 			-CANNON_MAXIMUM_PITCH_ORBIT,
 			CANNON_MAXIMUM_PITCH_ORBIT
 		)
