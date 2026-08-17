@@ -1,3 +1,4 @@
+# This workflow is registered after the repository's default branch exists.
 name: Verify and deploy itch.io Web build
 
 on:
