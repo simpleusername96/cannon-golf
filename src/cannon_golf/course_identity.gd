@@ -66,8 +66,6 @@ static func signature(course: CannonGolfCourseData) -> String:
 				str(leg.get(&"rim_elevation_band") if _has_property(leg, &"rim_elevation_band") else 1),
 				String(leg.get(&"feature_anchor") if _has_property(leg, &"feature_anchor") else &""),
 			]))
-	if OS.has_environment("CANNON_GOLF_IDENTITY_TRACE") and course.course_id == &"first_ridge":
-		print("CANNON_GOLF_IDENTITY_FEED=", JSON.stringify(feed))
 	return "|".join(feed).sha256_text()
 
 

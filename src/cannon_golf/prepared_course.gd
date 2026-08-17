@@ -197,8 +197,8 @@ func compute_payload_sha256() -> String:
 	if course_id.is_empty() or course_signature.is_empty():
 		return ""
 	var feed := PackedStringArray([
-		str(schema_version), String(course_id), course_signature, str(cell_count),
-		str(local_bounds), str(content_bounds), str(play_bounds),
+		str(schema_version), String(course_id), course_signature, _v2i(cell_count),
+		_rect2(local_bounds), _aabb(content_bounds), _aabb(play_bounds),
 		str(top_triangle_count), str(skirt_triangle_count), str(bottom_triangle_count),
 	])
 	if has_any_certificate_data():
@@ -219,14 +219,14 @@ func compute_payload_sha256() -> String:
 			return ""
 		var leg_feed := PackedStringArray([
 			str(leg.route_index), str(leg.rim_elevation_band), String(leg.feature_anchor),
-			str(leg.goal_position), String.num(leg.goal_radius, 5), String.num(leg.goal_rim_y, 5),
-			String.num(leg.goal_lip_y, 5), str(leg.launcher_position),
-			String.num(leg.shot_axis_yaw_degrees, 5), str(leg.frame_bounds),
-			_metric_feed(leg.corridor_admission), str(leg.intended_setup),
+			_v3(leg.goal_position), String.num(leg.goal_radius, 5), String.num(leg.goal_rim_y, 5),
+			String.num(leg.goal_lip_y, 5), _v3(leg.launcher_position),
+			String.num(leg.shot_axis_yaw_degrees, 5), _aabb(leg.frame_bounds),
+			_metric_feed(leg.corridor_admission), _v3(leg.intended_setup),
 		])
 		if leg.has_any_certificate_data():
 			leg_feed.append_array(PackedStringArray([
-				str(leg.certified_setup), str(leg.center_success_count),
+				_v3(leg.certified_setup), str(leg.center_success_count),
 				_metric_feed(leg.neighbor_successes), _metric_feed(leg.axis_pass_evidence),
 				str(leg.default_attempt_count), str(leg.default_success_count),
 				String.num(leg.settlement_time_seconds, 5),
@@ -239,9 +239,9 @@ func compute_payload_sha256() -> String:
 		if placement == null:
 			return ""
 		feed.append_array(PackedStringArray([
-			placement.model_path, str(placement.position),
+			placement.model_path, _v3(placement.position),
 			String.num(placement.yaw_degrees, 5),
-			String.num(placement.uniform_scale, 5), str(placement.is_tree),
+			String.num(placement.uniform_scale, 5), "1" if placement.is_tree else "0",
 		]))
 	return "|".join(feed).sha256_text()
 
@@ -278,5 +278,60 @@ func _metric_feed(metrics: Dictionary) -> String:
 	keys.sort_custom(func(left: Variant, right: Variant) -> bool: return str(left) < str(right))
 	var values := PackedStringArray()
 	for key in keys:
-		values.append("%s=%s" % [str(key), str(metrics[key])])
+		values.append("%s=%s" % [str(key), _metric_value_feed(metrics[key])])
 	return ",".join(values)
+
+
+func _metric_value_feed(value: Variant) -> String:
+	match typeof(value):
+		TYPE_NIL:
+			return "null"
+		TYPE_BOOL:
+			return "1" if value else "0"
+		TYPE_INT:
+			return str(value)
+		TYPE_FLOAT:
+			return String.num(float(value), 8)
+		TYPE_VECTOR2:
+			return _v2(value)
+		TYPE_VECTOR2I:
+			return _v2i(value)
+		TYPE_VECTOR3:
+			return _v3(value)
+		TYPE_RECT2:
+			return _rect2(value)
+		TYPE_AABB:
+			return _aabb(value)
+		TYPE_DICTIONARY:
+			return "{%s}" % _metric_feed(value)
+		TYPE_ARRAY, TYPE_PACKED_BYTE_ARRAY, TYPE_PACKED_INT32_ARRAY, \
+		TYPE_PACKED_INT64_ARRAY, TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY, \
+		TYPE_PACKED_STRING_ARRAY, TYPE_PACKED_VECTOR2_ARRAY, TYPE_PACKED_VECTOR3_ARRAY:
+			var items := PackedStringArray()
+			for item in value:
+				items.append(_metric_value_feed(item))
+			return "[%s]" % ",".join(items)
+		_:
+			return String(value)
+
+
+func _v2(value: Vector2) -> String:
+	return "%s,%s" % [String.num(value.x, 8), String.num(value.y, 8)]
+
+
+func _v2i(value: Vector2i) -> String:
+	return "%d,%d" % [value.x, value.y]
+
+
+func _v3(value: Vector3) -> String:
+	return "%s,%s,%s" % [
+		String.num(value.x, 8), String.num(value.y, 8), String.num(value.z, 8),
+	]
+
+
+func _rect2(value: Rect2) -> String:
+	return "%s;%s" % [_v2(value.position), _v2(value.size)]
+
+
+func _aabb(value: AABB) -> String:
+	return "%s;%s" % [_v3(value.position), _v3(value.size)]
