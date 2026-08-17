@@ -19,6 +19,7 @@ const NEARLY_STILL_ANGULAR_SPEED := 1.1 * CannonGolfBallistics.MOTION_TIME_SCALE
 ## Fire stays unrestricted, but the single-threaded Web build must not retain an
 ## unbounded number of expensive rigid bodies against the course collision mesh.
 const MAXIMUM_SIMULATED_BALLS := 4
+const PLANNING_DRAG_THRESHOLD_PIXELS := 6.0
 
 @export var initial_course_index := 0
 var initial_prepared_course: CannonGolfPreparedCourse
@@ -56,6 +57,8 @@ var _live_shots: Dictionary = {}
 var _next_ball_id := 1
 var _planning_drag_active := false
 var _planning_drag_button: MouseButton = MOUSE_BUTTON_NONE
+var _planning_drag_committed := false
+var _planning_drag_accumulated := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -205,12 +208,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	if event is InputEventMouseMotion and _planning_drag_active:
 		var mouse_motion := event as InputEventMouseMotion
+		var drag_relative := _committed_planning_drag_relative(mouse_motion.relative)
+		if drag_relative.is_zero_approx():
+			get_viewport().set_input_as_handled()
+			return
 		if _planning_drag_button == MOUSE_BUTTON_LEFT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			pan_planning_drag(mouse_motion.position, mouse_motion.relative)
+			pan_planning_drag(mouse_motion.position, drag_relative)
 		elif _planning_drag_button == MOUSE_BUTTON_RIGHT \
 				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_RIGHT:
-			orbit_planning(mouse_motion.relative)
+			orbit_planning(drag_relative)
 		else:
 			_end_planning_drag()
 		get_viewport().set_input_as_handled()
@@ -424,10 +431,10 @@ func _activate_overview_exploration() -> void:
 
 
 func _begin_planning_drag(button: MouseButton) -> void:
-	_activate_overview_exploration()
 	_planning_drag_active = true
 	_planning_drag_button = button
-	Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+	_planning_drag_committed = false
+	_planning_drag_accumulated = Vector2.ZERO
 
 
 func _end_planning_drag() -> void:
@@ -435,7 +442,22 @@ func _end_planning_drag() -> void:
 		return
 	_planning_drag_active = false
 	_planning_drag_button = MOUSE_BUTTON_NONE
+	_planning_drag_committed = false
+	_planning_drag_accumulated = Vector2.ZERO
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+
+
+func _committed_planning_drag_relative(relative: Vector2) -> Vector2:
+	if _planning_drag_committed:
+		return relative
+	_planning_drag_accumulated += relative
+	if _planning_drag_accumulated.length() < PLANNING_DRAG_THRESHOLD_PIXELS:
+		return Vector2.ZERO
+	_planning_drag_committed = true
+	Input.set_default_cursor_shape(Input.CURSOR_DRAG)
+	var committed_relative := _planning_drag_accumulated
+	_planning_drag_accumulated = Vector2.ZERO
+	return committed_relative
 
 
 func _load_course(index: int, prepared: CannonGolfPreparedCourse = null) -> void:

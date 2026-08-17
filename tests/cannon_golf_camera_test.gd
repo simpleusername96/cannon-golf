@@ -230,6 +230,13 @@ func _assert_camera_preset_interaction() -> void:
 	game._on_setup_changed(51.0, 50.0, 50.0)
 	game._camera_rig.update(1.0)
 	var cannon_transform := game._camera.global_transform
+	game._begin_planning_drag(MOUSE_BUTTON_LEFT)
+	_assert_true(game.planning_view == &"cannon",
+			"Pressing the world in Cannon view must not select Overview.")
+	_assert_true(game._committed_planning_drag_relative(Vector2(2.0, 1.0)).is_zero_approx() \
+			and game.planning_view == &"cannon",
+			"Click jitter below the drag threshold must retain Cannon view.")
+	game._end_planning_drag()
 	_assert_true(game.orbit_planning(Vector2(40.0, 12.0)),
 			"Orbit after Cannon must continue as Overview exploration.")
 	game._camera_rig.update(1.0)
