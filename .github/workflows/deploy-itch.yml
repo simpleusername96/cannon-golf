@@ -120,6 +120,35 @@ jobs:
               }
           }
 
+          function Invoke-VerifiedDownload {
+              param(
+                  [Parameter(Mandatory = $true)][string]$Uri,
+                  [Parameter(Mandatory = $true)][string]$Destination,
+                  [Parameter(Mandatory = $true)][string]$Algorithm,
+                  [Parameter(Mandatory = $true)][string]$ExpectedHash
+              )
+
+              $attemptLimit = 4
+              for ($attempt = 1; $attempt -le $attemptLimit; $attempt++) {
+                  Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
+                  try {
+                      Write-Host "Downloading $Uri (attempt $attempt of $attemptLimit)"
+                      Invoke-WebRequest -UseBasicParsing -Uri $Uri -OutFile $Destination
+                      Assert-FileHash -Path $Destination -Algorithm $Algorithm -Expected $ExpectedHash
+                      return
+                  }
+                  catch {
+                      Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
+                      if ($attempt -eq $attemptLimit) {
+                          throw
+                      }
+                      $delaySeconds = [Math]::Pow(2, $attempt)
+                      Write-Warning "Download failed: $($_.Exception.Message). Retrying in $delaySeconds seconds."
+                      Start-Sleep -Seconds $delaySeconds
+                  }
+              }
+          }
+
           $toolRoot = Join-Path $env:HOME ".cache/cannon-golf/godot/$env:GODOT_RELEASE"
           $godotName = "Godot_v$($env:GODOT_RELEASE)_linux.x86_64"
           $godotPath = Join-Path $toolRoot $godotName
@@ -130,8 +159,7 @@ jobs:
               New-Item -ItemType Directory -Path $toolRoot -Force | Out-Null
               $godotArchive = Join-Path $env:RUNNER_TEMP "Godot_v$($env:GODOT_RELEASE)_linux.x86_64.zip"
               $godotUrl = "https://github.com/godotengine/godot-builds/releases/download/$env:GODOT_RELEASE/Godot_v$($env:GODOT_RELEASE)_linux.x86_64.zip"
-              Invoke-WebRequest -UseBasicParsing -Uri $godotUrl -OutFile $godotArchive
-              Assert-FileHash -Path $godotArchive -Algorithm SHA512 -Expected '4CCDAB7A48EECCBE8819A2FC1F6262F8D72065D98601BCB3743FCBD7EBD39F373758A788EE3293A05EC5B2C48538266C437404312E372225CD2DF273945A2DE9'
+              Invoke-VerifiedDownload -Uri $godotUrl -Destination $godotArchive -Algorithm SHA512 -ExpectedHash '4CCDAB7A48EECCBE8819A2FC1F6262F8D72065D98601BCB3743FCBD7EBD39F373758A788EE3293A05EC5B2C48538266C437404312E372225CD2DF273945A2DE9'
               Expand-Archive -LiteralPath $godotArchive -DestinationPath $toolRoot -Force
           }
 
@@ -139,8 +167,7 @@ jobs:
               New-Item -ItemType Directory -Path $templateRoot -Force | Out-Null
               $templateArchive = Join-Path $env:RUNNER_TEMP "Godot_v$($env:GODOT_RELEASE)_export_templates.tpz"
               $templateUrl = "https://github.com/godotengine/godot-builds/releases/download/$env:GODOT_RELEASE/Godot_v$($env:GODOT_RELEASE)_export_templates.tpz"
-              Invoke-WebRequest -UseBasicParsing -Uri $templateUrl -OutFile $templateArchive
-              Assert-FileHash -Path $templateArchive -Algorithm SHA512 -Expected 'AFCC83D8D3D298038F19C58744A0D660FA75DD4BAA33CB55D1011BB2565A2A8C2381728924564CB909E37C205A23F21B521B23BD057993AFD43AE4DA0B2F9D47'
+              Invoke-VerifiedDownload -Uri $templateUrl -Destination $templateArchive -Algorithm SHA512 -ExpectedHash 'AFCC83D8D3D298038F19C58744A0D660FA75DD4BAA33CB55D1011BB2565A2A8C2381728924564CB909E37C205A23F21B521B23BD057993AFD43AE4DA0B2F9D47'
 
               Add-Type -AssemblyName System.IO.Compression.FileSystem
               $archive = [System.IO.Compression.ZipFile]::OpenRead($templateArchive)
@@ -222,9 +249,35 @@ jobs:
           Set-StrictMode -Version Latest
           $ErrorActionPreference = 'Stop'
 
+          function Invoke-DownloadWithRetry {
+              param(
+                  [Parameter(Mandatory = $true)][string]$Uri,
+                  [Parameter(Mandatory = $true)][string]$Destination
+              )
+
+              $attemptLimit = 4
+              for ($attempt = 1; $attempt -le $attemptLimit; $attempt++) {
+                  Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
+                  try {
+                      Write-Host "Downloading $Uri (attempt $attempt of $attemptLimit)"
+                      Invoke-WebRequest -UseBasicParsing -Uri $Uri -OutFile $Destination
+                      return
+                  }
+                  catch {
+                      Remove-Item -LiteralPath $Destination -Force -ErrorAction SilentlyContinue
+                      if ($attempt -eq $attemptLimit) {
+                          throw
+                      }
+                      $delaySeconds = [Math]::Pow(2, $attempt)
+                      Write-Warning "Download failed: $($_.Exception.Message). Retrying in $delaySeconds seconds."
+                      Start-Sleep -Seconds $delaySeconds
+                  }
+              }
+          }
+
           $butlerArchive = Join-Path $env:RUNNER_TEMP 'butler-linux-amd64-v15.30.0.zip'
           $butlerUrl = 'https://github.com/itchio/butler/releases/download/v15.30.0/butler-linux-amd64.zip'
-          Invoke-WebRequest -UseBasicParsing -Uri $butlerUrl -OutFile $butlerArchive
+          Invoke-DownloadWithRetry -Uri $butlerUrl -Destination $butlerArchive
           $butlerHash = (Get-FileHash -LiteralPath $butlerArchive -Algorithm SHA256).Hash
           $expectedButlerHash = 'F2CAE7D24EBA0605048F71D0CC056F65C3B7FF9F73724F504C731CF3645BEF08'
           if ($butlerHash -ne $expectedButlerHash) {
