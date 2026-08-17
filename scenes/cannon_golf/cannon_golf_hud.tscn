@@ -193,7 +193,6 @@ min_value = -62.0
 max_value = 162.0
 step = 1.0
 value = 50.0
-tick_count = 7
 
 [node name="HorizontalIncrease" type="Button" parent="Root/BottomRail/AimPanel/HorizontalGroup/Input"]
 unique_name_in_owner = true
@@ -253,7 +252,6 @@ min_value = -90.0
 max_value = 90.0
 step = 1.0
 value = 50.0
-tick_count = 7
 
 [node name="ElevationIncrease" type="Button" parent="Root/BottomRail/AimPanel/ElevationGroup/Input"]
 unique_name_in_owner = true
@@ -449,6 +447,7 @@ grow_vertical = 2
 
 [node name="Actions" type="HBoxContainer" parent="Root/TopActions/Margin"]
 layout_mode = 2
+alignment = 1
 theme_override_constants/separation = 2
 
 [node name="ObliqueButton" type="Button" parent="Root/TopActions/Margin/Actions"]
@@ -459,6 +458,7 @@ theme_type_variation = &"TopIconButton"
 toggle_mode = true
 icon = ExtResource("5_overview")
 expand_icon = true
+icon_alignment = 1
 theme_override_constants/icon_max_width = 40
 tooltip_text = "전체 보기 (1)"
 accessibility_name = "전체 보기 (1)"
@@ -471,6 +471,7 @@ theme_type_variation = &"TopIconButton"
 toggle_mode = true
 icon = ExtResource("6_cannon")
 expand_icon = true
+icon_alignment = 1
 theme_override_constants/icon_max_width = 40
 tooltip_text = "대포 시점 (2)"
 accessibility_name = "대포 시점 (2)"
@@ -496,6 +497,7 @@ theme_type_variation = &"TopIconButton"
 disabled = true
 icon = ExtResource("7_retry")
 expand_icon = true
+icon_alignment = 1
 theme_override_constants/icon_max_width = 40
 tooltip_text = "빠른 재발사 (R)"
 accessibility_name = "빠른 재발사 (R)"
@@ -541,6 +543,7 @@ theme_type_variation = &"TopIconButton"
 toggle_mode = true
 icon = ExtResource("8_help")
 expand_icon = true
+icon_alignment = 1
 theme_override_constants/icon_max_width = 40
 tooltip_text = "조작법 보기"
 accessibility_name = "조작법 보기"
@@ -552,6 +555,7 @@ layout_mode = 2
 theme_type_variation = &"TopIconButton"
 icon = ExtResource("9_pause")
 expand_icon = true
+icon_alignment = 1
 theme_override_constants/icon_max_width = 40
 tooltip_text = "일시정지 (Esc)"
 accessibility_name = "일시정지 (Esc)"
@@ -617,7 +621,6 @@ min_value = 10.0
 max_value = 100.0
 step = 1.0
 value = 50.0
-tick_count = 7
 
 [node name="PowerIncrease" type="Button" parent="Root/BottomRail/ShotPanel/PowerGroup/PowerInput"]
 unique_name_in_owner = true
@@ -637,7 +640,7 @@ layout_mode = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(88, 88)
 layout_mode = 2
-theme_type_variation = &"AmberCircleButton"
+theme_type_variation = &"HudFireButton"
 text = "발사"
 
 [node name="ResultOverlay" type="Control" parent="Root"]

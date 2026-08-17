@@ -90,6 +90,9 @@ func _capture() -> void:
 		app.show_settings()
 	elif requested_state == "cannon":
 		game.set_planning_view(&"cannon")
+	elif requested_state == "hud_icon_focus":
+		game.set_planning_view(&"cannon")
+		(game._hud.get_node("%CannonButton") as Button).grab_focus()
 	elif requested_state == "cannon_input_stability":
 		game.set_planning_view(&"cannon")
 		game._on_setup_changed(51.0, 50.0, 50.0)
@@ -208,7 +211,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "cannon", "cannon_input_stability", "explored", "panned", "zoom_close", "zoom_far",
+		"planning", "cannon", "hud_icon_focus", "cannon_input_stability", "explored", "panned", "zoom_close", "zoom_far",
 		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
 		"halo_cannon_down",
 		"relay_initial", "relay_overview",
@@ -230,6 +233,13 @@ func _capture() -> void:
 				or not game._camera_rig.orbit_degrees.is_zero_approx() \
 				or not game._camera.global_transform.is_equal_approx(cannon_stable_transform):
 			push_error("Cannon input stability capture changed to overview or moved its camera.")
+			quit(1)
+			return
+	if game != null and requested_state == "hud_icon_focus":
+		var focused_cannon_button := game._hud.get_node("%CannonButton") as Button
+		if game.planning_view != &"cannon" or not focused_cannon_button.button_pressed \
+				or not focused_cannon_button.has_focus():
+			push_error("HUD icon focus capture did not retain the centered selected cannon action.")
 			quit(1)
 			return
 	if game != null and requested_state == "halo_cannon_down":

@@ -101,7 +101,7 @@ func _run() -> void:
 	var normal_primary_count := 0
 	for node in _all_descendants(hud):
 		if node is Button and node.is_visible_in_tree() \
-				and (node as Button).theme_type_variation == &"AmberCircleButton":
+				and (node as Button).theme_type_variation in [&"AmberCircleButton", &"HudFireButton"]:
 			normal_primary_count += 1
 	_assert(normal_primary_count == 1, "Fire must be the only normal-play primary action.")
 	hud.set_view(&"cannon")
@@ -120,7 +120,24 @@ func _run() -> void:
 	_assert(not fire_button.disabled, "Shot two must remain available while one ball is live.")
 	_assert(not (hud.get_node("%FollowButton") as Button).disabled, "A live ball must enable the follow action.")
 	for slider_name in ["HorizontalSlider", "ElevationSlider", "PowerSlider"]:
-		_assert((hud.get_node("%%%s" % slider_name) as Slider).editable, "Live flight must keep %s editable." % slider_name)
+		var slider := hud.get_node("%%%s" % slider_name) as Slider
+		_assert(slider.editable, "Live flight must keep %s editable." % slider_name)
+		_assert(slider.tick_count == 0, "%s must use one uninterrupted track without ticks." % slider_name)
+	var top_actions := hud.get_node("Root/TopActions/Margin/Actions") as HBoxContainer
+	_assert(top_actions.alignment == BoxContainer.ALIGNMENT_CENTER, "Top actions must center their complete icon group.")
+	var top_action_center_y := top_actions.get_global_rect().get_center().y
+	for button_name in ["ObliqueButton", "CannonButton", "RetryButton", "ShortcutButton", "PauseButton"]:
+		var top_button := hud.get_node("%%%s" % button_name) as Button
+		_assert(top_button.icon_alignment == HORIZONTAL_ALIGNMENT_CENTER, "%s must center its icon." % button_name)
+		_assert(absf(top_button.get_global_rect().get_center().y - top_action_center_y) < 0.5, "%s must share the top action row centerline." % button_name)
+	var oblique_button := hud.get_node("%ObliqueButton") as Button
+	var top_icon_hover := oblique_button.get_theme_stylebox(&"hover") as StyleBoxFlat
+	var top_icon_pressed := oblique_button.get_theme_stylebox(&"pressed") as StyleBoxFlat
+	_assert(top_icon_hover.bg_color.a == 0.0, "Top icon hover must not add a surrounding fill.")
+	_assert(top_icon_pressed.bg_color.a == 0.0 and top_icon_pressed.border_width_bottom == 2, "Selected top icons need only a restrained baseline.")
+	_assert(fire_button.theme_type_variation == &"HudFireButton", "Fire interaction styling must stay scoped to the gameplay HUD.")
+	var fire_hover := fire_button.get_theme_stylebox(&"hover") as StyleBoxFlat
+	_assert(fire_hover.bg_color.a == 0.0 and fire_hover.border_width_bottom == 2, "Fire hover must not add a yellow fill or thicker ring.")
 	hud.set_camera_mode(&"follow")
 	_assert((hud.get_node("%FollowButton") as Button).button_pressed, "Follow mode needs a selected state beyond color.")
 	_assert(
