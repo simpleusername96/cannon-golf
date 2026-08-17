@@ -126,6 +126,57 @@ Source owners: `tests/capture_cannon_golf_frame.gd`, `.agents/evidence/cannon-go
   - Change: run the complete Cannon Golf focused suite, `git diff --check`, and the diff-scoped codebase quality audit; make only small task-owned corrections.
   - Accept: every command exits zero, no Godot error is reported, rendered blockers are absent, and no task-owned responsibility or failure-path issue remains.
 
+### Phase 4: Correct camera-state regressions
+
+Goal: every course-selection preview stays at the complete-course overview, and ordinary input never silently changes a selected cannon view to overview.
+
+Preconditions:
+
+- The reported failures are reproduced in their current owners: preview configuration omits the runtime terrain/collision contract, and planning-navigation entry points call `_ensure_overview_view()` unconditionally.
+
+Source owners: `src/cannon_golf/app/cannon_golf_preview_world.gd`, `src/cannon_golf/cannon_golf_game.gd`, `tests/cannon_golf_camera_test.gd`, `tests/capture_cannon_golf_frame.gd`
+
+- [x] **4.1** Give course previews the same complete-course camera safety inputs as gameplay.
+  - Change: configure the preview rig with prepared terrain bounds, the builder height sampler, presentation bounds, and goal collision exclusions.
+  - Accept: all fifteen prepared previews retain a finite complete-course fit and no course collapses its boom into an extreme close view.
+- [x] **4.2** Keep cannon view stable under overview-only navigation input.
+  - Change: pan, orbit, wheel zoom, and arrow pan become no-ops while cannon view is selected; explicit view selection remains the only planning-view transition.
+  - Accept: cannon setup changes and every overview-only navigation input preserve `view_mode == &"cannon"` and its source-relative camera pose; overview navigation remains unchanged.
+
+### Phase 5: Match the recovered approved UI images
+
+Goal: close the visible gaps between the approved real-snapshot edits and actual Godot output instead of approving from intent alone.
+
+Preconditions:
+
+- The two approved image-generation outputs from the 2026-08-17 session were recovered and compared at original resolution against the committed Godot captures.
+
+Source owners: `scenes/cannon_golf/app/cannon_golf_course_select.tscn`, `src/cannon_golf/app/cannon_golf_course_select.gd`, `scenes/cannon_golf/cannon_golf_hud.tscn`, `resources/ui/paint_mountain_theme.tres`, UI contract tests
+
+- [x] **5.1** Match the course-selection list composition.
+  - Change: remove the right-edge scrollbar/divider appearance, use the approved thin left guide, center LV12 so LV9 through LV15 are visible, and align title, Back, selection mark, and circular Start to the reference.
+  - Accept: a 1280 by 720 LV12 render shows exactly the approved seven-row range, left guide, selected goal count, and no right-side list divider or card.
+- [x] **5.2** Match gameplay HUD scale and spacing.
+  - Change: align top-left copy and bottom controls to the approved coordinates, increase the five top action glyphs to the approved legible scale, and preserve the open center and one-line bottom instrumentation.
+  - Accept: a 1280 by 720 LV12 render matches the reference hierarchy and spacing; top actions are legible icon-sized controls rather than tiny glyphs, and no persistent panel returns.
+
+### Phase 6: Rendered comparison and final gate
+
+Goal: reject visual or camera regressions before handoff.
+
+Preconditions:
+
+- Phases 4 and 5 pass their focused checks.
+
+Source owners: `tests/capture_cannon_golf_frame.gd`, `.agents/evidence/cannon-golf/2026-08-17-transparent-world-ui/`, task-owned source/tests/docs
+
+- [x] **6.1** Capture the camera regression matrix and both UI screens.
+  - Change: capture all fifteen course previews plus cannon-input-before/after evidence and fresh LV12 gameplay/course-selection frames.
+  - Accept: every preview shows the complete course, cannon input preserves cannon view, and a direct side-by-side review finds no material reference mismatch.
+- [x] **6.2** Run final integration and diff-scoped quality gates.
+  - Change: run focused camera/UI checks, the complete Cannon Golf suite once, `git diff --check`, and the task-owned quality audit.
+  - Accept: every command exits zero, no Godot error or visual blocker remains, and the plan status returns to `done` only after the evidence is inspected.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -156,7 +207,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Task 3.2 — all 24 Cannon Golf validation entries passed in 127.6 seconds, `git diff --check` passed, and the diff-scoped quality audit found no task-owned responsibility, contract, or reachable failure-path issue. Final 1280 by 720 captures retain the real LV12 world while matching the approved transparent navy-and-amber UI.
+- Last completed gate: Task 6.2 — all 24 Cannon Golf validation entries passed in 146.4 seconds with no Godot errors, log growth, or owned-process leaks; `git diff --check` passed and the diff-scoped quality audit found no responsibility, contract, or reachable failure-path issue.
 - Update rule: after a checkpoint passes, record concise evidence, check the task, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

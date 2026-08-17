@@ -377,35 +377,30 @@ func return_to_planning_view() -> bool:
 
 func pan_planning(screen_direction: Vector2) -> void:
 	_activate_planning_camera()
-	_ensure_overview_view()
+	if _camera_rig.view_mode != &"oblique":
+		return
 	_camera_rig.pan(screen_direction)
 
 
 func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
 	_activate_planning_camera()
-	_ensure_overview_view()
+	if _camera_rig.view_mode != &"oblique":
+		return false
 	return _camera_rig.pan_drag(screen_position, relative)
 
 
 func orbit_planning(relative: Vector2) -> bool:
 	_activate_planning_camera()
-	_ensure_overview_view()
+	if _camera_rig.view_mode != &"oblique":
+		return false
 	return _camera_rig.orbit(relative)
 
 
 func zoom_planning(wheel_steps: float) -> bool:
 	_activate_planning_camera()
-	_ensure_overview_view()
+	if _camera_rig.view_mode != &"oblique":
+		return false
 	return _camera_rig.zoom_by_steps(wheel_steps)
-
-
-func _ensure_overview_view() -> void:
-	if _camera_rig.view_mode == &"oblique":
-		return
-	_camera_rig.set_view(&"oblique")
-	_course_builder.launcher.set_cannon_view_active(false)
-	_hud.set_view(&"oblique")
-	_hud.set_camera_mode(&"planning")
 
 
 func reset_planning_camera() -> void:
@@ -426,6 +421,8 @@ func _activate_planning_camera() -> void:
 
 func _begin_planning_drag(button: MouseButton) -> void:
 	_activate_planning_camera()
+	if _camera_rig.view_mode != &"oblique":
+		return
 	_planning_drag_active = true
 	_planning_drag_button = button
 	Input.set_default_cursor_shape(Input.CURSOR_DRAG)

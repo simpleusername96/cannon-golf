@@ -1,5 +1,7 @@
 extends SceneTree
 
+const GAME_SCENE := preload("res://scenes/cannon_golf/cannon_golf.tscn")
+
 var _failed := false
 
 
@@ -174,9 +176,70 @@ func _run() -> void:
 		camera.queue_free()
 		rig.queue_free()
 		await process_frame
+	await _assert_all_preview_courses_fit()
+	await _assert_cannon_input_stability()
 	if not _failed:
-		print("Cannon Golf overview, cannon perspective, and follow camera contract passed.")
+		print("Cannon Golf overview, preview framing, cannon stability, and follow camera contract passed.")
 	quit(1 if _failed else 0)
+
+
+func _assert_all_preview_courses_fit() -> void:
+	var preview := CannonGolfPreviewWorld.new()
+	root.add_child(preview)
+	await process_frame
+	for index in range(CannonGolfCourseCatalog.level_count()):
+		var course := CannonGolfCourseCatalog.course_at(index)
+		var prepared := load(CannonGolfCourseCatalog.prepared_path_for(course)) \
+				as CannonGolfPreparedCourse
+		_assert_true(prepared != null and preview.show_course(index, prepared),
+				"Every prepared course must build in the selection preview.")
+		preview._camera_rig.snap_to_planning()
+		_assert_true(
+			TerrainCameraFramer.pose_fits_bounds(
+				preview._builder.presentation_bounds(),
+				preview._camera.global_position,
+				preview._camera_rig.planning_focus(),
+				preview._camera.fov,
+				float(root.size.x) / float(root.size.y),
+				1.0
+			),
+			"LV %d preview must retain a complete-course fit instead of collapsing close." \
+					% (index + 1)
+		)
+	preview.queue_free()
+	await process_frame
+
+
+func _assert_cannon_input_stability() -> void:
+	var game := GAME_SCENE.instantiate() as CannonGolfGame
+	game.initial_course_index = 0
+	game.initial_prepared_course = load(
+		CannonGolfCourseCatalog.prepared_path_for(CannonGolfCourseCatalog.course_at(0))
+	) as CannonGolfPreparedCourse
+	root.add_child(game)
+	await process_frame
+	game.set_planning_view(&"cannon")
+	game._on_setup_changed(51.0, 50.0, 50.0)
+	game._camera_rig.update(1.0)
+	var stable_transform := game._camera.global_transform
+	game.pan_planning(Vector2.RIGHT)
+	_assert_true(not game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(4.0, 2.0)),
+			"Cannon view must reject overview pan drag without changing view.")
+	_assert_true(not game.orbit_planning(Vector2(4.0, 2.0)),
+			"Cannon view must reject overview orbit without changing view.")
+	_assert_true(not game.zoom_planning(1.0),
+			"Cannon view must reject overview wheel zoom without changing view.")
+	game._camera_rig.update(1.0)
+	_assert_true(
+		game.planning_view == &"cannon" \
+				and game.planning_pan.is_zero_approx() \
+				and is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
+				and game._camera_rig.orbit_degrees.is_zero_approx() \
+				and game._camera.global_transform.is_equal_approx(stable_transform),
+		"Aim movement and overview-only input must preserve the selected cannon camera."
+	)
+	game.queue_free()
+	await process_frame
 
 
 func _assert_true(condition: bool, message: String) -> void:

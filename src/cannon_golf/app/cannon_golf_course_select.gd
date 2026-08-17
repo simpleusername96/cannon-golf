@@ -114,7 +114,7 @@ func _build_course_buttons() -> void:
 	for index in range(_courses.size()):
 		var button := Button.new()
 		button.name = "Level%02d" % (index + 1)
-		button.custom_minimum_size = Vector2(0.0, 58.0)
+		button.custom_minimum_size = Vector2(0.0, 62.0)
 		button.theme_type_variation = &"CourseRowButton"
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -189,4 +189,8 @@ func _ensure_selected_visible() -> void:
 	if not is_inside_tree() or _selected_course_index < 0 \
 			or _selected_course_index >= _course_buttons.size():
 		return
-	_scroll.ensure_control_visible(_course_buttons[_selected_course_index])
+	var selected := _course_buttons[_selected_course_index]
+	var bar := _scroll.get_v_scroll_bar()
+	var centered := selected.position.y + selected.size.y * 0.5 - _scroll.size.y * 0.5
+	var maximum := maxf(bar.max_value - bar.page, 0.0)
+	_scroll.scroll_vertical = roundi(clampf(centered, 0.0, maximum))

@@ -232,10 +232,10 @@ func apply_language(language: String) -> void:
 	%HorizontalLabel.text = "H" if english else "좌우"
 	%ElevationLabel.text = "V" if english else "상하"
 	%PowerLabel.text = "PWR" if english else "파워"
-	_oblique_button.text = "◎"
-	_cannon_button.text = "⌾"
+	_oblique_button.text = ""
+	_cannon_button.text = ""
 	_follow_button.text = "FOLLOW" if english else "추적"
-	_retry_button.text = "↻"
+	_retry_button.text = ""
 	_camera_reset_button.text = "RESET" if english else "초기"
 	_set_icon_copy(_horizontal_decrease, "Decrease horizontal aim (Q)" if english else "좌우 조준 감소 (Q)")
 	_set_icon_copy(_horizontal_increase, "Increase horizontal aim (E)" if english else "좌우 조준 증가 (E)")

@@ -51,7 +51,17 @@ func show_course(index: int, prepared: CannonGolfPreparedCourse = null) -> bool:
 	_builder = replacement
 	course_index = index
 	_apply_world_envelope()
-	_camera_rig.configure(_camera, _builder.course)
+	# Preview framing uses the same terrain and collision contract as gameplay.
+	# Without these inputs a goal body can collapse the swept boom into an
+	# extreme close-up on otherwise valid prepared courses.
+	_camera_rig.configure(
+		_camera,
+		_builder.course,
+		_builder.prepared_course.local_bounds,
+		Callable(_builder, "height_at_local"),
+		_builder.presentation_bounds(),
+		_builder.camera_collision_exclusions()
+	)
 	_camera.current = visible
 	return true
 

@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=54 format=3]
+[gd_resource type="Theme" load_steps=59 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/pretendard/PretendardVariable.woff2" id="1_font"]
 [ext_resource type="Texture2D" path="res://assets/ui/external/kenney_ui_pack_2/panel_neutral_depth.png" id="2_neutral_depth"]
@@ -256,6 +256,39 @@ expand_margin_top = 2.0
 expand_margin_right = 2.0
 expand_margin_bottom = 2.0
 
+[sub_resource type="StyleBoxEmpty" id="TopIconControl"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="TopIconHover"]
+bg_color = Color(0.09, 0.145, 0.22, 0.08)
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+
+[sub_resource type="StyleBoxFlat" id="TopIconFocus"]
+bg_color = Color(0, 0, 0, 0)
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.09, 0.145, 0.22, 0.82)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+
 [sub_resource type="StyleBoxFlat" id="CourseRowSelected"]
 bg_color = Color(0, 0, 0, 0)
 content_margin_left = 20.0
@@ -264,6 +297,23 @@ content_margin_right = 10.0
 content_margin_bottom = 6.0
 border_width_left = 4
 border_color = Color(0.89, 0.604, 0.055, 1)
+
+[sub_resource type="StyleBoxEmpty" id="CourseRowNormal"]
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="CourseRowHover"]
+bg_color = Color(0.09, 0.145, 0.22, 0.08)
+content_margin_left = 20.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
 
 [sub_resource type="StyleBoxFlat" id="CourseRowFocus"]
 bg_color = Color(0, 0, 0, 0)
@@ -472,14 +522,21 @@ BareTextButton/styles/pressed = SubResource("TransparentPressed")
 BareTextButton/styles/hover_pressed = SubResource("TransparentPressed")
 BareTextButton/styles/disabled = SubResource("TransparentControl")
 BareTextButton/styles/focus = SubResource("TransparentFocus")
+TopIconButton/base_type = &"Button"
+TopIconButton/styles/normal = SubResource("TopIconControl")
+TopIconButton/styles/hover = SubResource("TopIconHover")
+TopIconButton/styles/pressed = SubResource("TopIconControl")
+TopIconButton/styles/hover_pressed = SubResource("TopIconHover")
+TopIconButton/styles/disabled = SubResource("TopIconControl")
+TopIconButton/styles/focus = SubResource("TopIconFocus")
 CourseRowButton/base_type = &"Button"
 CourseRowButton/fonts/font = SubResource("FontWeight500")
 CourseRowButton/font_sizes/font_size = 18
-CourseRowButton/styles/normal = SubResource("TransparentControl")
-CourseRowButton/styles/hover = SubResource("TransparentHover")
+CourseRowButton/styles/normal = SubResource("CourseRowNormal")
+CourseRowButton/styles/hover = SubResource("CourseRowHover")
 CourseRowButton/styles/pressed = SubResource("CourseRowSelected")
 CourseRowButton/styles/hover_pressed = SubResource("CourseRowSelected")
-CourseRowButton/styles/disabled = SubResource("TransparentControl")
+CourseRowButton/styles/disabled = SubResource("CourseRowNormal")
 CourseRowButton/styles/focus = SubResource("CourseRowFocus")
 AmberCircleButton/base_type = &"Button"
 AmberCircleButton/colors/font_color = Color(0.89, 0.604, 0.055, 1)

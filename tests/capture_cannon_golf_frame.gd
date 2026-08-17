@@ -20,6 +20,7 @@ func _capture() -> void:
 	var fired_transform := Transform3D.IDENTITY
 	var panned_start_focus := Vector3.ZERO
 	var panned_end_focus := Vector3.ZERO
+	var cannon_stable_transform := Transform3D.IDENTITY
 	var output_path := ProjectSettings.globalize_path(
 		"res://.godot/capture-temp/cannon-golf.png"
 	)
@@ -89,6 +90,15 @@ func _capture() -> void:
 		app.show_settings()
 	elif requested_state == "cannon":
 		game.set_planning_view(&"cannon")
+	elif requested_state == "cannon_input_stability":
+		game.set_planning_view(&"cannon")
+		game._on_setup_changed(51.0, 50.0, 50.0)
+		game._camera_rig.update(1.0)
+		cannon_stable_transform = game._camera.global_transform
+		game.pan_planning(Vector2.RIGHT)
+		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(4.0, 2.0))
+		game.orbit_planning(Vector2(4.0, 2.0))
+		game.zoom_planning(1.0)
 	elif requested_state == "explored":
 		game.orbit_planning(Vector2(190.0, -62.0))
 		game.zoom_planning(2.0)
@@ -198,7 +208,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "cannon", "explored", "panned", "zoom_close", "zoom_far",
+		"planning", "cannon", "cannon_input_stability", "explored", "panned", "zoom_close", "zoom_far",
 		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
 		"halo_cannon_down",
 		"relay_initial", "relay_overview",
@@ -211,6 +221,15 @@ func _capture() -> void:
 		if game._camera_rig.orbit_degrees.is_zero_approx() \
 				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM):
 			push_error("Explored capture did not retain an orbit and zoom change.")
+			quit(1)
+			return
+	if game != null and requested_state == "cannon_input_stability":
+		if game.planning_view != &"cannon" \
+				or not game.planning_pan.is_zero_approx() \
+				or not is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
+				or not game._camera_rig.orbit_degrees.is_zero_approx() \
+				or not game._camera.global_transform.is_equal_approx(cannon_stable_transform):
+			push_error("Cannon input stability capture changed to overview or moved its camera.")
 			quit(1)
 			return
 	if game != null and requested_state == "halo_cannon_down":

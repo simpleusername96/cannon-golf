@@ -30,6 +30,16 @@ func _run() -> void:
 		),
 		"Selecting LV 12 must automatically reveal its complete row."
 	)
+	var scroll := course_select.get_node("Scroll") as ScrollContainer
+	_assert(
+		scroll.get_global_rect().encloses(rows[8].get_global_rect()) \
+				and scroll.get_global_rect().encloses(rows[14].get_global_rect()),
+		"The approved LV12 composition must show the complete LV9 through LV15 range."
+	)
+	_assert(
+		scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_SHOW_NEVER,
+		"The course list must scroll without drawing a right-edge divider."
+	)
 
 	course_select.set_course_preparation_state(CannonGolfCourseSelect.CoursePreparationState.PREPARING)
 	_assert((course_select.get_node("%Start") as Button).disabled, "Preparing must disable Start.")

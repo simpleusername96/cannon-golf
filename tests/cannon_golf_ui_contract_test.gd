@@ -217,8 +217,9 @@ func _run() -> void:
 	_assert(course_select.get_node_or_null("Scroll/CourseList") is VBoxContainer, "Course rows need one direct scroll owner.")
 	var course_scroll := course_select.get_node("Scroll") as ScrollContainer
 	_assert(
-		course_scroll.get_v_scroll_bar().get_combined_minimum_size().x <= 4.0,
-		"The course list scrollbar must remain visually narrow."
+		course_scroll.vertical_scroll_mode == ScrollContainer.SCROLL_MODE_SHOW_NEVER \
+				and course_select.get_node_or_null("ListGuide") is ColorRect,
+		"The course list must use the approved left guide without a right-edge scrollbar."
 	)
 	for index in range(course_select.course_buttons().size()):
 		var course_button := course_select.course_buttons()[index]

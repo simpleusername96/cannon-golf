@@ -1,7 +1,12 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/cannon_golf/cannon_golf_hud.gd" id="1_hud"]
 [ext_resource type="Script" path="res://src/cannon_golf/cannon_aim_reticle.gd" id="4_reticle"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cannon_golf_overview.svg" id="5_overview"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cannon_golf_cannon.svg" id="6_cannon"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cannon_golf_retry.svg" id="7_retry"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cannon_golf_help.svg" id="8_help"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/cannon_golf_pause.svg" id="9_pause"]
 
 [node name="CannonGolfHUD" type="CanvasLayer"]
 process_mode = 3
@@ -36,7 +41,7 @@ script = ExtResource("4_reticle")
 
 [node name="GoalProgress" type="Control" parent="Root"]
 layout_mode = 0
-offset_left = 40.0
+offset_left = 32.0
 offset_top = 28.0
 offset_right = 368.0
 offset_bottom = 60.0
@@ -58,8 +63,8 @@ vertical_alignment = 1
 
 [node name="LauncherSource" type="Control" parent="Root"]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 76.0
+offset_left = 36.0
+offset_top = 74.0
 offset_right = 368.0
 offset_bottom = 124.0
 mouse_filter = 2
@@ -123,9 +128,9 @@ anchor_right = 1.0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 32.0
-offset_top = -108.0
-offset_right = -32.0
-offset_bottom = -16.0
+offset_top = -100.0
+offset_right = -24.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 1
@@ -133,7 +138,7 @@ mouse_filter = 1
 [node name="AimPanel" type="HBoxContainer" parent="Root/BottomRail"]
 layout_mode = 1
 anchors_preset = 15
-anchor_right = 0.68
+anchor_right = 0.62
 anchor_bottom = 1.0
 offset_right = -12.0
 grow_horizontal = 2
@@ -143,6 +148,7 @@ theme_override_constants/separation = 24
 [node name="HorizontalGroup" type="VBoxContainer" parent="Root/BottomRail/AimPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 theme_override_constants/separation = 4
 
 [node name="Header" type="HBoxContainer" parent="Root/BottomRail/AimPanel/HorizontalGroup"]
@@ -187,6 +193,7 @@ min_value = -62.0
 max_value = 162.0
 step = 1.0
 value = 50.0
+tick_count = 7
 
 [node name="HorizontalIncrease" type="Button" parent="Root/BottomRail/AimPanel/HorizontalGroup/Input"]
 unique_name_in_owner = true
@@ -201,6 +208,7 @@ text = "→"
 [node name="ElevationGroup" type="VBoxContainer" parent="Root/BottomRail/AimPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 theme_override_constants/separation = 4
 
 [node name="Header" type="HBoxContainer" parent="Root/BottomRail/AimPanel/ElevationGroup"]
@@ -245,6 +253,7 @@ min_value = -90.0
 max_value = 90.0
 step = 1.0
 value = 50.0
+tick_count = 7
 
 [node name="ElevationIncrease" type="Button" parent="Root/BottomRail/AimPanel/ElevationGroup/Input"]
 unique_name_in_owner = true
@@ -423,10 +432,10 @@ text = "일시정지"
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -280.0
+offset_left = -331.0
 offset_top = 24.0
-offset_right = -32.0
-offset_bottom = 72.0
+offset_right = -23.0
+offset_bottom = 84.0
 grow_horizontal = 0
 mouse_filter = 2
 
@@ -440,25 +449,29 @@ grow_vertical = 2
 
 [node name="Actions" type="HBoxContainer" parent="Root/TopActions/Margin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 2
 
 [node name="ObliqueButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(58, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-theme_type_variation = &"BareTextButton"
+theme_type_variation = &"TopIconButton"
 toggle_mode = true
-text = "◎"
+icon = ExtResource("5_overview")
+expand_icon = true
+theme_override_constants/icon_max_width = 40
 tooltip_text = "전체 보기 (1)"
 accessibility_name = "전체 보기 (1)"
 
 [node name="CannonButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(58, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-theme_type_variation = &"BareTextButton"
+theme_type_variation = &"TopIconButton"
 toggle_mode = true
-text = "⌾"
+icon = ExtResource("6_cannon")
+expand_icon = true
+theme_override_constants/icon_max_width = 40
 tooltip_text = "대포 시점 (2)"
 accessibility_name = "대포 시점 (2)"
 
@@ -477,19 +490,20 @@ accessibility_name = "공 따라가기"
 
 [node name="RetryButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(70, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-theme_type_variation = &"BareTextButton"
-theme_override_font_sizes/font_size = 22
+theme_type_variation = &"TopIconButton"
 disabled = true
-text = "↻"
+icon = ExtResource("7_retry")
+expand_icon = true
+theme_override_constants/icon_max_width = 40
 tooltip_text = "빠른 재발사 (R)"
 accessibility_name = "빠른 재발사 (R)"
 
 [node name="ZoomInButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
 focus_mode = 0
 theme_type_variation = &"HudIconButton"
@@ -521,26 +535,30 @@ accessibility_name = "축소 (휠 아래)"
 
 [node name="ShortcutButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-theme_type_variation = &"BareTextButton"
+theme_type_variation = &"TopIconButton"
 toggle_mode = true
-text = "?"
+icon = ExtResource("8_help")
+expand_icon = true
+theme_override_constants/icon_max_width = 40
 tooltip_text = "조작법 보기"
 accessibility_name = "조작법 보기"
 
 [node name="PauseButton" type="Button" parent="Root/TopActions/Margin/Actions"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(60, 60)
 layout_mode = 2
-theme_type_variation = &"BareTextButton"
-text = "Ⅱ"
+theme_type_variation = &"TopIconButton"
+icon = ExtResource("9_pause")
+expand_icon = true
+theme_override_constants/icon_max_width = 40
 tooltip_text = "일시정지 (Esc)"
 accessibility_name = "일시정지 (Esc)"
 
 [node name="ShotPanel" type="HBoxContainer" parent="Root/BottomRail"]
 layout_mode = 1
-anchor_left = 0.68
+anchor_left = 0.62
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 12.0
@@ -552,6 +570,7 @@ theme_override_constants/separation = 16
 [node name="PowerGroup" type="VBoxContainer" parent="Root/BottomRail/ShotPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
 theme_override_constants/separation = 4
 
 [node name="Header" type="HBoxContainer" parent="Root/BottomRail/ShotPanel/PowerGroup"]
@@ -598,6 +617,7 @@ min_value = 10.0
 max_value = 100.0
 step = 1.0
 value = 50.0
+tick_count = 7
 
 [node name="PowerIncrease" type="Button" parent="Root/BottomRail/ShotPanel/PowerGroup/PowerInput"]
 unique_name_in_owner = true
