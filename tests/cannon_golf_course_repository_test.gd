@@ -27,13 +27,13 @@ func _run() -> void:
 	_assert_true(not _ready_ids.has(obsolete.course_id), "An obsolete completion must not publish readiness.")
 	_assert_true(_ready_ids.has(latest.course_id), "The latest completion must publish readiness.")
 
-	for index in [1, 2, 3]:
-		var course := CannonGolfCourseCatalog.course_at(index)
-		repository.request_course(course)
-		_assert_true(await _wait_ready(repository, course), "LRU probe course must load: %s." % course.course_id)
-		_assert_true(repository.cached_course_count() <= 3, "Prepared-course LRU must stay bounded to three entries.")
+	repository.prefetch_courses(CannonGolfCourseCatalog.all_courses())
+	_assert_true(await _wait_catalog_ready(repository),
+			"Background prefetch must warm every bounded catalog artifact.")
+	_assert_true(repository.cached_course_count() == CannonGolfCourseCatalog.level_count(),
+			"The prepared cache must retain the complete fifteen-course catalog.")
 	_assert_true(_failed_ids.is_empty(), "Valid catalog resources must not publish load failure.")
-	print("Cannon Golf asynchronous latest-request and LRU repository contract passed.")
+	print("Cannon Golf prioritized request and catalog-prefetch contract passed.")
 	quit(0)
 
 
@@ -43,6 +43,19 @@ func _wait_ready(
 ) -> bool:
 	for _frame in range(600):
 		if repository.ready_course(course) != null:
+			return true
+		await process_frame
+	return false
+
+
+func _wait_catalog_ready(repository: CannonGolfCourseArtifactRepository) -> bool:
+	for _frame in range(1800):
+		var all_ready := true
+		for course in CannonGolfCourseCatalog.all_courses():
+			if repository.ready_course(course) == null:
+				all_ready = false
+				break
+		if all_ready:
 			return true
 		await process_frame
 	return false

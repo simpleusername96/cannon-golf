@@ -235,10 +235,10 @@ func _run() -> void:
 	for required in ["Back", "Start"]:
 		_assert(_find_named(course_select, required) is Button, "Course select must retain %s." % required)
 	var course_start := course_select.get_node("%Start") as Button
-	_assert(course_start.theme_type_variation == &"AmberCircleButton" \
-			and course_start.custom_minimum_size.x >= 44.0 \
-			and is_equal_approx(course_start.custom_minimum_size.x, course_start.custom_minimum_size.y),
-			"Course Start must retain its established circular amber action.")
+	_assert(course_start.theme_type_variation == &"CourseStartButton" \
+			and course_start.custom_minimum_size.y >= 44.0 \
+			and not is_equal_approx(course_start.custom_minimum_size.x, course_start.custom_minimum_size.y),
+			"Course Start must retain its approved directional action shape.")
 	_assert(
 		course_select.course_buttons().size() == 15,
 		"Course select must create fifteen reusable catalog rows."

@@ -827,15 +827,23 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-053 — Change Fire only when separating the primary actions
 
-- Status: accepted on 2026-08-17; supersedes only D-052's Start/Fire shape
-  clause and D-051's circular Fire clause. Camera, course selection, settings,
-  and other D-052 behavior remain unchanged.
-- Course Start retains its concise circular amber action. Gameplay Fire alone
-  becomes a compact filled horizontal amber action with a restrained projectile
-  cue, so launch reads immediately without changing the level-entry control.
-- Fire remains the only normal-play primary action, stays at the bottom rail's
-  far-right edge, remains camera-independent, and preserves keyboard access,
-  truthful disabled state, and Korean/English text fit.
+- Status: withdrawn on 2026-08-17 because it incorrectly interpreted “change
+  only Fire” as permission to roll Course Start back to its earlier circle.
+- The withdrawn implementation rolled Course Start back to a concise circular
+  action and moved the filled horizontal treatment to Fire. That rollback must
+  not guide current implementation; D-054 records the corrected behavior.
+
+### D-054 — Preserve directional Start while refining Fire
+
+- Status: accepted on 2026-08-17; replaces the withdrawn D-053 interpretation
+  and preserves the camera, settings, and selection behavior accepted in D-052.
+- Course Start remains the compact horizontal amber action that names the
+  selected level and includes a forward cue. Refining Fire must not roll Start
+  back to the earlier shared circular language.
+- Gameplay Fire retains its smaller projectile-marked action. Prepared course
+  artifacts may warm in the background, but explicit selection has priority;
+  preview terrain becomes visible only after its new authored camera framing is
+  applied so replacement cannot read as an unintended zoom transition.
 
 ## Rationale
 

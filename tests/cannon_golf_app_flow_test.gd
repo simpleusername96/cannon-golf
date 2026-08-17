@@ -35,10 +35,11 @@ func _run() -> void:
 	_assert(course_select.select_course(1), "the second authored course must be selectable")
 	await process_frame
 	_assert(app.selected_course_index == 1, "course selection must remain zero-based")
-	_assert(
-		app.get_node("PreviewWorld").course_index != 1,
-		"selection must retain the prior preview until the requested artifact is ready"
-	)
+	var second_course := CannonGolfCourseCatalog.course_at(1)
+	var second_ready := app.course_artifact_repository.ready_course(second_course) != null
+	_assert(app.get_node("PreviewWorld").course_index == 1 if second_ready \
+			else app.get_node("PreviewWorld").course_index != 1,
+			"A warmed selection must switch immediately; a cold selection must retain the prior preview.")
 	var relay_index := CannonGolfCourseCatalog.index_of(&"deep_relay")
 	_assert(course_select.select_course(relay_index), "the relay course must be selectable")
 	await process_frame
@@ -59,6 +60,14 @@ func _run() -> void:
 	var preview_world := app.get_node("PreviewWorld") as CannonGolfPreviewWorld
 	_assert(preview_world._builder.terrain_body == null,
 			"Course selection previews must not register gameplay terrain collision bodies.")
+	_assert(preview_world._builder.visible,
+			"The replacement builder must become visible only after framing is configured.")
+	_assert(_preview_builder_count(preview_world) == 1,
+			"An atomic preview swap must retain exactly one visible course builder.")
+	var preview_camera_position := preview_world._camera.global_position
+	await process_frame
+	_assert(preview_world._camera.global_position.is_equal_approx(preview_camera_position),
+			"The replacement preview camera must stay snapped after the visible swap.")
 
 	var game := app.start_selected_course(relay_index)
 	await process_frame
@@ -118,3 +127,11 @@ func _wait_for_prepared(
 			return prepared
 		await process_frame
 	return null
+
+
+func _preview_builder_count(preview_world: CannonGolfPreviewWorld) -> int:
+	var count := 0
+	for child in preview_world.get_children():
+		if child is CannonGolfCourseBuilder:
+			count += 1
+	return count

@@ -45,6 +45,7 @@ func _ready() -> void:
 	_apply_language(String(settings_store.get_settings()[&"language"]))
 	show_main_menu(false)
 	_request_selected_course(selected_course_index)
+	course_artifact_repository.prefetch_courses(CannonGolfCourseCatalog.all_courses())
 
 
 func _create_screens() -> void:

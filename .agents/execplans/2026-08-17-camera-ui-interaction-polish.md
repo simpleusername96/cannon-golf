@@ -38,7 +38,7 @@ Constraints and invariants:
 - Explicit preset buttons remain available and Fire remains independent from camera state.
 - Exploration input from Cannon returns to Overview and then applies the requested pan/orbit/zoom; it does not move gameplay objects or alter aim/setup.
 - The launcher-source selector remains a source choice, not a target choice, and occupies the top band.
-- Course Start retains its circular amber action. Fire alone becomes a distinct compact horizontal filled action with a projectile cue.
+- Course Start retains its approved horizontal directional action. Fire alone receives the smaller projectile-marked treatment.
 - Course preview continues to use the immutable prepared render mesh and real goal/launcher visuals; preview-only construction may omit gameplay collision bodies.
 - Existing unrelated untracked files remain untouched.
 
@@ -156,6 +156,30 @@ Source owners: `resources/ui/paint_mountain_theme.tres`, `scenes/cannon_golf/can
   - Change: run the two focused contracts, capture course-select and gameplay at 1280 by 720, inspect native pixels, run `git diff --check`, and perform the diff-scoped quality audit.
   - Accept: both renders have no clipping or overlap, only Fire uses the new filled horizontal action, focused checks exit zero, and no task-owned quality finding remains.
 
+### Phase 6: Restore Start and make preview changes immediate and atomic
+
+Goal: correct the Start-button misunderstanding and remove the delayed, scale-like terrain preview swap.
+
+Preconditions:
+
+- The user's 2026-08-17 correction supersedes Phase 5's Start rollback; Fire remains the only newly redesigned button.
+- Measured cold prepared-resource loads take 19–85 ms and preview construction takes 8–25 ms; the preview camera already snaps in one frame, so no camera tween needs removal.
+
+Source owners: `src/cannon_golf/course_artifact_repository.gd`, `src/cannon_golf/app/cannon_golf_app.gd`, `src/cannon_golf/app/cannon_golf_preview_world.gd`, course-select scene/script/theme, focused repository/app/UI tests, canonical design rules/decisions
+
+- [x] **6.1** Warm the prepared catalog without blocking selection.
+  - Change: let the artifact repository prefetch the bounded fifteen-course catalog after prioritizing the selected course, retain those immutable prepared artifacts, and let a user request preempt queued background work.
+  - Accept: all catalog artifacts become ready through threaded loading, the latest explicit request still wins, no terrain generation occurs, and selection can reuse warmed artifacts immediately.
+- [x] **6.2** Make the visible preview swap atomic.
+  - Change: build the replacement hidden, configure and snap the preview camera, then switch old/new visibility in one call before freeing the old builder.
+  - Accept: no reachable frame can show a new terrain with the old framing or both terrain builders together; the final preview retains exact prepared visual parity.
+- [x] **6.3** Restore the approved directional Start action.
+  - Change: restore the compact horizontal `LV n 시작 →` / `START LV n →` button and its own theme variation; keep the redesigned Fire unchanged.
+  - Accept: Start matches the pre-rollback course-select render, truthful preparation/error states remain, and Fire retains its current projectile-marked action.
+- [x] **6.4** Validate interaction, timing, and rendered output.
+  - Change: run focused repository, app-flow, performance, selection, and UI contracts; capture and inspect a real course-ready frame; run `git diff --check` and the diff-scoped quality audit.
+  - Accept: focused checks exit zero, the render has no clipping or stale composition, and no task-owned quality finding remains.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -187,7 +211,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Phase 5 — the focused UI and course-selection contracts passed; real 1280 by 720 course-ready and gameplay renders passed native-pixel inspection with circular Start restored and only Fire using the compact filled horizontal action; `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
+- Last completed gate: Phase 6 — five focused repository/app/performance/UI contracts passed; the repository warmed all fifteen artifacts while preserving latest-request priority, the preview retained one visible builder with a stable snapped camera, and the real 1280 by 720 LV12 render passed native-pixel inspection with directional Start restored; `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
 - Update rule: after each phase passes, record concise evidence, check its tasks, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

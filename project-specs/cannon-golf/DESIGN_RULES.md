@@ -255,8 +255,8 @@ coefficients, stage data formats, or code ownership.
   count once. Opening or changing selection must scroll the selected row into
   view. Do not add a list card, vertical section divider, difficulty label,
   stars, score, or duplicated level metadata. Back remains a surface-free text
-  action. Start retains its concise circular amber action; do not apply Fire's
-  filled horizontal treatment to it.
+  action. Start is a compact horizontal amber action that names the selected
+  level and uses a forward cue; do not roll it back while refining Fire.
 - Use one primary action per state. During launch setup, that action is Fire.
 - After the final goal confirms, place the existing stage-clear panel at the
   viewport center and focus its one primary result action.

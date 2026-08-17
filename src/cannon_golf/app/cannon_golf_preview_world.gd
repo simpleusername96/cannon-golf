@@ -41,13 +41,12 @@ func show_course(index: int, prepared: CannonGolfPreparedCourse = null) -> bool:
 		return true
 	var replacement := CannonGolfCourseBuilder.new()
 	replacement.name = "PreviewCourseBuilder"
+	replacement.visible = false
 	if not replacement.build_preview(course, prepared):
 		replacement.free()
 		return false
 	add_child(replacement)
-	if _builder != null:
-		remove_child(_builder)
-		_builder.free()
+	var previous := _builder
 	_builder = replacement
 	course_index = index
 	_apply_world_envelope()
@@ -63,6 +62,12 @@ func show_course(index: int, prepared: CannonGolfPreparedCourse = null) -> bool:
 		_builder.camera_collision_exclusions()
 	)
 	_camera.current = visible
+	if previous != null:
+		previous.visible = false
+	replacement.visible = true
+	if previous != null:
+		remove_child(previous)
+		previous.free()
 	return true
 
 
