@@ -95,6 +95,14 @@ func _capture() -> void:
 		game._begin_planning_drag(MOUSE_BUTTON_LEFT)
 		game._committed_planning_drag_relative(Vector2(2.0, 1.0))
 		game._end_planning_drag()
+	elif requested_state == "cannon_setup_stable":
+		game.set_planning_view(&"cannon")
+		cannon_start_transform = game._camera.global_transform
+		game._on_setup_changed(
+			CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM,
+			CannonGolfBallistics.MAXIMUM_ELEVATION_DEGREES,
+			100.0
+		)
 	elif requested_state == "hud_icon_focus":
 		game.set_planning_view(&"cannon")
 		(game._hud.get_node("%CannonButton") as Button).grab_focus()
@@ -216,7 +224,7 @@ func _capture() -> void:
 	for _frame in range(36):
 		await process_frame
 	if game != null and requested_state in [
-		"planning", "cannon", "cannon_click", "hud_icon_focus", "cannon_to_overview", "explored", "panned", "zoom_close", "zoom_far",
+		"planning", "cannon", "cannon_click", "cannon_setup_stable", "hud_icon_focus", "cannon_to_overview", "explored", "panned", "zoom_close", "zoom_far",
 		"collision_edge", "shortcuts", "unrestricted_aim", "halo_overview_extreme",
 		"halo_cannon_down",
 		"relay_initial", "relay_overview",
@@ -243,6 +251,12 @@ func _capture() -> void:
 	if game != null and requested_state == "cannon_click" \
 			and game.planning_view != &"cannon":
 		push_error("A world click without a committed drag left Cannon view.")
+		quit(1)
+		return
+	if game != null and requested_state == "cannon_setup_stable" \
+			and (game.planning_view != &"cannon" \
+			or not game._camera.global_transform.is_equal_approx(cannon_start_transform)):
+		push_error("Launch setup edits moved the selected Cannon preset.")
 		quit(1)
 		return
 	if game != null and requested_state == "hud_icon_focus":

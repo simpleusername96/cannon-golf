@@ -227,9 +227,19 @@ func _assert_camera_preset_interaction() -> void:
 	_assert_true(game.planning_view == &"oblique" and overview_button.button_pressed,
 			"The Overview button must leave Cannon and select Overview.")
 	cannon_button.pressed.emit()
-	game._on_setup_changed(51.0, 50.0, 50.0)
-	game._camera_rig.update(1.0)
 	var cannon_transform := game._camera.global_transform
+	game._on_setup_changed(
+		CannonGolfBallistics.MAXIMUM_HORIZONTAL_AIM,
+		CannonGolfBallistics.MAXIMUM_ELEVATION_DEGREES,
+		100.0
+	)
+	for _setup_frame in range(30):
+		game._camera_rig.update(1.0 / 60.0)
+	_assert_true(
+		game.planning_view == &"cannon"
+				and game._camera.global_transform.is_equal_approx(cannon_transform),
+		"Aim, elevation, and power edits must not move the selected Cannon preset."
+	)
 	game._begin_planning_drag(MOUSE_BUTTON_LEFT)
 	_assert_true(game.planning_view == &"cannon",
 			"Pressing the world in Cannon view must not select Overview.")

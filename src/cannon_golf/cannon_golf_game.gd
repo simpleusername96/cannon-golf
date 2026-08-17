@@ -315,7 +315,6 @@ func retry_attempt() -> bool:
 		return false
 	_course_builder.launcher.set_setup(retry_setup.x, retry_setup.y, retry_setup.z)
 	_hud.set_setup(retry_setup.x, retry_setup.y, retry_setup.z)
-	_sync_cannon_camera_pose()
 	last_launch_outcome = &""
 	get_tree().paused = false
 	_hud.set_pause_visible(false)
@@ -561,7 +560,6 @@ func _on_setup_changed(horizontal: float, elevation: float, power: float) -> voi
 		_course_builder.launcher.elevation_degrees,
 		_course_builder.launcher.power_percent
 	)
-	_sync_cannon_camera_pose()
 
 
 func _sync_cannon_camera_pose() -> void:
@@ -585,7 +583,6 @@ func _adjust_setup(horizontal_delta: float, elevation_delta: float, power_delta:
 		launcher.power_percent + power_delta
 	)
 	_hud.set_setup(launcher.horizontal_aim, launcher.elevation_degrees, launcher.power_percent)
-	_sync_cannon_camera_pose()
 
 
 func _on_result_primary_requested() -> void:

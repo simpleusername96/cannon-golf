@@ -180,6 +180,27 @@ Source owners: `src/cannon_golf/course_artifact_repository.gd`, `src/cannon_golf
   - Change: run focused repository, app-flow, performance, selection, and UI contracts; capture and inspect a real course-ready frame; run `git diff --check` and the diff-scoped quality audit.
   - Accept: focused checks exit zero, the render has no clipping or stale composition, and no task-owned quality finding remains.
 
+### Phase 7: Keep Cannon stable while editing launch setup
+
+Goal: stop aim and power controls from reauthoring the selected Cannon camera preset.
+
+Preconditions:
+
+- Cannon remains source-relative, so selecting another launcher source may relocate it.
+- Deliberate map pan, orbit, wheel zoom, or arrow-pan may still enter Overview as accepted in D-052.
+
+Source owners: `src/cannon_golf/cannon_golf_game.gd`, focused camera test/capture, canonical product behavior and decision records
+
+- [x] **7.1** Decouple launch setup from the Cannon camera transform.
+  - Change: update the launcher and HUD for horizontal aim, elevation, and power without resubmitting a camera pose; retain pose synchronization when the launcher source changes.
+  - Accept: setup controls move the barrel and aim display while the selected Cannon camera transform remains fixed and finite.
+- [x] **7.2** Add a regression contract for extreme setup edits.
+  - Change: change horizontal aim, elevation, and power after selecting Cannon, advance the camera, and compare the final transform with the stored preset.
+  - Accept: Cannon remains selected and the transform is unchanged; existing deliberate Overview exploration checks continue to pass.
+- [x] **7.3** Render and inspect the stable setup state.
+  - Change: capture a real 1280 by 720 Cannon frame after an extreme setup edit, inspect it at native pixels, then run `git diff --check` and the diff-scoped quality audit.
+  - Accept: the terrain framing is stable, the changed launcher direction remains legible, and no task-owned quality finding remains.
+
 ## Validation and Rework Controls
 
 | Cadence | Exact check | Run when | Do not rerun until |
@@ -211,7 +232,7 @@ Implementation-local discoveries may be handled inside the locked contract when 
 - Canonical progress: the task checkboxes in this contract.
 - Current phase: Complete.
 - Next task: None.
-- Last completed gate: Phase 6 — five focused repository/app/performance/UI contracts passed; the repository warmed all fifteen artifacts while preserving latest-request priority, the preview retained one visible builder with a stable snapped camera, and the real 1280 by 720 LV12 render passed native-pixel inspection with directional Start restored; `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
+- Last completed gate: Phase 7 — the camera regression retained the exact Cannon transform for thirty frames after maximum aim, elevation, and power edits; the real 1280 by 720 render preserved the source-relative rear view while the launcher changed direction; all twenty-four focused suite checks, `git diff --check`, document lifecycle review, and the diff-scoped quality audit passed with no task-owned finding.
 - Update rule: after each phase passes, record concise evidence, check its tasks, and advance this pointer in the same edit.
 
 ## Completion and Stop Conditions

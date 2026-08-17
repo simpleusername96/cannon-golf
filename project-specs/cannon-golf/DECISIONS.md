@@ -845,6 +845,19 @@ in `OPEN_QUESTIONS.md`.
   preview terrain becomes visible only after its new authored camera framing is
   applied so replacement cannot read as an unintended zoom transition.
 
+### D-055 — Keep the Cannon preset fixed during setup edits
+
+- Status: accepted on 2026-08-17; refines the source-relative Cannon behavior
+  in D-047 and the preset interaction in D-052.
+- Cannon is a fixed camera transform authored for the currently selected
+  launcher source. Horizontal aim, elevation, and power changes update the
+  physical launcher and aim display without resubmitting or interpolating the
+  camera pose.
+- Selecting a different launcher source may relocate the Cannon preset.
+  Explicit view buttons and deliberate map pan, orbit, wheel zoom, or arrow-pan
+  keep their D-052 behavior; ordinary setup controls and uncommitted clicks do
+  not change the selected view or its camera transform.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

@@ -237,7 +237,11 @@ cannon composition.
   launch direction in one frame by looking toward a near point on the real
   launch ray. Its physical barrel and center reticle accompany a uniformly
   reduced version of the overview partial aim curve. It does not frame or imply
-  a next goal.
+  a next goal. Once selected, its camera transform remains fixed while the
+  player changes horizontal aim, elevation, or power; the barrel, reticle, and
+  aim cue show those setup changes without orbiting, tilting, or interpolating
+  the camera. Selecting another launcher source authors a new source-relative
+  Cannon preset.
   Fire immediately follows the newest ball.
   `Tab` restores the exact overview or cannon state stored before follow; a
   second launch retargets follow without replacing that stored state.
