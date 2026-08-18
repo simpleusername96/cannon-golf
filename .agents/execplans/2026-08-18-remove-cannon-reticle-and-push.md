@@ -1,6 +1,6 @@
 ---
 type: plan
-status: active
+status: done
 created: 2026-08-18
 scope: Remove the Cannon center reticle and publish the completed local history
 related:
@@ -69,7 +69,7 @@ Constraints:
 - [x] **2.1** Run focused UI/camera checks and render Cannon view without the
   center marker.
 - [x] **2.2** Run the full suite, diff check, and task-scoped quality audit.
-- [ ] **2.3** Mark this plan done, commit task-owned files, and push `main` to
+- [x] **2.3** Mark this plan done, commit task-owned files, and push `main` to
   `origin/main` without force.
 
 ## Validation and Rework Controls
@@ -90,9 +90,10 @@ Constraints:
 ## Progress and Next Steps
 
 - Canonical progress: this checklist.
-- Current phase: Phase 2.
-- Next task: 2.3.
-- Last completed gate: full 24-test regression suite, 1920 by 1080 Cannon
+- Current phase: Complete.
+- Next task: None.
+- Last completed gate: scoped commit `df243b3` and non-force push to
+  `origin/main`, after the full 24-test regression suite, 1920 by 1080 Cannon
   render inspection, diff check, and task-scoped quality audit.
 
 ## Completion and Stop Conditions
