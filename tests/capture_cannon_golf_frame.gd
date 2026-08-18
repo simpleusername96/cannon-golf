@@ -109,7 +109,8 @@ func _capture() -> void:
 	elif requested_state == "cannon_explored":
 		game.set_planning_view(&"cannon")
 		cannon_start_transform = game._camera.global_transform
-		game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-120.0, 42.0))
+		for _pan_step in range(3):
+			game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-420.0, 120.0))
 		game.orbit_planning(Vector2(180.0, -70.0))
 		game.zoom_planning(2.0)
 	elif requested_state == "cannon_far":
@@ -241,15 +242,11 @@ func _capture() -> void:
 			return
 	if game != null and requested_state == "cannon_explored":
 		if game.planning_view != &"cannon" \
-				or game._camera_rig.cannon_pan_offset.is_zero_approx() \
-				or is_equal_approx(
-					game._camera_rig.cannon_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM
-				) \
-				or game._camera_rig.cannon_orbit_degrees.is_zero_approx() \
-				or not game.planning_pan.is_zero_approx() \
-				or not game._camera_rig.orbit_degrees.is_zero_approx() \
+				or game.planning_pan.is_zero_approx() \
+				or is_equal_approx(game.planning_zoom, CannonGolfCourseCameraRig.DEFAULT_ZOOM) \
+				or game._camera_rig.orbit_degrees.is_zero_approx() \
 				or game._camera.global_transform.is_equal_approx(cannon_start_transform):
-			push_error("Cannon exploration capture did not retain and move its local camera.")
+			push_error("Cannon exploration capture did not move the common planning camera.")
 			quit(1)
 			return
 	if game != null and requested_state == "cannon_far":

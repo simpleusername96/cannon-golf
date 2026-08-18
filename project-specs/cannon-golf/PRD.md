@@ -232,7 +232,7 @@ cannon composition.
 ### FR-8: Planning cameras
 
 - Requirement: planning supports one terrain-reading high-oblique overview and
-  one fixed rear-upper cannon perspective at the currently selected source.
+  one authored rear-upper cannon coordinate at the currently selected source.
   Cannon perspective is a medium-distance terrain-reading coordinate, not a
   close-up. It keeps the physical cannon near the center of the frame at roughly
   `5-10%` of viewport height while surrounding and forward terrain occupy most
@@ -266,17 +266,16 @@ cannon composition.
   planning. Launch controls remain editable in either camera mode.
   View changes and course exploration must preserve aim parameters, device
   placements, completed goals, current selection, and a stable return context.
-  Cannon is one planning-camera preset, not a restricted camera mode. Its
-  authored pose uses a subject-centered 3D-viewer model: the selected
-  cannon's authored anchor is the stable initial interest: left-drag orbits,
-  right-drag pans that interest across the prepared course, the wheel or compact
-  zoom actions change camera-to-interest distance, and arrow keys pan. Horizontal
-  orbit is continuous, vertical orbit stops before inversion, and direct input
-  updates the camera without trailing interpolation. It has the same complete
-  course exploration entitlement as any other planning preset: pan may reach
-  the complete prepared bounds and dolly may move from close inspection to a
-  whole-course distance. This state is independent from cannon aim and from the
-  stored transforms of other presets. It must not switch view automatically.
+  Cannon is one planning-camera preset, not a restricted camera mode. Selecting
+  it uses the cannon anchor only to author the initial coordinate. After that
+  selection, one common planning-camera state owns orbit, pan, distance,
+  bounds, terrain admission, and direct response for every preset. Pan may move
+  the focus anywhere in the complete prepared bounds; the cannon does not need
+  to remain centered or visible. Horizontal orbit is continuous, vertical
+  orbit stops before inversion, and direct input updates the camera without
+  trailing interpolation. Dolly may move from close inspection to a
+  whole-course distance. This state is independent from cannon aim. It must not
+  switch view automatically.
   Only an explicit Overview selection opens its authored camera. The
   high-oblique reset frames the complete presentation bounds, while Cannon
   reselection, reset, or source selection restores its authored medium-distance

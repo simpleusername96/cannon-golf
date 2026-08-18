@@ -384,14 +384,14 @@ func return_to_planning_view() -> bool:
 func pan_planning(screen_direction: Vector2) -> void:
 	_activate_planning_camera()
 	_camera_rig.pan(screen_direction)
-	_snap_direct_cannon_input()
+	_snap_direct_planning_input()
 
 
 func pan_planning_drag(screen_position: Vector2, relative: Vector2) -> bool:
 	_activate_planning_camera()
 	var changed := _camera_rig.pan_drag(screen_position, relative)
 	if changed:
-		_snap_direct_cannon_input()
+		_snap_direct_planning_input()
 	return changed
 
 
@@ -399,7 +399,7 @@ func orbit_planning(relative: Vector2) -> bool:
 	_activate_planning_camera()
 	var changed := _camera_rig.orbit(relative)
 	if changed:
-		_snap_direct_cannon_input()
+		_snap_direct_planning_input()
 	return changed
 
 
@@ -407,12 +407,12 @@ func zoom_planning(wheel_steps: float) -> bool:
 	_activate_planning_camera()
 	var changed := _camera_rig.zoom_by_steps(wheel_steps)
 	if changed:
-		_snap_direct_cannon_input()
+		_snap_direct_planning_input()
 	return changed
 
 
-func _snap_direct_cannon_input() -> void:
-	if _camera_rig.view_mode == &"cannon" and _camera_rig.camera_mode == &"planning":
+func _snap_direct_planning_input() -> void:
+	if _camera_rig.camera_mode == &"planning":
 		_camera_rig.snap_to_planning()
 
 
@@ -725,13 +725,14 @@ func _select_launcher_source(goal_index: int) -> bool:
 	if launch_state == LaunchState.CLEARED or goal_index < -1 \
 			or (goal_index >= 0 and not completed_goal_indices.has(goal_index)):
 		return false
+	var source_changed := selected_launcher_goal_index != goal_index
 	if not _course_builder.select_launcher_source(goal_index):
 		return false
 	selected_launcher_goal_index = goal_index
-	# Source selection changes the cannon, not the player's map inspection.
-	# Keep overview pan/zoom/orbit and an active follow shot untouched; cannon
-	# view follows the relocated cannon through its source-relative pose only.
-	_sync_cannon_camera_pose()
+	# Re-selecting the active source is part of quick retry, not a camera-preset
+	# selection. Preserve the single planning-navigation state in that path.
+	if source_changed:
+		_sync_cannon_camera_pose()
 	_course_builder.launcher.set_cannon_view_active(_camera_rig.view_mode == &"cannon")
 	_hud.set_setup(
 		_course_builder.launcher.horizontal_aim,

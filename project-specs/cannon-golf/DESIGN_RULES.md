@@ -95,18 +95,16 @@ coefficients, stage data formats, or code ownership.
   zoom-out actions reach the complete-course fit. Keep the response logarithmic.
 - Terrain collision shortens the camera boom. It must not lift the camera into
   a sky-dominant jump or let the near plane enter a cliff.
-- Cannon perspective is a selectable camera preset, not a restricted navigation
-  mode. Its stable initial interest is the selected cannon's authored anchor,
-  not a point along
-  the changing launch ray. Left-drag orbits continuously around that interest,
-  right-drag and arrow keys pan it across the complete prepared course, and the
-  wheel changes camera-to-interest distance from close inspection through a
-  whole-course scale. Keep vertical orbit short of inversion,
-  keep camera placement terrain safe, and apply direct manipulation without
-  trailing interpolation. Aim changes move the barrel and cues, not the camera.
-  Each preset retains its own transform for restoration, but all presets receive
-  the same exploration controls and course-scale reach. Only the explicit
-  Overview action opens its authored top/complete-course pose.
+- Cannon perspective is a selectable camera coordinate, not a restricted
+  navigation mode. The selected cannon's anchor authors only its initial
+  composition. From the first orbit, pan, arrow, or wheel input onward, use the
+  same planning-camera state, sensitivity, distance endpoints, course bounds,
+  terrain admission, and direct response as every other preset. Do not keep the
+  cannon centered or visible: right-drag and arrow keys may move the focus
+  anywhere in the prepared course. Keep vertical orbit short of inversion and
+  camera placement terrain safe. Aim changes move the barrel and cues, not the
+  camera. Only the explicit Overview action opens its authored
+  top/complete-course coordinate.
 - Shot Follow reveals cause and effect without locking input. Fire follows the
   newest ball automatically; `Tab`, overview, or cannon view returns to the
   exact stored pre-follow state. A confirmed goal also returns there immediately
@@ -119,10 +117,10 @@ coefficients, stage data formats, or code ownership.
   planning must restore a readable course framing.
 - The high-oblique reset frames the complete course. The cannon reset returns
   to the selected source's authored medium-distance rear-upper orbit pose.
-  Overview pan, orbit, and bounded zoom expose the full course; Cannon has the
-  same course-bound pan and whole-course zoom reach while preserving its
-  perspective orbit model. The course selection preview frames the course's full
-  depth.
+  One common pan, orbit, and bounded zoom owner exposes the full course from
+  either authored coordinate. Cannon must not preserve a separate pivot or
+  perspective-orbit model after selection. The course selection preview frames
+  the course's full depth.
 - Avoid wide frontal terrain silhouettes that flatten front-to-back distance.
 
 ### Terrain language

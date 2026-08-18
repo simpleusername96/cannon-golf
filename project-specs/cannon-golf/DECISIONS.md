@@ -896,7 +896,7 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-058 — Treat Cannon as an unrestricted planning-camera preset
 
-- Status: accepted on 2026-08-18; supersedes D-057's remaining Cannon-specific
+- Status: refined on 2026-08-18 by D-060; supersedes D-057's remaining Cannon-specific
   distance treatment and D-034's old mouse mapping and uniform `10%` zoom
   response while preserving the stable subject-centered authored pose.
 - Overview, Cannon, and future planning viewpoints are coordinate presets, not
@@ -924,6 +924,24 @@ in `OPEN_QUESTIONS.md`.
 - The user-provided LV5 1920 by 1080 snapshot on 2026-08-18 is the visual scale
   reference. The retained baseline showed the previous roughly `18.7 m` preset
   making the launcher occupy about `28%` of viewport height and is rejected.
+
+### D-060 — Use one navigation owner after selecting any camera coordinate
+
+- Status: accepted on 2026-08-18; refines D-058's allowance for preset-specific
+  stored transforms and supersedes D-057's subject-centered Cannon exploration
+  state. It preserves D-059's authored initial Cannon composition.
+- Overview, Cannon, and future planning buttons select authored camera
+  coordinates only. After selection, one common `pan/orbit/zoom` state owns all
+  direct planning navigation. Presets may not define different sensitivities,
+  distance endpoints, travel limits, collision admission, interpolation, or
+  return-state fields.
+- The cannon anchor is the initial Cannon interest, not a persistent pivot.
+  Common pan may move the interest anywhere inside the prepared course bounds,
+  so the cannon does not need to stay centered or visible. Exploration never
+  selects another preset as a side effect.
+- Explicit preset selection, reset, or launcher-source selection restores the
+  affected authored coordinate. Shot Follow stores and restores the single
+  active planning-navigation state exactly.
 
 ## Rationale
 

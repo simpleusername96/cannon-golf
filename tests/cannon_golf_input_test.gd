@@ -21,24 +21,24 @@ func _run() -> void:
 	_assert_true(fire_button.has_focus(), "Fire must own initial keyboard focus.")
 	game.set_planning_view(&"cannon")
 	var cannon_focus_before_left_drag := game._camera_rig.planning_focus()
-	var cannon_orbit_before_left_drag := game._camera_rig.cannon_orbit_degrees
+	var cannon_orbit_before_left_drag := game._camera_rig.orbit_degrees
 	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
 	_assert_true(
-		not game._camera_rig.cannon_orbit_degrees.is_equal_approx(
+		not game._camera_rig.orbit_degrees.is_equal_approx(
 			cannon_orbit_before_left_drag
 		) and game._camera_rig.planning_focus().is_equal_approx(cannon_focus_before_left_drag),
-		"Cannon left drag must orbit around its stable interest."
+		"Cannon left drag must update the common orbit without moving focus."
 	)
-	var cannon_orbit_before_right_drag := game._camera_rig.cannon_orbit_degrees
+	var cannon_orbit_before_right_drag := game._camera_rig.orbit_degrees
 	await _push_drag(
 		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
 	)
 	_assert_true(
-		game._camera_rig.cannon_orbit_degrees.is_equal_approx(cannon_orbit_before_right_drag) \
+		game._camera_rig.orbit_degrees.is_equal_approx(cannon_orbit_before_right_drag) \
 				and not game._camera_rig.planning_focus().is_equal_approx(
 					cannon_focus_before_left_drag
 				),
-		"Cannon right drag must pan without changing its orbit."
+		"Cannon right drag must use common pan without changing common orbit."
 	)
 	game.reset_planning_camera()
 	game.pan_planning(Vector2(1.0, -1.0))
@@ -49,9 +49,6 @@ func _run() -> void:
 	var fire_pan := game.planning_pan
 	var fire_zoom := game.planning_zoom
 	var fire_orbit := game._camera_rig.orbit_degrees
-	var fire_cannon_pan := game._camera_rig.cannon_pan_offset
-	var fire_cannon_zoom := game._camera_rig.cannon_zoom
-	var fire_cannon_orbit := game._camera_rig.cannon_orbit_degrees
 	var fire_cannon_transform := game._camera.global_transform
 	await _push_space()
 	_assert_ball_count(game, 1, "One physical Space press must create exactly one ball.")
@@ -60,10 +57,7 @@ func _run() -> void:
 				and game.planning_view == fire_view
 				and game.planning_pan.is_equal_approx(fire_pan)
 				and is_equal_approx(game.planning_zoom, fire_zoom)
-				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit) \
-				and game._camera_rig.cannon_pan_offset.is_equal_approx(fire_cannon_pan) \
-				and is_equal_approx(game._camera_rig.cannon_zoom, fire_cannon_zoom) \
-				and game._camera_rig.cannon_orbit_degrees.is_equal_approx(fire_cannon_orbit),
+				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit),
 		"Physical Fire must follow the newest ball without changing the stored planning state."
 	)
 	await _push_key(KEY_TAB)
@@ -71,9 +65,7 @@ func _run() -> void:
 		game._camera_rig.camera_mode == &"planning" and game.planning_view == fire_view
 				and game.planning_pan.is_equal_approx(fire_pan)
 				and is_equal_approx(game.planning_zoom, fire_zoom) \
-				and game._camera_rig.cannon_pan_offset.is_equal_approx(fire_cannon_pan) \
-				and is_equal_approx(game._camera_rig.cannon_zoom, fire_cannon_zoom) \
-				and game._camera_rig.cannon_orbit_degrees.is_equal_approx(fire_cannon_orbit) \
+				and game._camera_rig.orbit_degrees.is_equal_approx(fire_orbit) \
 				and game._camera.global_transform.is_equal_approx(fire_cannon_transform),
 		"Tab must restore the exact pre-fire planning state."
 	)

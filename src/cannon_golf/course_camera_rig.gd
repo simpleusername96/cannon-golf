@@ -21,22 +21,12 @@ const CANNON_FIELD_OF_VIEW := 70.0
 const CANNON_BACK_DISTANCE := 80.0
 const CANNON_SIDE_DISTANCE := 12.0
 const CANNON_HEIGHT := 45.0
-const CANNON_MINIMUM_ZOOM := -7.0
-const CANNON_MAXIMUM_ZOOM := 3.0
-const CANNON_ZOOM_FACTOR := 0.72
-const CANNON_ORBIT_DEGREES_PER_PIXEL := Vector2(0.22, 0.18)
-const CANNON_MINIMUM_PITCH_ORBIT := -15.0
-const CANNON_MAXIMUM_PITCH_ORBIT := 34.0
-const CANNON_ARROW_PAN_DISTANCE := 2.5
 
 var view_mode: StringName = &"oblique"
 var camera_mode: StringName = MODE_PLANNING
 var pan_offset := Vector3.ZERO
 var zoom := DEFAULT_ZOOM
 var orbit_degrees := Vector2.ZERO
-var cannon_pan_offset := Vector3.ZERO
-var cannon_zoom := DEFAULT_ZOOM
-var cannon_orbit_degrees := Vector2.ZERO
 
 var _camera: Camera3D
 var _course: CannonGolfCourseData
@@ -89,7 +79,6 @@ func configure(
 	pan_offset = Vector3.ZERO
 	zoom = DEFAULT_ZOOM
 	orbit_degrees = Vector2.ZERO
-	_reset_cannon_exploration()
 	_follow_target = null
 	_return_snapshot.clear()
 	_rendered_focus = _base_focus
@@ -108,11 +97,10 @@ func set_view(next_view: StringName) -> bool:
 		_follow_target = null
 		camera_mode = MODE_PLANNING
 	view_mode = next_view
+	_reset_exploration()
 	_apply_fov()
 	_pose_dirty = true
-	if next_view == &"cannon":
-		_reset_cannon_exploration()
-		snap_to_planning()
+	snap_to_planning()
 	return true
 
 
@@ -130,10 +118,7 @@ func set_planning_context(
 	_base_focus = focus
 	_cannon_anchor = cannon_anchor
 	_set_cannon_direction(cannon_direction, cannon_yaw_degrees)
-	pan_offset = Vector3.ZERO
-	zoom = DEFAULT_ZOOM
-	orbit_degrees = Vector2.ZERO
-	_reset_cannon_exploration()
+	_reset_exploration()
 	_pose_dirty = true
 	return_to_planning(true)
 	return true
@@ -148,11 +133,12 @@ func set_cannon_pose(
 		return false
 	_cannon_anchor = anchor
 	_set_cannon_direction(direction, cannon_yaw_degrees)
-	_reset_cannon_exploration()
+	if view_mode == &"cannon":
+		_reset_exploration()
 	if _return_snapshot.get("view", &"") == &"cannon":
-		_return_snapshot["cannon_pan"] = Vector3.ZERO
-		_return_snapshot["cannon_zoom"] = DEFAULT_ZOOM
-		_return_snapshot["cannon_orbit"] = Vector2.ZERO
+		_return_snapshot["pan"] = Vector3.ZERO
+		_return_snapshot["zoom"] = DEFAULT_ZOOM
+		_return_snapshot["orbit"] = Vector2.ZERO
 	_pose_dirty = true
 	return true
 
@@ -166,21 +152,15 @@ func set_cannon_yaw(world_yaw_degrees: float) -> bool:
 func pan(screen_direction: Vector2) -> void:
 	if _course == null:
 		return
-	if view_mode == &"cannon":
-		var right := _camera.global_transform.basis.x
-		right.y = 0.0
-		right = right.normalized()
-		var forward := -_camera.global_transform.basis.z
-		forward.y = 0.0
-		forward = forward.normalized()
-		var scale := CANNON_ARROW_PAN_DISTANCE * pow(CANNON_ZOOM_FACTOR, cannon_zoom)
-		_apply_cannon_pan(
-			right * screen_direction.x * scale + forward * screen_direction.y * scale
-		)
-		return
+	var right := _camera.global_transform.basis.x
+	right.y = 0.0
+	right = right.normalized()
+	var forward := -_camera.global_transform.basis.z
+	forward.y = 0.0
+	forward = forward.normalized()
 	var span := maxf(_course.content_bounds.size.x, _course.content_bounds.size.z)
 	var scale := maxf(span * ARROW_PAN_SPAN_RATIO, 1.0) * pow(0.9, zoom)
-	pan_offset += Vector3(screen_direction.x * scale, 0.0, -screen_direction.y * scale)
+	pan_offset += right * screen_direction.x * scale + forward * screen_direction.y * scale
 	_clamp_pan()
 	_pose_dirty = true
 
@@ -210,9 +190,6 @@ func pan_drag(_screen_position: Vector2, relative: Vector2) -> bool:
 	delta = delta.limit_length(maximum_event_distance)
 	if not delta.is_finite() or delta.is_zero_approx():
 		return false
-	if view_mode == &"cannon":
-		_apply_cannon_pan(delta)
-		return true
 	pan_offset += delta
 	_clamp_pan()
 	_pose_dirty = true
@@ -222,19 +199,6 @@ func pan_drag(_screen_position: Vector2, relative: Vector2) -> bool:
 func orbit(relative: Vector2) -> bool:
 	if relative.is_zero_approx():
 		return false
-	if view_mode == &"cannon":
-		cannon_orbit_degrees.x = wrapf(
-			cannon_orbit_degrees.x - relative.x * CANNON_ORBIT_DEGREES_PER_PIXEL.x,
-			-180.0,
-			180.0
-		)
-		cannon_orbit_degrees.y = clampf(
-			cannon_orbit_degrees.y + relative.y * CANNON_ORBIT_DEGREES_PER_PIXEL.y,
-			CANNON_MINIMUM_PITCH_ORBIT,
-			CANNON_MAXIMUM_PITCH_ORBIT
-		)
-		_pose_dirty = true
-		return true
 	orbit_degrees.x = wrapf(orbit_degrees.x - relative.x * ORBIT_DEGREES_PER_PIXEL.x, -180.0, 180.0)
 	orbit_degrees.y = clampf(orbit_degrees.y + relative.y * ORBIT_DEGREES_PER_PIXEL.y, -30.0, 30.0)
 	_pose_dirty = true
@@ -242,15 +206,6 @@ func orbit(relative: Vector2) -> bool:
 
 
 func zoom_by_steps(steps: float) -> bool:
-	if view_mode == &"cannon":
-		var next_cannon_zoom := clampf(
-			cannon_zoom + steps, CANNON_MINIMUM_ZOOM, CANNON_MAXIMUM_ZOOM
-		)
-		if is_equal_approx(next_cannon_zoom, cannon_zoom):
-			return false
-		cannon_zoom = next_cannon_zoom
-		_pose_dirty = true
-		return true
 	var next := clampf(zoom + steps, OVERVIEW_ZOOM, CLOSE_ZOOM)
 	if is_equal_approx(next, zoom):
 		return false
@@ -261,12 +216,7 @@ func zoom_by_steps(steps: float) -> bool:
 
 func reset_planning_view() -> void:
 	return_to_planning()
-	if view_mode == &"cannon":
-		_reset_cannon_exploration()
-	else:
-		pan_offset = Vector3.ZERO
-		zoom = DEFAULT_ZOOM
-		orbit_degrees = Vector2.ZERO
+	_reset_exploration()
 	_pose_dirty = true
 	snap_to_planning()
 
@@ -280,9 +230,6 @@ func follow(target: Node3D) -> bool:
 			"pan": pan_offset,
 			"zoom": zoom,
 			"orbit": orbit_degrees,
-			"cannon_pan": cannon_pan_offset,
-			"cannon_zoom": cannon_zoom,
-			"cannon_orbit": cannon_orbit_degrees,
 		}
 	_follow_target = target
 	_follow_direction = _target_horizontal_direction(target, _cannon_direction)
@@ -317,7 +264,7 @@ func follow_target() -> Node3D:
 
 func planning_focus() -> Vector3:
 	if view_mode == &"cannon":
-		return _terrain_safe_focus(_cannon_anchor + cannon_pan_offset)
+		return _terrain_safe_focus(_cannon_anchor + pan_offset)
 	var focus := _base_focus + pan_offset
 	var height := _terrain_height(focus)
 	if not is_finite(height):
@@ -374,16 +321,13 @@ func _apply_planning(delta: float) -> void:
 		_resolve_pose(size)
 	var weight := 1.0 if delta >= 0.999 else 1.0 - exp(-delta * 5.5)
 	var candidate := _camera.global_position.lerp(_planning_position, weight)
-	if view_mode == &"oblique" or _cannon_is_explored():
-		var next_focus := _rendered_focus.lerp(_planning_focus, weight)
-		var boom_origin := _terrain_safe_position(next_focus)
-		candidate = OverviewSolver.sweep_boom(
-			_camera, boom_origin, candidate, _collision_exclusions, _last_valid_position
-		)
-		candidate = _validated_camera_position(candidate, _last_valid_position, boom_origin)
-		_rendered_focus = boom_origin
-	else:
-		_rendered_focus = _planning_focus
+	var next_focus := _rendered_focus.lerp(_planning_focus, weight)
+	var boom_origin := _terrain_safe_position(next_focus)
+	candidate = OverviewSolver.sweep_boom(
+		_camera, boom_origin, candidate, _collision_exclusions, _last_valid_position
+	)
+	candidate = _validated_camera_position(candidate, _last_valid_position, boom_origin)
+	_rendered_focus = boom_origin
 	_last_valid_position = candidate
 	_camera.global_position = candidate
 	_camera.look_at(_rendered_focus, Vector3.UP)
@@ -396,13 +340,11 @@ func _resolve_pose(size: Vector2) -> void:
 		var base_position := _cannon_anchor - _cannon_heading * CANNON_BACK_DISTANCE \
 				+ camera_right * CANNON_SIDE_DISTANCE + Vector3.UP * CANNON_HEIGHT
 		var offset := base_position - _cannon_anchor
-		offset = offset.rotated(Vector3.UP, deg_to_rad(cannon_orbit_degrees.x))
+		offset = offset.rotated(Vector3.UP, deg_to_rad(orbit_degrees.x))
 		var orbit_right := Vector3.UP.cross(offset).normalized()
 		if not orbit_right.is_zero_approx():
-			offset = offset.rotated(
-				orbit_right, deg_to_rad(-cannon_orbit_degrees.y)
-			)
-		offset *= pow(CANNON_ZOOM_FACTOR, cannon_zoom)
+			offset = offset.rotated(orbit_right, deg_to_rad(-orbit_degrees.y))
+		offset = offset.normalized() * _resolved_cannon_distance(offset.length())
 		_planning_focus = base_focus
 		_planning_position = _planning_focus + offset
 	else:
@@ -456,41 +398,35 @@ func _restore_snapshot() -> void:
 	pan_offset = _return_snapshot.get("pan", Vector3.ZERO)
 	zoom = _return_snapshot.get("zoom", DEFAULT_ZOOM)
 	orbit_degrees = _return_snapshot.get("orbit", Vector2.ZERO)
-	cannon_pan_offset = _return_snapshot.get("cannon_pan", Vector3.ZERO)
-	cannon_zoom = _return_snapshot.get("cannon_zoom", DEFAULT_ZOOM)
-	cannon_orbit_degrees = _return_snapshot.get("cannon_orbit", Vector2.ZERO)
 	_return_snapshot.clear()
 
 
-func _apply_cannon_pan(delta: Vector3) -> void:
-	if not delta.is_finite() or delta.is_zero_approx():
-		return
-	delta.y = 0.0
-	cannon_pan_offset += delta
-	var focus := _cannon_anchor + cannon_pan_offset
-	focus.x = clampf(focus.x, _exploration_bounds.position.x, _exploration_bounds.end.x)
-	focus.z = clampf(focus.z, _exploration_bounds.position.z, _exploration_bounds.end.z)
-	cannon_pan_offset = Vector3(focus.x - _cannon_anchor.x, 0.0, focus.z - _cannon_anchor.z)
-	_pose_dirty = true
-
-
-func _reset_cannon_exploration() -> void:
-	cannon_pan_offset = Vector3.ZERO
-	cannon_zoom = DEFAULT_ZOOM
-	cannon_orbit_degrees = Vector2.ZERO
-
-
-func _cannon_is_explored() -> bool:
-	return not cannon_pan_offset.is_zero_approx() \
-			or not is_equal_approx(cannon_zoom, DEFAULT_ZOOM) \
-			or not cannon_orbit_degrees.is_zero_approx()
+func _reset_exploration() -> void:
+	pan_offset = Vector3.ZERO
+	zoom = DEFAULT_ZOOM
+	orbit_degrees = Vector2.ZERO
 
 
 func _clamp_pan() -> void:
-	var focus := _base_focus + pan_offset
+	var base_focus := _cannon_anchor if view_mode == &"cannon" else _base_focus
+	var focus := base_focus + pan_offset
 	focus.x = clampf(focus.x, _exploration_bounds.position.x, _exploration_bounds.end.x)
 	focus.z = clampf(focus.z, _exploration_bounds.position.z, _exploration_bounds.end.z)
-	pan_offset = focus - _base_focus
+	pan_offset = Vector3(focus.x - base_focus.x, 0.0, focus.z - base_focus.z)
+
+
+func _resolved_cannon_distance(base_distance: float) -> float:
+	if zoom >= DEFAULT_ZOOM:
+		return exp(lerpf(
+			log(base_distance), log(CLOSE_INSPECTION_DISTANCE),
+			clampf(zoom / CLOSE_ZOOM, 0.0, 1.0)
+		))
+	var course_diagonal := Vector2(_frame_bounds.size.x, _frame_bounds.size.z).length()
+	var whole_course_distance := maxf(base_distance, course_diagonal * 1.18)
+	return exp(lerpf(
+		log(base_distance), log(whole_course_distance),
+		clampf(-zoom / -OVERVIEW_ZOOM, 0.0, 1.0)
+	))
 
 
 func _terrain_safe_focus(focus: Vector3) -> Vector3:
