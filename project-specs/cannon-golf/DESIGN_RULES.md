@@ -83,9 +83,10 @@ coefficients, stage data formats, or code ownership.
   and small center reticle. Exact vertical cannon aim must keep a finite, stable
   camera basis without reducing the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
-- In every planning preset, left-drag orbits and right-drag pans around the
-  bounded course focus, the wheel changes distance, and arrow keys pan. A click
-  without drag must not refocus or jump the pivot. Direct overview interaction
+- In every planning preset, left-drag moves the terrain, right-drag or
+  Shift+left-drag orbits around the bounded course focus, the wheel changes
+  distance, and arrow keys pan. A click without drag must not refocus or jump
+  the pivot. Direct overview interaction
   during Shot Follow restores the stored overview before applying the input.
 - Keep zoom bounded but materially useful in both directions. A compact reset
   action restores the authored high-oblique view, zero pan, and default distance.
@@ -100,7 +101,7 @@ coefficients, stage data formats, or code ownership.
   composition. From the first orbit, pan, arrow, or wheel input onward, use the
   same planning-camera state, sensitivity, distance endpoints, course bounds,
   terrain admission, and direct response as every other preset. Do not keep the
-  cannon centered or visible: right-drag and arrow keys may move the focus
+  cannon centered or visible: left-drag and arrow keys may move the focus
   anywhere in the prepared course. Keep vertical orbit short of inversion and
   camera placement terrain safe. Aim changes move the barrel and cues, not the
   camera. Only the explicit Overview action opens its authored

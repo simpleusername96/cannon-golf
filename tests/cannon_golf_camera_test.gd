@@ -258,7 +258,7 @@ func _assert_camera_preset_interaction() -> void:
 	game._end_planning_drag()
 	var authored_cannon_distance := game._camera_rig.resolved_planning_distance()
 	_assert_true(game.orbit_planning(Vector2(40.0, 12.0)),
-			"Left drag must orbit within Cannon exploration.")
+			"Common orbit input must work within Cannon exploration.")
 	var immediate_orbit_transform := game._camera.global_transform
 	_assert_true(
 		not immediate_orbit_transform.is_equal_approx(cannon_transform),
@@ -266,7 +266,7 @@ func _assert_camera_preset_interaction() -> void:
 	)
 	game.pan_planning(Vector2.RIGHT)
 	_assert_true(game.pan_planning_drag(Vector2(640.0, 360.0), Vector2(-80.0, -24.0)),
-			"Right drag must pan within Cannon exploration.")
+			"Common pan input must work within Cannon exploration.")
 	_assert_true(game.zoom_planning(1.0), "Wheel input must zoom within Cannon exploration.")
 	_assert_true(
 		game.planning_view == &"cannon" \

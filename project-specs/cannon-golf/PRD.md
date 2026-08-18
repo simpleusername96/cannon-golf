@@ -255,8 +255,9 @@ cannon composition.
   not switch to overview, reset overview exploration, or end an unrelated live
   Shot Follow. Cannon view alone follows the selected source because it is
   source-relative.
-  Every planning-camera preset uses left-drag orbit, right-drag pan, the mouse
-  wheel or compact actions for distance, and arrow keys for pan. Ten logarithmic
+  Every planning-camera preset uses left-drag to move the terrain, right-drag or
+  Shift+left-drag to orbit, the mouse wheel or compact actions for distance,
+  and arrow keys for pan. Ten logarithmic
   zoom-in actions move from reset framing to a `28 m` desired minimum distance;
   six zoom-out actions reach the complete-course fit. A swept camera boom
   shortens before terrain instead of lifting the camera above an obstruction.

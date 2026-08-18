@@ -11,6 +11,12 @@ enum LaunchState {
 	CLEARED,
 }
 
+enum PlanningDragAction {
+	NONE,
+	PAN,
+	ORBIT,
+}
+
 ## Rest uses the physics callback's wall-clock delta. Cannon Golf applies its
 ## motion multiplier directly to ball parameters rather than to this timer.
 const LOW_SPEED_FAILURE_SECONDS := 2.0
@@ -57,6 +63,7 @@ var _live_shots: Dictionary = {}
 var _next_ball_id := 1
 var _planning_drag_active := false
 var _planning_drag_button: MouseButton = MOUSE_BUTTON_NONE
+var _planning_drag_action := PlanningDragAction.NONE
 var _planning_drag_committed := false
 var _planning_drag_accumulated := Vector2.ZERO
 
@@ -192,7 +199,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		var mouse_button := event as InputEventMouseButton
 		if mouse_button.button_index in [MOUSE_BUTTON_LEFT, MOUSE_BUTTON_RIGHT]:
 			if mouse_button.pressed:
-				_begin_planning_drag(mouse_button.button_index)
+				_begin_planning_drag(
+					mouse_button.button_index,
+					mouse_button.button_index == MOUSE_BUTTON_LEFT and mouse_button.shift_pressed
+				)
 				get_viewport().set_input_as_handled()
 			elif _planning_drag_active and mouse_button.button_index == _planning_drag_button:
 				_end_planning_drag()
@@ -212,14 +222,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		if drag_relative.is_zero_approx():
 			get_viewport().set_input_as_handled()
 			return
-		if _planning_drag_button == MOUSE_BUTTON_LEFT \
-				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_LEFT:
-			orbit_planning(drag_relative)
-		elif _planning_drag_button == MOUSE_BUTTON_RIGHT \
-				and mouse_motion.button_mask & MOUSE_BUTTON_MASK_RIGHT:
-			pan_planning_drag(mouse_motion.position, drag_relative)
-		else:
+		var expected_mask := MOUSE_BUTTON_MASK_LEFT \
+				if _planning_drag_button == MOUSE_BUTTON_LEFT else MOUSE_BUTTON_MASK_RIGHT
+		if (mouse_motion.button_mask & expected_mask) == 0:
 			_end_planning_drag()
+		elif _planning_drag_action == PlanningDragAction.PAN:
+			pan_planning_drag(mouse_motion.position, drag_relative)
+		elif _planning_drag_action == PlanningDragAction.ORBIT:
+			orbit_planning(drag_relative)
 		get_viewport().set_input_as_handled()
 		return
 	if not (event is InputEventKey) or not event.pressed or event.echo:
@@ -432,9 +442,11 @@ func _activate_planning_camera() -> void:
 	_hud.set_camera_mode(&"planning")
 
 
-func _begin_planning_drag(button: MouseButton) -> void:
+func _begin_planning_drag(button: MouseButton, orbit_modifier: bool = false) -> void:
 	_planning_drag_active = true
 	_planning_drag_button = button
+	_planning_drag_action = PlanningDragAction.ORBIT \
+			if button == MOUSE_BUTTON_RIGHT or orbit_modifier else PlanningDragAction.PAN
 	_planning_drag_committed = false
 	_planning_drag_accumulated = Vector2.ZERO
 
@@ -444,6 +456,7 @@ func _end_planning_drag() -> void:
 		return
 	_planning_drag_active = false
 	_planning_drag_button = MOUSE_BUTTON_NONE
+	_planning_drag_action = PlanningDragAction.NONE
 	_planning_drag_committed = false
 	_planning_drag_accumulated = Vector2.ZERO
 	Input.set_default_cursor_shape(Input.CURSOR_ARROW)

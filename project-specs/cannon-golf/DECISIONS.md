@@ -896,12 +896,13 @@ in `OPEN_QUESTIONS.md`.
 
 ### D-058 — Treat Cannon as an unrestricted planning-camera preset
 
-- Status: refined on 2026-08-18 by D-060; supersedes D-057's remaining Cannon-specific
-  distance treatment and D-034's old mouse mapping and uniform `10%` zoom
-  response while preserving the stable subject-centered authored pose.
+- Status: refined on 2026-08-18 by D-060 and D-061; supersedes D-057's
+  remaining Cannon-specific distance treatment and D-034's old mouse mapping
+  and uniform `10%` zoom response while preserving the stable subject-centered
+  authored pose.
 - Overview, Cannon, and future planning viewpoints are coordinate presets, not
   navigation modes with different exploration entitlements. Every preset uses
-  left-drag orbit, right-drag pan, wheel/compact dolly, and arrow pan.
+  the common mouse and keyboard mapping defined by D-061.
 - Cannon may pan across the complete prepared course bounds and dolly from close
   inspection to a whole-course distance. Its authored anchor, field of view,
   reset transform, aim presentation, and stored return transform may remain
@@ -942,6 +943,19 @@ in `OPEN_QUESTIONS.md`.
 - Explicit preset selection, reset, or launcher-source selection restores the
   affected authored coordinate. Shot Follow stores and restores the single
   active planning-navigation state exactly.
+
+### D-061 — Use map-style mouse navigation for planning cameras
+
+- Status: accepted on 2026-08-18; replaces D-058's model-viewer mouse mapping
+  and restores D-034's primary left-drag pan while preserving D-060's single
+  navigation owner.
+- Left-drag moves the terrain. Right-drag or Shift+left-drag orbits around the
+  current planning focus. The wheel changes distance and arrow keys pan. This
+  mapping is identical in Overview, Cannon, and future planning coordinates.
+- A drag action is selected at mouse-down and remains stable until release;
+  changing a modifier mid-drag must not mix pan and orbit. Motion below the
+  existing drag threshold remains a click and does not move or refocus the
+  camera.
 
 ## Rationale
 

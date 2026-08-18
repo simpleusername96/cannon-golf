@@ -24,21 +24,33 @@ func _run() -> void:
 	var cannon_orbit_before_left_drag := game._camera_rig.orbit_degrees
 	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
 	_assert_true(
-		not game._camera_rig.orbit_degrees.is_equal_approx(
-			cannon_orbit_before_left_drag
-		) and game._camera_rig.planning_focus().is_equal_approx(cannon_focus_before_left_drag),
-		"Cannon left drag must update the common orbit without moving focus."
+		game._camera_rig.orbit_degrees.is_equal_approx(cannon_orbit_before_left_drag) \
+				and not game._camera_rig.planning_focus().is_equal_approx(
+					cannon_focus_before_left_drag
+				),
+		"Cannon left drag must move terrain without changing common orbit."
 	)
+	var cannon_focus_before_right_drag := game._camera_rig.planning_focus()
 	var cannon_orbit_before_right_drag := game._camera_rig.orbit_degrees
 	await _push_drag(
 		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
 	)
 	_assert_true(
-		game._camera_rig.orbit_degrees.is_equal_approx(cannon_orbit_before_right_drag) \
-				and not game._camera_rig.planning_focus().is_equal_approx(
-					cannon_focus_before_left_drag
+		not game._camera_rig.orbit_degrees.is_equal_approx(cannon_orbit_before_right_drag) \
+				and game._camera_rig.planning_focus().is_equal_approx(
+					cannon_focus_before_right_drag
 				),
-		"Cannon right drag must use common pan without changing common orbit."
+		"Cannon right drag must orbit without moving the common focus."
+	)
+	var focus_before_modified_left := game._camera_rig.planning_focus()
+	var orbit_before_modified_left := game._camera_rig.orbit_degrees
+	await _push_drag(
+		Vector2(640.0, 300.0), Vector2(-64.0, 28.0), MOUSE_BUTTON_LEFT, true
+	)
+	_assert_true(
+		not game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_modified_left) \
+				and game._camera_rig.planning_focus().is_equal_approx(focus_before_modified_left),
+		"Shift+left drag must use the same orbit action as right drag."
 	)
 	game.reset_planning_camera()
 	game.pan_planning(Vector2(1.0, -1.0))
@@ -193,23 +205,25 @@ func _run() -> void:
 	var focus_before_drag := game._camera_rig.planning_focus()
 	var orbit_before_drag := game._camera_rig.orbit_degrees
 	await _push_drag(
-		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
+		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_LEFT
 	)
 	_assert_true(
 		game._camera_rig.camera_mode == &"planning" \
 				and not game._camera_rig.planning_focus().is_equal_approx(focus_before_drag),
-		"Right drag during follow must return to planning and move across the terrain."
+		"Left drag during follow must return to planning and move across the terrain."
 	)
 	_assert_true(
 		game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_drag),
-		"Right drag must not rotate the terrain."
+		"Left drag must not rotate the terrain."
 	)
 	var focus_after_drag := game._camera_rig.planning_focus()
-	await _push_drag(Vector2(640.0, 300.0), Vector2(88.0, -36.0))
+	await _push_drag(
+		Vector2(640.0, 300.0), Vector2(88.0, -36.0), MOUSE_BUTTON_RIGHT
+	)
 	_assert_true(
 		not game._camera_rig.orbit_degrees.is_equal_approx(orbit_before_drag) \
 				and game._camera_rig.planning_focus().is_equal_approx(focus_after_drag),
-		"Left drag must orbit around the player-selected planning focus."
+		"Right drag must orbit around the player-selected planning focus."
 	)
 	var orbit_after_drag := game._camera_rig.orbit_degrees
 	await _push_click(Vector2(640.0, 300.0))
@@ -265,7 +279,7 @@ func _run() -> void:
 	var relay_focus_before_drag := game._camera_rig.planning_focus()
 	for _drag_index in range(4):
 		await _push_drag(
-			Vector2(640.0, 360.0), Vector2(120.0, 0.0), MOUSE_BUTTON_RIGHT
+			Vector2(640.0, 360.0), Vector2(120.0, 0.0), MOUSE_BUTTON_LEFT
 		)
 	var relay_focus_after_drag := game._camera_rig.planning_focus()
 	var relay_drag_distance := relay_focus_after_drag.distance_to(relay_focus_before_drag)
@@ -277,7 +291,7 @@ func _run() -> void:
 		relay_drag_distance > 1.0 \
 				and relay_drag_distance <= relay_span \
 				and game.active_course().content_bounds.has_point(relay_focus_after_drag),
-		"Course right drag %.3f must stay within %.3f and inside exploration bounds (%s)." % [
+		"Course left drag %.3f must stay within %.3f and inside exploration bounds (%s)." % [
 			relay_drag_distance,
 			relay_span,
 			game.active_course().content_bounds.has_point(relay_focus_after_drag),
@@ -326,18 +340,35 @@ func _push_click(position: Vector2) -> void:
 func _push_drag(
 	position: Vector2,
 	relative: Vector2,
-	button: MouseButton = MOUSE_BUTTON_LEFT
+	button: MouseButton = MOUSE_BUTTON_LEFT,
+	shift_pressed: bool = false
 ) -> void:
-	await _push_mouse_button(button, true, position)
+	var pressed := InputEventMouseButton.new()
+	pressed.button_index = button
+	pressed.pressed = true
+	pressed.position = position
+	pressed.global_position = position
+	pressed.button_mask = MOUSE_BUTTON_MASK_LEFT \
+			if button == MOUSE_BUTTON_LEFT else MOUSE_BUTTON_MASK_RIGHT
+	pressed.shift_pressed = shift_pressed
+	Input.parse_input_event(pressed)
+	await process_frame
 	var motion := InputEventMouseMotion.new()
 	motion.position = position + relative
 	motion.global_position = motion.position
 	motion.relative = relative
 	motion.button_mask = MOUSE_BUTTON_MASK_LEFT \
 			if button == MOUSE_BUTTON_LEFT else MOUSE_BUTTON_MASK_RIGHT
+	motion.shift_pressed = shift_pressed
 	Input.parse_input_event(motion)
 	await process_frame
-	await _push_mouse_button(button, false, motion.position)
+	var released := pressed.duplicate() as InputEventMouseButton
+	released.pressed = false
+	released.position = motion.position
+	released.global_position = motion.position
+	released.button_mask = 0
+	Input.parse_input_event(released)
+	await process_frame
 
 
 func _press_step(button: Button) -> void:

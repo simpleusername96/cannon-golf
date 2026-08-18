@@ -186,7 +186,10 @@ func _run() -> void:
 	hud.set_shortcut_panel_visible(true)
 	await process_frame
 	var korean_shortcut_copy := _visible_copy(hud.get_node("%ShortcutPanel"))
-	for required in ["Q / E", "Space", "Tab", "조준으로 복귀", "Shift + R", "드래그", "휠", "방향키", "Esc"]:
+	for required in [
+		"Q / E", "Space", "Tab", "조준으로 복귀", "Shift + R", "좌 드래그",
+		"우 / Shift+좌", "화면 이동", "화면 회전", "휠", "방향키", "Esc",
+	]:
 		_assert(korean_shortcut_copy.contains(required), "Korean shortcut help must expose %s." % required)
 	hud.set_shortcut_panel_visible(false)
 	hud.apply_language("en")
@@ -203,7 +206,10 @@ func _run() -> void:
 	_assert(hud.is_shortcut_panel_visible(), "Shortcut help must open on request.")
 	_assert((hud.get_node("%ShortcutCloseButton") as Button).has_focus(), "Shortcut help must move focus to its close action.")
 	var shortcut_copy := _visible_copy(hud.get_node("%ShortcutPanel"))
-	for required in ["Q / E", "Space", "Tab", "Return to aim", "Shift + R", "Drag", "Wheel", "Arrows", "Esc"]:
+	for required in [
+		"Q / E", "Space", "Tab", "Return to aim", "Shift + R", "L Drag",
+		"R / Shift+L", "Move view", "Orbit view", "Wheel", "Arrows", "Esc",
+	]:
 		_assert(shortcut_copy.contains(required), "English shortcut help must expose %s." % required)
 	_assert_hud_edge_fit(hud, Vector2(1280.0, 720.0), "1280x720 shortcut-open")
 	root.size = Vector2i(1600, 900)
