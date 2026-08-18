@@ -957,6 +957,17 @@ in `OPEN_QUESTIONS.md`.
   existing drag threshold remains a click and does not move or refocus the
   camera.
 
+### D-062 — Remove the Cannon center-screen reticle
+
+- Status: accepted on 2026-08-18; supersedes the center-reticle clauses in
+  D-044 and D-047 without changing their world-space aim guide or physical
+  barrel requirements.
+- Cannon view must not draw a center-screen dot, crosshair, chevrons, or another
+  replacement HUD marker. The physical barrel and compact world-space partial
+  aim curve remain the setup-direction cues.
+- Remove the obsolete HUD node and drawing component instead of retaining a
+  hidden or dormant reticle implementation.
+
 ## Rationale
 
 - Separating impact memory from painting prevents the inherited coverage system

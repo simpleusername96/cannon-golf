@@ -53,7 +53,6 @@ signal result_primary_requested
 @onready var _launcher_source_name: Label = %LauncherSourceName
 @onready var _launcher_source_position: Label = %LauncherSourcePosition
 @onready var _launcher_source_next: Button = %LauncherSourceNext
-@onready var _aim_reticle: Control = %AimReticle
 
 var _syncing := false
 var _pause_suspended := false
@@ -446,11 +445,10 @@ func is_shortcut_panel_visible() -> bool:
 
 func _refresh_camera_buttons() -> void:
 	var following := _camera_mode == &"follow"
-	_aim_reticle.visible = not following and _planning_view == &"cannon"
 	_follow_button.button_pressed = following
 	var english := _language == "en"
-	var reset_copy := "Reset view (Home) · Left orbit / right move" if english \
-			else "시점 원위치 (Home) · 왼쪽 회전 / 오른쪽 이동"
+	var reset_copy := "Reset view (Home) · Left move / right orbit" if english \
+			else "시점 원위치 (Home) · 왼쪽 이동 / 오른쪽 회전"
 	_set_icon_copy(_camera_reset_button, reset_copy)
 	_set_icon_copy(
 		_follow_button,

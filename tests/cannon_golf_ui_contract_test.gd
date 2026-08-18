@@ -17,6 +17,8 @@ func _run() -> void:
 	root.add_child(hud)
 	await process_frame
 	await process_frame
+	_assert(hud.get_node_or_null("%AimReticle") == null,
+			"Cannon planning must not add a center-screen aim reticle.")
 	_assert(hud.get_node_or_null("Root/BottomRail") is Control, "Normal play needs one transparent bottom rail.")
 	_assert(hud.get_node_or_null("Root/BottomRail/AimPanel") is HBoxContainer, "The rail must own horizontal and elevation groups.")
 	_assert(hud.get_node_or_null("Root/BottomRail/ShotPanel") is HBoxContainer, "The rail must own power and Fire.")

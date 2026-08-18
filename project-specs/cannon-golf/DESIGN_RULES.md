@@ -80,7 +80,7 @@ coefficients, stage data formats, or code ownership.
   Keep the curve depth-tested and shadow-free; only the compact arrowhead may
   bypass depth testing. Uniformly reduce the same guide in cannon perspective so
   its connected arrow stays compact near the camera; keep the physical barrel
-  and small center reticle. Exact vertical cannon aim must keep a finite, stable
+  and do not add a center-screen reticle. Exact vertical cannon aim must keep a finite, stable
   camera basis without reducing the legal elevation range.
 - Use an oblique three-quarter view when both axes must remain readable.
 - In every planning preset, left-drag moves the terrain, right-drag or

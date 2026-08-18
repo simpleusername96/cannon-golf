@@ -238,10 +238,10 @@ cannon composition.
   `5-10%` of viewport height while surrounding and forward terrain occupy most
   of the image. The authored camera-to-interest distance stays within `80-110 m`
   and the view remains at least `45°` away from straight down. Its physical
-  barrel and center reticle accompany a uniformly
+  barrel accompanies a uniformly
   reduced version of the overview partial aim curve. It does not frame or imply
   a next goal. Once selected, its camera transform remains fixed while the
-  player changes horizontal aim, elevation, or power; the barrel, reticle, and
+  player changes horizontal aim, elevation, or power; the barrel and
   aim cue show those setup changes without orbiting, tilting, or interpolating
   the camera. Selecting another launcher source authors a new source-relative
   Cannon preset.
@@ -441,8 +441,8 @@ cannon composition.
 
 - Applies to: FR-8, FR-10.
 - Conditions for done: planning provides one top/oblique view and one rear-upper
-  cannon perspective in which the physical cannon, compact partial guide,
-  center reticle, and surrounding terrain remain legible without a cannon-led
+  cannon perspective in which the physical cannon, compact partial guide, and
+  surrounding terrain remain legible without a cannon-led
   close-up; settled balls, retained
   marks, and the
   selected pad are not hidden by persistent HUD elements. Changing view,
